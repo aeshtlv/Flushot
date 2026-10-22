@@ -1,11 +1,16 @@
 {
   "name": "flushot",
   "version": "2.2.8",
-  "description": "Lightshot-style screenshot tool for Windows with macOS-looking framed cards, annotations and text recognition",
+  "description": "Screenshot tool for Windows: select a region and get a finished picture with a frame, annotations and text recognition",
   "main": "./out/main/index.js",
   "author": "Flushot",
   "license": "MIT",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aeshtlv/Flushot.git"
+  },
+  "homepage": "https://aeshtlv.github.io/Flushot/",
   "keywords": [
     "screenshot",
     "screen-capture",

@@ -1,8 +1,8 @@
 # Flushot
 
-**A Lightshot-style screenshot tool for Windows with macOS-looking output.** Select a region and
-Flushot returns it on a framed card with a soft shadow and rounded corners — at full resolution,
-with no resampling. Windows 10 and 11, x64.
+**A screenshot tool for Windows.** Select a region and Flushot hands you a finished picture: neatly
+framed, with a soft shadow and rounded corners, at full resolution. Nothing to configure before the
+first run. Windows 10 and 11, x64.
 
 <p align="center">
   <img src="logo/logo.png" alt="Flushot" width="120">
@@ -22,7 +22,7 @@ with no resampling. Windows 10 and 11, x64.
 - **Any region, any size.** The result is your selection plus a frame, so 300×270 and 3840×2160 both
   work. Pixels are copied one-to-one; nothing is stretched.
 - **Framed card.** Frame width 0–200 px on all four sides, colour of your choice, rounded corners,
-  macOS Quick Look style shadow — or a clean screenshot with no border at all.
+  a soft shadow — or a clean screenshot with no border at all.
 - **Annotations.** Arrow, line, rectangle, freehand, text with word wrapping, numbered steps, move,
   blur and pixelate. Draw on the result and copy it, no separate editor.
 - **Text recognition.** The "Text" button reads the screenshot or a selected fragment with the
@@ -39,6 +39,8 @@ with no resampling. Windows 10 and 11, x64.
 
 Prebuilt archives are attached to **[Releases](../../releases/latest)**. The `win64.zip` is the most
 reliable option: unpack it and run `Flushot.exe` — it does not need a writable `%TEMP%`.
+
+There is also a landing page with screenshots: **https://aeshtlv.github.io/Flushot/**
 
 The binaries are not code-signed, so SmartScreen may warn you: **More info → Run anyway**.
 

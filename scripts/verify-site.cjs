@@ -6,12 +6,11 @@
  * unreadable on someone else's. None of that shows up in a screenshot, so it is
  * checked here instead.
  *
- * Usage: node scripts/verify-site.cjs [--no-archives]
+ * Usage: node scripts/verify-site.cjs
  *
- * `--no-archives` skips the checks that need the release archives: a fresh clone has no
- * `share/*.zip` (they are build output, not source), so the download buttons cannot be
- * verified there. Everything else — links, images, contrast, markup, fonts — is still
- * checked, and the skipped part is named in the output rather than passed silently.
+ * The download buttons point at GitHub Releases, so nothing here needs the archives to
+ * be present: the links are checked against `package.json` and, when `share/` is not
+ * empty, against the real file names.
  */
 
 const path = require('node:path')
@@ -21,9 +20,6 @@ const sharp = require('sharp')
 
 const ROOT = path.join(__dirname, '..')
 const SITE = path.join(ROOT, 'site')
-
-/** Release archives are build output, so a source checkout has none to check. */
-const SKIP_ARCHIVES = process.argv.includes('--no-archives')
 
 const problems = []
 const notes = []
@@ -182,22 +178,11 @@ async function checkFiles() {
 async function checkReferences() {
   const html = read('index.html')
   const refs = localReferences(html)
-  let skipped = 0
   for (const ref of refs) {
-    // Release archives are build output, not source: in a fresh clone they do not exist,
-    // and the download links are checked by `checkDownloads` when they do.
-    if (SKIP_ARCHIVES && ref.startsWith('downloads/')) {
-      skipped += 1
-      continue
-    }
     const target = path.join(SITE, ref.split('?')[0])
     if (!existsSync(target)) fail(`broken reference in index.html: ${ref}`)
   }
-  notes.push(
-    skipped === 0
-      ? `index.html references ${refs.length} local files, all present`
-      : `index.html references ${refs.length - skipped} local files, all present (${skipped} archive link(s) not checked)`
-  )
+  notes.push(`index.html references ${refs.length} local files, all present`)
 
   // Every <picture> WebP source must sit next to a PNG fallback with the same box.
   const pictureSources = [...html.matchAll(/<source srcset="assets\/([a-z-]+)\.webp"/g)].map((m) => m[1])
@@ -351,18 +336,10 @@ async function checkMarkup() {
   const visiblePanels = [...html.matchAll(/role="tabpanel"(?![^>]*hidden)/g)].length
   if (tabs > 0 && visiblePanels !== 1) fail(`${visiblePanels} panels are visible on load, expected 1`)
 
-  // Downloads must point at real archives.
-  const archives = [...html.matchAll(/href="(downloads\/[^"]+)"/g)].map((m) => m[1])
-  if (archives.length === 0) fail('no download links found')
-  for (const archive of archives) {
-    if (SKIP_ARCHIVES) continue
-    if (!existsSync(path.join(SITE, archive))) fail(`download link points at a missing file: ${archive}`)
-  }
-  notes.push(
-    SKIP_ARCHIVES
-      ? `${archives.length} download links named, files not checked (--no-archives)`
-      : `${archives.length} download links verified`
-  )
+  // Downloads must point at the release, not at a file that is not there.
+  const releaseLinks = [...html.matchAll(/href="(https:\/\/github\.com\/[^"]*\/releases\/[^"]*)"/g)].length
+  if (releaseLinks === 0) fail('no download links found')
+  else notes.push(`${releaseLinks} download links point at GitHub Releases`)
 
   checkTagBalance(html, 'index.html')
 
@@ -425,11 +402,14 @@ async function checkNoExternalRequests() {
   const css = read('styles.css')
   const js = read('app.js')
 
-  // The site must work from a USB stick with no network.
+  // The site must work from a USB stick with no network. Download buttons are the one
+  // deliberate exception: they *navigate* to the release, which is a click, not a load,
+  // so the page itself still renders and reads with the cable unplugged.
   for (const [name, content] of [['index.html', html], ['styles.css', css], ['app.js', js]]) {
     const external = [...content.matchAll(/https?:\/\/[^\s"')]+/g)]
       .map((m) => m[0])
       .filter((url) => !url.startsWith('https://schema.org') && !url.includes('example.com') && !url.includes('w3.org'))
+      .filter((url) => !/^https:\/\/github\.com\/[^/]+\/[^/]+\/releases\//.test(url))
     if (external.length > 0) fail(`${name} loads from the network: ${external.slice(0, 3).join(', ')}`)
   }
   notes.push('no external fonts, CDNs or trackers')
@@ -579,38 +559,61 @@ async function checkSocialPreview() {
   if (stat.size > 5 * 1024 * 1024) fail(`og-image.png is ${(stat.size / 1024 / 1024).toFixed(1)} MB, some platforms cap at 5 MB`)
 }
 
-async function checkDownloads() {
-  const files = await fs.readdir(path.join(SITE, 'downloads')).catch(() => [])
-  if (files.length === 0) {
-    // The archives are build output: `node scripts/build-site.cjs` copies them out of
-    // `share/`. Their absence is normal in a fresh clone, where the page links to
-    // GitHub Releases instead, so point at the right command rather than just failing.
-    fail(
-      'site/downloads is empty, so the download buttons 404 — run `node scripts/build-site.cjs` ' +
-        'to copy the archives from share/, or rerun with --no-archives if they live in GitHub Releases'
-    )
+/**
+ * The download buttons point at GitHub Releases, not at files next to the page.
+ *
+ * That is what makes the site publishable at all: three archives of 110–160 MB cannot
+ * live in a repository, and a page whose buttons 404 is worse than no page. The links
+ * are checked against the two facts that can drift — the repository they name and the
+ * version in the file names — and, when `share/` happens to hold the archives, against
+ * the actual file names as well.
+ */
+async function checkReleaseLinks() {
+  const html = read('index.html')
+  const links = [...html.matchAll(/href="(https:\/\/github\.com\/[^"]*\/releases\/[^"]*)"/g)].map((m) => m[1])
+  if (links.length === 0) {
+    fail('no GitHub Releases download links on the page')
     return
   }
-  const html = read('index.html')
-  let matched = 0
-  for (const file of files) {
-    if (!html.includes(file)) fail(`downloads/${file} is not linked from the page`)
-    const target = path.join(SITE, 'downloads', file)
-    const stat = await fs.stat(target)
-    if (stat.size < 1024 * 1024) fail(`downloads/${file} is only ${stat.size} bytes, that is not an archive`)
 
-    // The copy on the site must be the same bytes as the one in `share/`. Comparing
-    // sizes was not enough: rebuilding the same version produces an archive of
-    // exactly the same size, so a stale copy sat in `downloads/` looking perfectly
-    // valid while the page offered an older build.
-    const source = path.join(ROOT, 'share', file)
-    if (existsSync(source)) {
-      const [a, b] = await Promise.all([fs.readFile(source), fs.readFile(target)])
-      if (!a.equals(b)) fail(`downloads/${file} differs from share/${file}, so the site offers a stale build`)
-      else matched += 1
+  const pkg = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8'))
+  const slug = (pkg.repository?.url ?? '')
+    .replace(/^git\+/, '')
+    .replace(/^https:\/\/github\.com\//, '')
+    .replace(/\.git$/, '')
+    .replace(/\/$/, '')
+  if (!slug) fail('package.json has no repository.url, so the release links cannot be tied to it')
+
+  const archives = await fs.readdir(path.join(ROOT, 'share')).catch(() => [])
+  const known = new Set(archives.filter((name) => name.endsWith('.zip')))
+
+  for (const link of links) {
+    const match = /^https:\/\/github\.com\/([^/]+\/[^/]+)\/releases\/latest\/download\/(.+)$/.exec(link)
+    if (!match) {
+      fail(`download link is not a "releases/latest/download" URL: ${link}`)
+      continue
+    }
+    const [, linkSlug, file] = match
+    if (slug && linkSlug.toLowerCase() !== slug.toLowerCase()) {
+      fail(`download link points at ${linkSlug}, but package.json names ${slug}`)
+    }
+    if (!file.includes(pkg.version)) {
+      fail(`download link ${file} does not carry version ${pkg.version} from package.json`)
+    }
+    if (known.size > 0 && !known.has(file)) {
+      fail(`download link names ${file}, which is not in share/ — the file would 404`)
     }
   }
-  notes.push(`${files.length} archives present and linked, ${matched} byte-identical to share/`)
+
+  for (const name of known) {
+    if (!html.includes(name)) fail(`share/${name} exists but no download button offers it`)
+  }
+
+  notes.push(
+    known.size > 0
+      ? `${links.length} download links point at ${slug} releases, names match share/`
+      : `${links.length} download links point at ${slug} releases (share/ is empty here, file names not cross-checked)`
+  )
 }
 
 async function reportSize() {
@@ -638,11 +641,7 @@ async function main() {
   await checkFonts()
   await checkSocialPreview()
   await checkBrandMark()
-  if (SKIP_ARCHIVES) {
-    notes.push('release archives not checked (--no-archives)')
-  } else {
-    await checkDownloads()
-  }
+  await checkReleaseLinks()
   await reportSize()
 
   for (const note of notes) console.log(`  · ${note}`)

@@ -36,10 +36,10 @@ jobs:
       - name: Unit tests
         run: npm test
 
-      # No browser needed, so this runs on a bare runner. The archives are build output
-      # and are not in the repository, hence --no-archives.
+      # No browser needed, so this runs on a bare runner. The download buttons point at
+      # GitHub Releases, so nothing here depends on the archives being present.
       - name: Site checks
-        run: node scripts/verify-site.cjs --no-archives
+        run: npm run verify:site
 
       # A renamed file or a moved heading turns a link into a silent 404 on GitHub.
       - name: Documentation links

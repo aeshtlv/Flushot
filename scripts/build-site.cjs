@@ -7,10 +7,13 @@
  *  - web-optimised copies of the real screenshots (WebP + PNG fallback, sized to
  *    the widest place they are shown, so nothing is upscaled on a 2x display),
  *  - the favicon set, rasterised from the same SVG the app itself uses,
- *  - the social preview image,
- *  - the download archives, copied in so the folder works on its own.
+ *  - the social preview image.
  *
- * Usage: node scripts/build-site.cjs [--skip-downloads]
+ * The download archives are deliberately *not* copied in: the buttons point at
+ * GitHub Releases, because three archives of 110–160 MB cannot live in a repository
+ * and the folder has to stay publishable as-is.
+ *
+ * Usage: node scripts/build-site.cjs
  */
 
 const path = require('node:path')
@@ -21,7 +24,6 @@ const sharp = require('sharp')
 const ROOT = path.join(__dirname, '..')
 const SITE = path.join(ROOT, 'site')
 const ASSETS = path.join(SITE, 'assets')
-const DOWNLOADS = path.join(SITE, 'downloads')
 
 // The app icon, taken from `logo/logo.svg` — the file the owner supplied, and the
 // same drawing the program rasterises for its window icon and the site header uses.
@@ -71,14 +73,8 @@ const IMAGES = [
   { src: 'docs/multi-monitor.png', out: 'monitors', width: 420, height: null }
 ]
 
-const DOWNLOAD_FILES = [
-  'Flushot-2.2.8-win64.zip',
-  'Flushot-2.2.8-installer.zip',
-  'Flushot-2.2.8-portable.zip'
-]
-
 async function ensureDirs() {
-  for (const dir of [SITE, ASSETS, DOWNLOADS]) {
+  for (const dir of [SITE, ASSETS]) {
     await fs.mkdir(dir, { recursive: true })
   }
 }
@@ -148,41 +144,12 @@ async function buildOgImage() {
   return { copied: false, kb: Math.round((await fs.stat(target)).size / 1024) }
 }
 
-async function buildDownloads() {
-  const rows = []
-  for (const name of DOWNLOAD_FILES) {
-    const source = path.join(ROOT, 'share', name)
-    const target = path.join(DOWNLOADS, name)
-    if (!existsSync(source)) throw new Error(`missing archive: share/${name}`)
-    const sourceSize = (await fs.stat(source)).size
-    const targetSize = existsSync(target) ? (await fs.stat(target)).size : -1
-
-    // A rebuild of the same version produces an archive of exactly the same size —
-    // only a few bytes of the zip's timestamps and the packed files' contents
-    // change. Comparing sizes alone therefore silently left the *previous* build of
-    // the same version on the site: `downloads/` held an archive that no longer
-    // matched `share/`, and the page kept offering it. The bytes are what matter, so
-    // the bytes are what get compared.
-    let same = false
-    if (targetSize === sourceSize) {
-      const [a, b] = await Promise.all([fs.readFile(source), fs.readFile(target)])
-      same = a.equals(b)
-    }
-    if (!same) await fs.copyFile(source, target)
-
-    rows.push({ name, mb: (sourceSize / 1024 / 1024).toFixed(1), copied: !same })
-  }
-  return rows
-}
-
 async function main() {
-  const skipDownloads = process.argv.includes('--skip-downloads')
   await ensureDirs()
 
   const images = await buildImages()
   const icons = await buildIcons()
   const og = await buildOgImage()
-  const downloads = skipDownloads ? [] : await buildDownloads()
 
   console.log('Images')
   for (const row of images) {
@@ -190,12 +157,6 @@ async function main() {
   }
   console.log(`\nIcons: favicon.svg, favicon-32.png (${icons.png32} B), apple-touch-icon.png (${icons.apple} B), icon-512.png`)
   console.log(`Social preview: og-image.png ${og.kb} KB${og.copied ? ' (from smm/)' : ' (generated)'}`)
-  if (downloads.length > 0) {
-    console.log('\nDownloads')
-    for (const row of downloads) console.log(`  ${row.name.padEnd(30)} ${row.mb} MB`)
-  } else {
-    console.log('\nDownloads: skipped')
-  }
 
   const total = images.reduce((sum, row) => sum + row.webpKB, 0)
   console.log(`\nPage image weight (WebP): ${total} KB`)
