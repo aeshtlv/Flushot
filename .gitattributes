@@ -1,0 +1,34 @@
+# Normalise line endings on commit; check out native ones.
+* text=auto
+
+# Source and docs: LF everywhere, so diffs and CI agree with Linux tooling.
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.cjs text eol=lf
+*.mjs text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.md text eol=lf
+
+# The instruction for end users is opened in Notepad on a fresh Windows install,
+# so it keeps Windows line endings.
+share/*.txt text eol=crlf
+
+# Binary files: never diff, never convert.
+*.png binary
+*.jpg binary
+*.webp binary
+*.ico binary
+*.woff2 binary
+*.zip binary
+*.exe binary
+*.asar binary
+
+# Generated files: keep them out of diffs and out of language statistics.
+package-lock.json linguist-generated=true -diff
+site/fonts.css linguist-generated=true
+build/icon.ico binary

@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Types, tests, site
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The renderer and the main process are two separate TypeScript projects with
+      # different libs, so one `tsc` would miss half the errors.
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+      # No browser needed, so this runs on a bare runner. The archives are build output
+      # and are not in the repository, hence --no-archives.
+      - name: Site checks
+        run: node scripts/verify-site.cjs --no-archives
+
+      # A renamed file or a moved heading turns a link into a silent 404 on GitHub.
+      - name: Documentation links
+        run: npm run verify:docs

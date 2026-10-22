@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Страница не найдена — Flushot</title>
+<meta name="description" content="Такой страницы нет. Вернитесь на главную — там описание Flushot и ссылки на скачивание.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#09090b">
+<meta name="color-scheme" content="dark light">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="styles.css">
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('flushot-theme');
+      if (saved === 'light' || saved === 'dark') document.documentElement.dataset.theme = saved;
+    } catch (error) {
+      /* private mode: keep the dark default */
+    }
+  })();
+</script>
+<style>
+  .notfound {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 40px 24px;
+    text-align: center;
+  }
+
+  .notfound__inner {
+    max-width: 460px;
+  }
+
+  .notfound__code {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+  }
+
+  .notfound h1 {
+    margin: 16px 0 14px;
+    font-size: clamp(28px, 5vw, 40px);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+  }
+
+  .notfound p {
+    color: var(--fg-muted);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .notfound .btn {
+    margin-top: 28px;
+  }
+</style>
+</head>
+<body>
+<main class="notfound">
+  <div class="notfound__inner">
+    <p class="notfound__code">Ошибка 404</p>
+    <h1>Такой страницы нет</h1>
+    <p>Возможно, ссылка устарела или в адресе опечатка. На главной — описание программы и ссылки на скачивание.</p>
+    <a class="btn btn--primary" href="index.html">На главную</a>
+  </div>
+</main>
+</body>
+</html>

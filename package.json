@@ -1,0 +1,51 @@
+{
+  "name": "flushot",
+  "version": "2.2.8",
+  "description": "Lightshot-style screenshot tool for Windows with macOS-looking framed cards, annotations and text recognition",
+  "main": "./out/main/index.js",
+  "author": "Flushot",
+  "license": "MIT",
+  "private": true,
+  "keywords": [
+    "screenshot",
+    "screen-capture",
+    "annotations",
+    "ocr",
+    "electron",
+    "windows"
+  ],
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "dev": "electron-vite dev",
+    "start": "electron-vite preview",
+    "build": "electron-vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "icons": "node scripts/generate-icons.mjs",
+    "verify:docs": "node scripts/verify-docs.cjs",
+    "verify:site": "node scripts/verify-site.cjs",
+    "dist": "npm run build && electron-builder --win nsis portable",
+    "dist:dir": "npm run build && electron-builder --dir --win",
+    "self-test": "npm run build && electron . --self-test"
+  },
+  "dependencies": {
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "sharp": "^0.35.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "electron": "^44.9.0",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^6.0.0",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5"
+  }
+}
