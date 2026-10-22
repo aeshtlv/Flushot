@@ -54,19 +54,18 @@ FLUSHOT — КАК ОПУБЛИКОВАТЬ САЙТ
   сборка не нужна.
 
 
-3. Что поменять после получения адреса
---------------------------------------
+3. Адреса в начале страницы
+---------------------------
 
-В файле index.html, в самом начале:
+В index.html, в самом начале, три адреса уже прописаны на боевой сайт:
 
-  <link rel="canonical" href="https://example.com/">
-      → ваш адрес страницы
+  <link rel="canonical" href="https://aeshtlv.github.io/Flushot/">
+  <meta property="og:url" content="https://aeshtlv.github.io/Flushot/">
+  <meta property="og:image" content="https://aeshtlv.github.io/Flushot/og-image.png">
+  (и twitter:image — такой же)
 
-  <meta property="og:image" content="og-image.png">
-      → полный адрес: https://ваш-домен/og-image.png
-
-  <meta property="og:url" content="...">
-      → добавьте эту строку с полным адресом
+Менять их нужно только при переезде на другой домен: подставьте свой адрес во все
+четыре места.
 
 Почему это важно: превью ссылки в Telegram, VK и X требует АБСОЛЮТНЫЙ адрес
 картинки. С относительным ссылка откроется, но без картинки.

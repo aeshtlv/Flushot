@@ -397,22 +397,47 @@ async function checkCss() {
   notes.push(`${used.size} custom properties used, all defined in both themes`)
 }
 
+/**
+ * The page must open and read with the network cable unplugged.
+ *
+ * Only *loading* positions are checked: `src`, `srcset`, stylesheet/preload/icon links,
+ * `url()` and `@import` in the CSS, and `fetch` in the script. Two kinds of absolute URL
+ * are deliberately allowed, because neither makes the browser request anything:
+ *
+ *  - the download buttons, which navigate to the release on a click;
+ *  - `canonical`, `og:url` and `og:image`, which are metadata read by crawlers and link
+ *    previews. Those have to be absolute, so a "no https anywhere" rule would forbid the
+ *    very thing that makes a shared link show a picture.
+ */
 async function checkNoExternalRequests() {
   const html = read('index.html')
   const css = read('styles.css')
   const js = read('app.js')
 
-  // The site must work from a USB stick with no network. Download buttons are the one
-  // deliberate exception: they *navigate* to the release, which is a click, not a load,
-  // so the page itself still renders and reads with the cable unplugged.
-  for (const [name, content] of [['index.html', html], ['styles.css', css], ['app.js', js]]) {
-    const external = [...content.matchAll(/https?:\/\/[^\s"')]+/g)]
-      .map((m) => m[0])
-      .filter((url) => !url.startsWith('https://schema.org') && !url.includes('example.com') && !url.includes('w3.org'))
-      .filter((url) => !/^https:\/\/github\.com\/[^/]+\/[^/]+\/releases\//.test(url))
-    if (external.length > 0) fail(`${name} loads from the network: ${external.slice(0, 3).join(', ')}`)
+  const loadingUrls = []
+  for (const match of html.matchAll(/\s(?:src|srcset)="([^"]+)"/g)) {
+    for (const part of match[1].split(',')) loadingUrls.push(part.trim().split(/\s+/)[0])
   }
-  notes.push('no external fonts, CDNs or trackers')
+  for (const match of html.matchAll(/<link[^>]+rel="(?:stylesheet|preload|icon|apple-touch-icon|manifest)"[^>]*>/g)) {
+    const href = /href="([^"]+)"/.exec(match[0])
+    if (href) loadingUrls.push(href[1])
+  }
+  for (const match of css.matchAll(/url\((["']?)([^"')]+)\1\)|@import\s+["']([^"']+)["']/g)) {
+    loadingUrls.push(match[2] || match[3])
+  }
+  for (const match of js.matchAll(/(?:fetch|import)\s*\(\s*["']([^"']+)["']/g)) {
+    loadingUrls.push(match[1])
+  }
+
+  const external = loadingUrls.filter((url) => /^(https?:)?\/\//.test(url) && !url.startsWith('data:'))
+  if (external.length > 0) fail(`the page loads from the network: ${[...new Set(external)].slice(0, 3).join(', ')}`)
+
+  // The download buttons are the one deliberate navigation away from the page.
+  const buttons = [...html.matchAll(/<a\s[^>]*href="(https?:\/\/[^"]+)"/g)].map((m) => m[1])
+  const unexpected = buttons.filter((url) => !/^https:\/\/github\.com\/[^/]+\/[^/]+\/releases\//.test(url))
+  if (unexpected.length > 0) fail(`unexpected external link: ${[...new Set(unexpected)].slice(0, 3).join(', ')}`)
+
+  notes.push(`no external resources; ${new Set(buttons).size} outbound links, all to the release`)
 }
 
 /**
