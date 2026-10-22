@@ -1,6 +1,7 @@
 # Публикация
 
-Репозиторий: **https://github.com/aeshtlv/Flushot**. Страница программы: **https://aeshtlv.github.io/Flushot/**.
+Репозиторий: **https://github.com/aeshtlv/Flushot**. Страница программы: **https://flushot.ink**
+(свой сервер, см. [HOSTING.md](HOSTING.md)).
 
 ## Что лежит в репозитории
 
@@ -41,13 +42,17 @@ gh release create v2.2.8 --title "Flushot 2.2.8" --notes-file CHANGELOG.md ^
 
 ## Сайт
 
-`site/` — статика без сборщика. Кнопки скачивания ведут в Releases, поэтому папку можно публиковать
-целиком, ничего не копируя внутрь.
+`site/` — статика без сборщика. Кнопки скачивания ведут в Releases, поэтому папку можно
+публиковать целиком, ничего не копируя внутрь.
 
-Workflow `.github/workflows/pages.yml` выкладывает `site/` на GitHub Pages при каждом изменении в
-`main`. Источник уже настроен: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-Если Pages придётся включить заново (новый форк, переезд), выбрать этот источник и запустить workflow
-`Pages` на вкладке **Actions**.
+Боевой сайт живёт на своём сервере: **https://flushot.ink**, nginx, выкладка командой
+`bash /root/deploy-site.sh`. Как это устроено — в [HOSTING.md](HOSTING.md).
+
+GitHub Pages остаётся как резервная копия. Workflow `.github/workflows/pages.yml` выкладывает
+`site/` при каждом изменении в `main`, источник уже настроен: **Settings → Pages →
+Build and deployment → Source: GitHub Actions**. Копия доступна по адресу
+`https://aeshtlv.github.io/Flushot/`, но в её `canonical` указан `flushot.ink`, поэтому
+поисковики не считают её дублем.
 
 Альтернатива без workflow:
 
@@ -65,15 +70,17 @@ node scripts/shot-site.cjs     # рендер в headless-браузере на 
 ```
 
 При переезде на другой домен нужно обновить `canonical`, `og:url`, `og:image` и `twitter:image`
-в начале `site/index.html` — им нужен абсолютный адрес. Подробнее — в
-[site/КАК ОПУБЛИКОВАТЬ.txt](../site/КАК%20ОПУБЛИКОВАТЬ.txt).
+в начале `site/index.html`, а также `sitemap.xml` и `robots.txt` — им нужен абсолютный адрес.
+Подробнее — в [site/КАК ОПУБЛИКОВАТЬ.txt](../site/КАК%20ОПУБЛИКОВАТЬ.txt).
 
 ## Что проверить после публикации
 
 - Главная страница репозитория показывает `README.md` с картинками из `docs/` и `logo/`.
 - Вкладка **Releases** содержит три архива, и ссылки из README открываются.
 - Вкладка **Actions** — зелёные прогоны `CI` (типы, тесты, сайт, документация) и `Pages`.
-- Сайт открывается по адресу `https://aeshtlv.github.io/Flushot/`, кнопки на нём скачивают архивы.
+- Сайт открывается по адресу `https://flushot.ink`, кнопки на нём скачивают архивы. Копия на
+  `https://aeshtlv.github.io/Flushot/` остаётся рабочей, но её `canonical` указывает на свой
+  домен: поисковики считают основной версией `flushot.ink`.
 - В файловом дереве нет ни одного файла больше 100 МБ.
 
 ## Чего в репозитории намеренно нет

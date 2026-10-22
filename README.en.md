@@ -47,7 +47,7 @@ all three; only the installation method differs.
 The binaries are not code-signed, so SmartScreen warns on first launch: **More info → Run anyway**.
 That is standard behaviour for an unsigned executable.
 
-Landing page: **https://aeshtlv.github.io/Flushot/**
+Landing page: **https://flushot.ink**
 
 ## Build from source
 
@@ -101,6 +101,7 @@ Both capture hotkeys are configurable, including a single key without modifiers.
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | capture pipeline, DPI handling, image quality, OCR, performance |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | commands, self-test, packaging, site and screenshot checks |
 | [docs/GITHUB.md](docs/GITHUB.md) | publishing releases and the site |
+| [docs/HOSTING.md](docs/HOSTING.md) | server, domain, HTTPS, deploying the site |
 | [CHANGELOG.md](CHANGELOG.md) | version history |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | planned directions |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | how to build and what to check before a pull request |

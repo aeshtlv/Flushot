@@ -1,5 +1,4 @@
 User-agent: *
 Allow: /
 
-# No Sitemap line yet: it needs the real domain, and a relative path there is
-# invalid. Add `Sitemap: https://<домен>/sitemap.xml` once the site has one.
+Sitemap: https://flushot.ink/sitemap.xml
