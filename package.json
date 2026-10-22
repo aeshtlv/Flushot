@@ -34,7 +34,8 @@
     "verify:site": "node scripts/verify-site.cjs",
     "dist": "npm run build && electron-builder --win nsis portable",
     "dist:dir": "npm run build && electron-builder --dir --win",
-    "self-test": "npm run build && electron . --self-test"
+    "self-test": "npm run build && electron . --self-test",
+    "verify:live": "node scripts/check-live.cjs"
   },
   "dependencies": {
     "react": "^19.3.1",

@@ -14,6 +14,12 @@
 *.html text eol=lf
 *.md text eol=lf
 
+# Shell scripts and nginx configs run on the Linux server: a CRLF in them makes
+# bash fail with "bad interpreter" and nginx refuse to start. LF is mandatory,
+# not cosmetic.
+*.sh text eol=lf
+deploy/nginx/* text eol=lf
+
 # The instruction for end users is opened in Notepad on a fresh Windows install,
 # so it keeps Windows line endings.
 share/*.txt text eol=crlf
