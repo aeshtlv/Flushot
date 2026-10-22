@@ -74,7 +74,7 @@ npm run dist:dir     # распакованная сборка release/win-unpac
 | `Flushot-<версия>-portable.exe` | portable-версия без установки |
 | `win-unpacked/` | распакованное приложение (создаётся `npm run dist:dir`) |
 
-Для передачи архивы раскладываются в **`share/`**: `Flushot-<версия>-win64.zip` (вся папка `win-unpacked`), `Flushot-<версия>-installer.zip` (внутри установщик), `Flushot-<версия>-portable.zip` (внутри portable) и инструкция `ПРОЧТИ МЕНЯ.txt`. Каждый архив содержит ровно один вариант, без вложенных папок и служебных файлов. Архивы в репозиторий не попадают — они весят по 110–160 МБ; для них есть GitHub Releases, см. [GITHUB.md](GITHUB.md).
+Для передачи архивы раскладываются в **`share/`**: `Flushot-<версия>-win64.zip` (вся папка `win-unpacked` плюс инструкция `ПРОЧТИ МЕНЯ.txt`), `Flushot-<версия>-installer.zip` (внутри только установщик), `Flushot-<версия>-portable.zip` (внутри только portable). Внутри нет вложенных папок и служебных файлов. Архивы в репозиторий не попадают — они весят по 110–160 МБ; для них есть GitHub Releases, см. [GITHUB.md](GITHUB.md).
 
 Конфигурация — `electron-builder.yml`. Иконки лежат в `build/`: `icon.png` для окна и `icon.ico` для установщика, обе собираются из `logo/logo.svg` командой `npm run icons` и лежат в репозитории, чтобы `npm run dist` работал сразу после клонирования. `asarUnpack` обязателен: нативные бинарники `sharp`/`@img` не могут исполняться из asar.
 
