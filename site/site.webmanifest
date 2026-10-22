@@ -1,0 +1,17 @@
+{
+  "name": "Flushot — скриншоты с рамкой и тенью",
+  "short_name": "Flushot",
+  "description": "Скриншоты с рамкой, тенью и пометками для Windows 10 и 11.",
+  "lang": "ru",
+  "start_url": "./",
+  "scope": "./",
+  "display": "browser",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "favicon-32.png", "sizes": "32x32", "type": "image/png" },
+    { "src": "apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

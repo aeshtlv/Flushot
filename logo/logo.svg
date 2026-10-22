@@ -1,0 +1,9 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <title>Flushot</title>
+  <rect width="200" height="200" rx="44" fill="#111111"/>
+  <g fill="#A3C8F0">
+    <path d="M57 57h14v84H57z M71 71h14v42H71z M85 85h14v14H85z"/>
+    <path d="M85 113h14v14H85z M99 99h14v14H99z M99 127h14v14H99z M113 113h14v14H113z M113 141h14v14H113z M127 99h14v14H127z M127 127h14v14H127z"/>
+  </g>
+</svg>

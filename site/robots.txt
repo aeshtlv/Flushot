@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# The archives are large; crawlers do not need to pull them.
+Disallow: /downloads/
+
+# No Sitemap line yet: it needs the real domain, and a relative path there is
+# invalid. Add `Sitemap: https://<домен>/sitemap.xml` once the site has one.

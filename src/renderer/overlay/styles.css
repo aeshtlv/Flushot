@@ -1,0 +1,971 @@
+:root {
+  --accent: #0a84ff;
+  --accent-hover: #0071e3;
+  --surface: rgba(250, 250, 252, 0.92);
+  /* Same surface without transparency, for bars drawn over the screenshot. */
+  --surface-solid: rgba(250, 250, 252, 0.985);
+  --surface-border: rgba(0, 0, 0, 0.08);
+  --text: #1d1d1f;
+  --text-muted: #6e6e73;
+  --danger: #ff453a;
+  --ok: #34c759;
+  font-family: -apple-system, 'SF Pro Text', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  color: var(--text);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+}
+
+body {
+  cursor: crosshair;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.overlay-root {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+.overlay-root--idle {
+  background: transparent;
+}
+
+/* The round is finishing and the window is about to be hidden.
+ *
+ * `visibility` rather than `opacity`: nothing is painted at all, so a window the
+ * compositor has not yet taken down shows the desktop through it instead of the
+ * frozen screenshot. No transition — this has to be the very next frame. */
+.overlay-root.is-blank,
+.overlay-root.is-blank * {
+  visibility: hidden;
+  transition: none !important;
+  animation: none !important;
+}
+
+.screen-shot {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+}
+
+/* Dim everything, then punch a clear hole over the selection. */
+.dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 8, 12, 0.46);
+  pointer-events: none;
+  transition: background 120ms ease;
+}
+
+.overlay-root.stage-selecting.has-selection .dim {
+  -webkit-mask-image:
+    linear-gradient(#000 0 0),
+    linear-gradient(#000 0 0);
+  -webkit-mask-size:
+    100% 100%,
+    var(--sel-w) var(--sel-h);
+  -webkit-mask-position:
+    0 0,
+    var(--sel-x) var(--sel-y);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-composite: source-out;
+  mask-image:
+    linear-gradient(#000 0 0),
+    linear-gradient(#000 0 0);
+  mask-size:
+    100% 100%,
+    var(--sel-w) var(--sel-h);
+  mask-position:
+    0 0,
+    var(--sel-x) var(--sel-y);
+  mask-repeat: no-repeat;
+  mask-composite: exclude;
+}
+
+.overlay-root.stage-result .dim,
+.overlay-root.stage-busy .dim {
+  background: rgba(6, 6, 10, 0.72);
+}
+
+.overlay-root.stage-result .hint,
+.overlay-root.stage-busy .hint {
+  display: none;
+}
+
+/* The layer covers exactly one monitor, positioned by inline percentages: the
+   result must not be centred on the whole desktop, or a two-monitor selection
+   would put the card right on the seam and slice it in half. */
+.result-layer {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  gap: 14px;
+  padding: 24px;
+  animation: result-in 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* The picture lives in its own scroll area: a capture bigger than the monitor
+   can be panned instead of being cut off, while the caption and both toolbars
+   stay put below it. */
+.result-viewport {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  /* `safe` on both axes: a picture larger than the viewport must start at its
+     top-left corner and scroll, never be pushed out of reach. */
+  align-items: safe center;
+  justify-content: safe center;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.result-viewport.is-pannable {
+  cursor: grab;
+}
+
+.result-viewport.is-panning {
+  cursor: grabbing;
+}
+
+/* The drag-to-pan gesture must not start a text selection in the card. */
+.result-viewport.is-panning * {
+  user-select: none;
+}
+
+@keyframes result-in {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The toolbars inside the result column are ordinary flow items, not floating
+   overlays: their position then follows from the column itself, so nothing can
+   be pushed out of the window by a taller picture or a longer caption. The
+   confirm toolbar keeps `position: absolute` because it is anchored to the
+   selection with explicit coordinates. */
+.result-layer > .toolbar {
+  position: static;
+  flex: 0 0 auto;
+}
+
+/* The card is exactly the picture at the current zoom — the size comes from an
+   inline style, so no CSS cap may shrink it. A capture that spans two monitors
+   is bigger than one screen and is scaled down to fit, never cropped. */
+.result-card {
+  position: relative;
+  flex: 0 0 auto;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.18),
+    0 28px 74px rgba(0, 0, 0, 0.46);
+}
+
+.result-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  -webkit-user-drag: none;
+}
+
+/* While the picture is still being composed there is no size yet. */
+.result-card--placeholder {
+  max-width: min(62%, 1080px);
+  max-height: min(58%, calc(100% - 250px));
+}
+
+/* The picture inside the card, so the drawing surface can be placed exactly
+   over it: annotations never spill onto the frame. */
+.result-card__media {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  line-height: 0;
+}
+
+.annotate-box {
+  position: absolute;
+  overflow: hidden;
+}
+
+/* The fragment picker. Sits above the drawing surface, so while it is armed a
+   drag selects text instead of drawing an arrow — the tool underneath never sees
+   the pointer. */
+.ocr-pick {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.ocr-pick__rect {
+  position: absolute;
+  border: 1px solid rgba(10, 132, 255, 0.95);
+  border-radius: 2px;
+  background: rgba(10, 132, 255, 0.14);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.55) inset,
+    0 2px 10px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+
+/* Says what to do with the armed picker without a dialog or a tooltip the user
+   has to find first. Fades out as soon as the drag starts. */
+.ocr-pick__hint {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #ffffff;
+  background: rgba(20, 20, 22, 0.78);
+  backdrop-filter: blur(12px);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.annotate-surface {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.annotate-surface--text {
+  cursor: text;
+}
+
+.annotate-surface--blur {
+  cursor: cell;
+}
+
+/* A badge is placed with a single click, so the cursor says "drop here". */
+.annotate-surface--step {
+  cursor: copy;
+}
+
+/* The move tool grabs whatever is under the pointer. */
+.annotate-surface--move {
+  cursor: grab;
+}
+
+.annotate-surface--move:active {
+  cursor: grabbing;
+}
+
+.annotate-text {
+  position: absolute;
+  min-width: 90px;
+  padding: 2px 6px;
+  border: 1px dashed currentColor;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.9);
+  font-family: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 600;
+  line-height: 1.25;
+  outline: none;
+  resize: none;
+  /* Long captions scroll inside the editor instead of growing the card: the
+     annotation bar must stay where the user left it. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  transform: translateY(-2px);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Text size buttons: a literal A that grows, which reads faster than numbers. */
+.tb--text-size {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  width: 26px;
+}
+
+.text-size {
+  font-weight: 700;
+  line-height: 1;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+/* The annotation bar sits above the actions and stays compact. */
+.toolbar--annotate {
+  gap: 3px;
+  padding: 5px;
+}
+
+/* Zoom cluster. It only appears when the picture is larger than the monitor, so
+   the usual single-monitor capture keeps the toolbar as short as before. */
+.zoom {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tb--zoom {
+  width: 26px;
+  padding: 0;
+}
+
+.zoom__slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 84px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.14);
+  outline: none;
+  cursor: pointer;
+}
+
+.zoom__slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.28);
+}
+
+.zoom__slider:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.zoom__value {
+  min-width: 34px;
+  font-size: 11.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.tb--tool.is-active {
+  background: rgba(255, 255, 255, 0.94);
+  color: #1d1d1f;
+}
+
+.swatch {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.swatch:hover {
+  transform: scale(1.12);
+}
+
+.swatch.is-active {
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.95),
+    0 1px 4px rgba(0, 0, 0, 0.4);
+  transform: scale(1.12);
+}
+
+.swatch:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.tb--stroke {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stroke-dot {
+  display: block;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* The text input is sized in container units so it matches the final glyphs. */
+.annotate-box {
+  container-type: inline-size;
+}
+
+.result-card__placeholder {
+  width: min(62vw, 58vh * 16 / 9, 1080px);
+  aspect-ratio: 16 / 9;
+  background: #ffffff;
+}
+
+.result-card__busy {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.result-caption {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.72);
+  font-variant-numeric: tabular-nums;
+}
+
+.result-caption__dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.6;
+}
+
+/* Says what the shortcuts do, in words. The keys are printed on the buttons
+   already, but "Ctrl+C" alone does not tell someone that it copies the picture
+   without the marks — which is exactly what a tester failed to discover. */
+.result-caption__hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  opacity: 0.78;
+}
+
+.result-caption__hint kbd {
+  font: inherit;
+  font-size: 10px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.result-layer .toolbar {
+  position: static;
+  margin-top: 2px;
+}
+
+.selection {
+  position: absolute;
+  border: 1.5px solid rgba(255, 255, 255, 0.96);
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.28), 0 10px 40px rgba(0, 0, 0, 0.18);
+  cursor: move;
+}
+
+.handle {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.22);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.handle--nw { left: -6px; top: -6px; cursor: nwse-resize; }
+.handle--n  { left: 50%; top: -6px; transform: translateX(-50%); cursor: ns-resize; }
+.handle--ne { right: -6px; top: -6px; cursor: nesw-resize; }
+.handle--e  { right: -6px; top: 50%; transform: translateY(-50%); cursor: ew-resize; }
+.handle--se { right: -6px; bottom: -6px; cursor: nwse-resize; }
+.handle--s  { left: 50%; bottom: -6px; transform: translateX(-50%); cursor: ns-resize; }
+.handle--sw { left: -6px; bottom: -6px; cursor: nesw-resize; }
+.handle--w  { left: -6px; top: 50%; transform: translateY(-50%); cursor: ew-resize; }
+
+.size-badge {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: rgba(28, 28, 32, 0.82);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.2px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(16px);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.size-badge__hint {
+  font-weight: 500;
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+.hint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: rgba(255, 255, 255, 0.96);
+  pointer-events: none;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
+}
+
+/*
+ * Inside the selection there is no dimmed backdrop behind the bar, only the
+ * screenshot itself. A translucent surface with a blur reads fine on the desktop
+ * but turns into mush over a busy page, so the inside case gets an opaque one.
+ */
+.toolbar.is-inside {
+  background: var(--surface-solid);
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.06),
+    0 16px 40px rgba(0, 0, 0, 0.34);
+}
+
+.size-badge.is-inside {
+  background: rgba(28, 28, 32, 0.94);
+}
+
+.hint__title {
+  margin: 0 0 6px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+
+.hint__subtitle {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.78;
+}
+
+kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  font-family: inherit;
+  font-size: 11px;
+}
+
+.toolbar {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.04),
+    0 12px 34px rgba(0, 0, 0, 0.26);
+  backdrop-filter: blur(30px) saturate(180%);
+  cursor: default;
+  animation: toolbar-in 160ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes toolbar-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.tb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 38px;
+  min-width: 38px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 590;
+  cursor: pointer;
+  transition: background 120ms ease, transform 120ms ease;
+}
+
+.tb:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.tb:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.tb:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.tb--primary {
+  background: var(--accent);
+  color: #fff;
+  padding: 0 14px;
+}
+
+.tb--primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+/* A shortcut printed on the button itself.
+ *
+ * It used to live only in the `title` tooltip, and a tooltip is something you
+ * have to already suspect exists: the tester never found Ctrl+C at all and kept
+ * pressing "Создать". A key cap is visible without hovering anything. */
+.tb--with-key {
+  padding-right: 8px;
+}
+
+.tb__key {
+  margin-left: 2px;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.07);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 10.5px;
+  font-weight: 560;
+  letter-spacing: 0.01em;
+  line-height: 15px;
+}
+
+/* On the accent button the cap has to invert, or it turns into a grey smudge. */
+.tb--primary .tb__key {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.34);
+  color: #fff;
+}
+
+.tb-divider {
+  width: 1px;
+  height: 22px;
+  margin: 0 3px;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.tb svg {
+  flex: none;
+}
+
+/* The status message sits at the top of the primary monitor. It used to be
+   anchored to the bottom of the overlay window — the bottom of the whole
+   desktop — which put it on a second monitor and, on one screen, directly on top
+   of the action toolbar. The toolbars occupy the bottom of the result column, so
+   the top is the strip that stays free. The horizontal centre and the exact top
+   come from the host monitor as inline percentages. */
+.toast {
+  position: absolute;
+  left: 50%;
+  top: 20px;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  max-width: min(560px, 80vw);
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: rgba(28, 28, 32, 0.9);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(20px);
+  animation: toast-in 180ms ease;
+}
+
+.toast__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ok);
+  flex: none;
+}
+
+.toast--error .toast__dot {
+  background: var(--danger);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  background-size: 40% 100%;
+  animation: progress 1.1s linear infinite;
+}
+
+@keyframes progress {
+  from {
+    background-position: -40% 0;
+  }
+  to {
+    background-position: 140% 0;
+  }
+}
+
+.display-tag {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  padding: 4px 9px;
+  border-radius: 7px;
+  background: rgba(28, 28, 32, 0.62);
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 11px;
+  font-weight: 500;
+  pointer-events: none;
+  backdrop-filter: blur(10px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toolbar,
+  .toast,
+  .progress {
+    animation: none;
+  }
+}
+
+/* Recognized text.
+ *
+ * A side panel rather than a modal: the point is to compare the text with the
+ * screenshot behind it, and a dialog would cover exactly what is being checked.
+ * Anchored to the right edge of the monitor the result lives on. */
+/* The panel is anchored to the result layer, which is exactly one monitor: the
+   overlay itself spans every screen, so anchoring there opened the panel across
+   the seam between two monitors. Height leaves room for the caption and both
+   toolbars underneath, so it never covers the buttons. */
+.text-panel {
+  position: absolute;
+  top: 50%;
+  right: 18px;
+  transform: translateY(-50%);
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  width: min(360px, calc(100% - 36px));
+  max-height: min(70vh, calc(100% - 170px), 560px);
+  border-radius: 14px;
+  background: var(--surface-solid);
+  border: 1px solid var(--surface-border);
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.04),
+    0 18px 48px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(30px) saturate(180%);
+  overflow: hidden;
+  animation: text-panel-in 160ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes text-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
+.text-panel__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 8px 10px 14px;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.text-panel__title {
+  font-size: 13px;
+  font-weight: 620;
+  /* The title names the panel and must never wrap: when the header runs out of
+   * room it is the summary that gives way, not this. */
+  flex: none;
+  white-space: nowrap;
+}
+
+.text-panel__meta {
+  margin-left: auto;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  /* The header also carries the "правлено" badge once the text has been edited,
+   * and together with the engine summary that is wider than the 360 px panel. The
+   * summary is the least important thing in the row, so it truncates instead of
+   * pushing the close button out of the panel. */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.text-panel .tb--close {
+  height: 28px;
+  min-width: 28px;
+  padding: 0;
+  flex: none;
+}
+
+.text-panel .tb--close svg {
+  width: 15px;
+  height: 15px;
+}
+
+.text-panel__body {
+  margin: 0;
+  padding: 14px;
+  overflow: auto;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  /* The text has to be selectable and copyable: that is the whole feature. */
+  user-select: text;
+  -webkit-user-select: text;
+  cursor: text;
+}
+
+/* The recognized text is editable, so this is a textarea rather than a <pre>.
+ *
+ * It has to be indistinguishable from the text it replaced — no border, no inner
+ * shadow, the same padding — or the panel starts looking like a form. `flex: 1 1 0`
+ * makes it take the panel's spare height and scroll inside it, so a long result
+ * never pushes the buttons off the bottom of the panel.
+ */
+.text-panel__editor {
+  flex: 1 1 auto;
+  min-height: 96px;
+  width: 100%;
+  box-sizing: border-box;
+  border: 0;
+  outline: none;
+  resize: none;
+  background: transparent;
+  color: inherit;
+  /* A caret and a selection colour that match the rest of the overlay. */
+  caret-color: var(--accent);
+}
+
+.text-panel__editor::selection {
+  background: rgba(10, 132, 255, 0.28);
+}
+
+.text-panel__summary {
+  /* Truncates on its own, so the badge to its left always stays readable. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.text-panel__edited {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(10, 132, 255, 0.14);
+  color: var(--accent);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.text-panel__body--note {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.text-panel__error {
+  margin: 0;
+  color: var(--danger);
+}
+
+.text-panel__foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--surface-border);
+}
+
+.text-panel__hint {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 0, 0, 0.14);
+  border-top-color: var(--accent);
+  animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

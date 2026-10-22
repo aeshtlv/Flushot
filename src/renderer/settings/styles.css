@@ -1,0 +1,729 @@
+:root {
+  --bg: #f5f5f7;
+  --panel: #ffffff;
+  --panel-border: rgba(0, 0, 0, 0.06);
+  --text: #1d1d1f;
+  --text-muted: #6e6e73;
+  --accent: #0a84ff;
+  --hover: rgba(0, 0, 0, 0.05);
+  --control: rgba(120, 120, 128, 0.12);
+  --control-border: rgba(0, 0, 0, 0.08);
+  --track: rgba(120, 120, 128, 0.2);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 26px rgba(0, 0, 0, 0.06);
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --bg: #1c1c1e;
+  --panel: #2c2c2e;
+  --panel-border: rgba(255, 255, 255, 0.07);
+  --text: #f5f5f7;
+  --text-muted: #98989d;
+  --accent: #0a84ff;
+  --hover: rgba(255, 255, 255, 0.08);
+  --control: rgba(120, 120, 128, 0.28);
+  --control-border: rgba(255, 255, 255, 0.08);
+  --track: rgba(120, 120, 128, 0.36);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px rgba(0, 0, 0, 0.34);
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, 'SF Pro Text', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  overflow: hidden;
+}
+
+.loading {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  color: var(--text-muted);
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  height: 48px;
+  min-height: 48px;
+  padding: 0 14px 0 18px;
+  -webkit-app-region: drag;
+  border-bottom: 1px solid var(--panel-border);
+  background: var(--bg);
+}
+
+.titlebar__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The mark itself is inline SVG (see BrandMark.tsx); this only places it.
+ *
+ * It used to be an empty span painted with a blue gradient, which was the old
+ * logo. Now that the drawing lives in one place, the element is a plain box and
+ * the colours come from the SVG — so the title bar and the taskbar icon cannot
+ * disagree. */
+.logo {
+  display: block;
+  flex: none;
+  border-radius: 4px;
+}
+
+.icon-button {
+  -webkit-app-region: no-drag;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.icon-button:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 18px 20px 8px;
+}
+
+.preview {
+  margin-bottom: 18px;
+}
+
+.preview__frame {
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--shadow);
+  /* The frame fills the window and the image fills the frame, so stretching the
+     window widens the preview instead of leaving empty space beside a fixed
+     440 px column. Width comes from the container, never from the image, so the
+     two cannot chase each other. Height still follows the image's aspect ratio. */
+  width: 100%;
+}
+
+.preview__frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.preview__skeleton {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: linear-gradient(100deg, #ececf0 20%, #f6f6f8 40%, #ececf0 60%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.preview__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 9px;
+  padding-left: 2px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.5;
+}
+
+.panels {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.panel {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--shadow);
+  min-width: 0;
+}
+
+.panel h2 {
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  min-height: 32px;
+  padding: 4px 0;
+  /* A narrow window must wrap the control under its label, never overflow. */
+  flex-wrap: wrap;
+}
+
+.row__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 130px;
+}
+
+.row__label {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.row__hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.row__control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 1 auto;
+  min-width: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
+.segmented {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--control);
+  border: 1px solid var(--control-border);
+}
+
+.segmented__item {
+  height: 24px;
+  padding: 0 11px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 120ms ease, box-shadow 120ms ease;
+}
+
+.segmented__item:hover:not(.is-active) {
+  background: var(--hover);
+}
+
+.segmented__item.is-active {
+  background: var(--panel);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.16);
+  font-weight: 600;
+}
+
+/* Four cards in two even columns, so every row lines up exactly. */
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(112px, 1fr));
+  gap: 8px;
+  min-width: 0;
+}
+
+.swatch {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 7px;
+  width: 100%;
+  min-width: 0;
+  height: 30px;
+  padding: 0 9px 0 7px;
+  border-radius: 9px;
+  border: 1px solid var(--control-border);
+  background: var(--control);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.swatch__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.swatch.is-active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 26%, transparent);
+}
+
+.swatch__color {
+  width: 16px;
+  height: 16px;
+  border-radius: 5px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  flex: none;
+}
+
+.swatch--picker {
+  position: relative;
+  overflow: hidden;
+}
+
+.swatch--picker input[type='color'] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+}
+
+/* Saved palette colours are compact: a dot plus the hex code. */
+.swatch--saved .swatch__label,
+.swatch--add .swatch__label {
+  font-size: 11px;
+  letter-spacing: 0.2px;
+  opacity: 0.85;
+}
+
+.swatch--add {
+  border-style: dashed;
+}
+
+.swatch__color--add {
+  background: transparent;
+  border: 1px dashed var(--control-border);
+  position: relative;
+}
+
+.swatch__color--add::after {
+  content: '+';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.swatch--add:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.toggle {
+  position: relative;
+  width: 42px;
+  height: 25px;
+  border-radius: 999px;
+  border: none;
+  background: var(--track);
+  cursor: pointer;
+  transition: background 160ms ease;
+  padding: 0;
+}
+
+.toggle.is-on {
+  background: var(--accent);
+}
+
+.toggle__knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 21px;
+  height: 21px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.28);
+  transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.toggle.is-on .toggle__knob {
+  transform: translateX(17px);
+}
+
+.slider {
+  padding: 6px 0 2px;
+}
+
+.slider__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.slider__value {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.slider input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--track);
+  outline: none;
+}
+
+.slider input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  border: 0.5px solid rgba(0, 0, 0, 0.12);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.24);
+  cursor: pointer;
+}
+
+.slider.is-disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.folder {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 300px;
+}
+
+.folder__path {
+  font-size: 11px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  max-width: 220px;
+  direction: rtl;
+  text-align: left;
+  padding: 4px 6px;
+  margin-right: -6px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 3px;
+}
+
+.folder__path:hover {
+  background: var(--hover);
+  border-color: var(--control-border);
+  color: var(--text);
+}
+
+.panel--reset {
+  background: transparent;
+  box-shadow: none;
+  border-style: dashed;
+}
+
+.reset {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.reset__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 160px;
+}
+
+.reset__title {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.reset__hint {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.button--danger {
+  color: #d70015;
+  border-color: rgba(215, 0, 21, 0.28);
+  background: rgba(215, 0, 21, 0.08);
+}
+
+.button--danger:hover {
+  background: rgba(215, 0, 21, 0.14);
+}
+
+.hotkey {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.hotkey__field {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 132px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 7px;
+  border: 1px solid var(--control-border);
+  background: var(--control);
+  color: var(--text);
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.hotkey__field:hover {
+  background: var(--hover);
+}
+
+.hotkey__field.is-recording {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.hotkey__prompt {
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.hotkey__field kbd {
+  white-space: nowrap;
+}
+
+.button {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 7px;
+  border: 1px solid var(--control-border);
+  background: var(--control);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 120ms ease;
+}
+
+.button:hover {
+  background: var(--hover);
+}
+
+.button--ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-muted);
+}
+
+.footer {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px 12px;
+  min-height: 46px;
+  padding: 8px 20px;
+  border-top: 1px solid var(--panel-border);
+  background: var(--bg);
+}
+
+.footer__hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  justify-self: start;
+}
+
+/* Version sits in the middle of the footer, not beside the buttons. */
+.version {
+  justify-self: center;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+kbd {
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.footer__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.status {
+  justify-self: end;
+  text-align: right;
+  font-size: 11px;
+  font-weight: 500;
+  /* Only problems reach this line, so it is always a warning colour. */
+  color: #d70015;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(120, 120, 128, 0.34);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
+}
+
+/* Narrow or short windows: stack controls under their label instead of
+   squeezing the icons out of the panel. */
+@media (max-width: 500px) {
+  .content {
+    padding: 14px 14px 6px;
+  }
+
+  .panel {
+    padding: 12px 13px;
+  }
+
+  .row__control {
+    width: 100%;
+    justify-content: flex-start;
+    margin-left: 0;
+  }
+
+  .segmented {
+    max-width: 100%;
+  }
+
+  .segmented__item {
+    padding: 0 9px;
+  }
+
+  .footer {
+    padding: 8px 14px;
+    grid-template-columns: 1fr auto;
+  }
+
+  .footer .status {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}
+
+@media (max-width: 380px) {
+  .segmented__item {
+    padding: 0 7px;
+    font-size: 11px;
+  }
+
+  .footer__hint span {
+    display: none;
+  }
+}
