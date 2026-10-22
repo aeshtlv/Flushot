@@ -97,8 +97,9 @@ function main() {
     for (const target of links(text)) {
       if (/^(https?:|mailto:|tel:|data:)/.test(target)) continue
 
-      // `../../releases/latest/download/x.zip` is a GitHub route, not a file.
-      if (target.includes('/releases/')) continue
+      // `../../releases/latest/download/x.zip` is a GitHub route, not a file: it resolves
+      // to https://github.com/<owner>/<repo>/releases/... only once the repo is pushed.
+      if (/(^|\/)releases(\/|$)/.test(target)) continue
 
       const [rawPath, rawAnchor] = target.split('#')
       // `ПРОЧТИ%20МЕНЯ.txt` is how the space has to be written in Markdown.
