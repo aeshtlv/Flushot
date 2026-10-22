@@ -4,6 +4,9 @@
 тенью и скруглёнными углами, без потери качества. Ничего настраивать перед первым запуском не нужно.
 Windows 10 и 11.
 
+[![CI](https://github.com/aeshtlv/Flushot/actions/workflows/ci.yml/badge.svg)](https://github.com/aeshtlv/Flushot/actions/workflows/ci.yml)
+[![Лицензия: MIT](https://img.shields.io/badge/%D0%BB%D0%B8%D1%86%D0%B5%D0%BD%D0%B7%D0%B8%D1%8F-MIT-4c8bf5)](LICENSE)
+
 <p align="center">
   <img src="logo/logo.png" alt="Логотип Flushot" width="120">
 </p>

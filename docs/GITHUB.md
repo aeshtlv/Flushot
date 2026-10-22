@@ -79,16 +79,14 @@ gh release create v2.2.8 --title "Flushot 2.2.8" --notes-file CHANGELOG.md ^
 ## Шаг 4. Сайт на GitHub Pages
 
 Лендинг в `site/` — статика без сборщика, и он уже готов к публикации: кнопки скачивания ведут на
-`https://github.com/<логин>/Flushot/releases/latest/download/<файл>`, а не на файлы рядом со страницей.
+`https://github.com/aeshtlv/Flushot/releases/latest/download/<файл>`, а не на файлы рядом со страницей.
 Поэтому папку можно выложить целиком, ничего не копируя внутрь.
 
-В репозитории лежит `.github/workflows/pages.yml`: он публикует `site/` при каждом изменении в `main`.
-Включается один раз:
+Workflow `.github/workflows/pages.yml` публикует `site/` при каждом изменении в `main`. **Он уже включён**,
+и сайт живёт по адресу **https://aeshtlv.github.io/Flushot/**.
 
-**Settings → Pages → Build and deployment → Source: GitHub Actions.**
-
-После первого прогона сайт доступен по адресу `https://<логин>.github.io/Flushot/`. Проверить прогон —
-вкладка **Actions**, workflow `Pages`.
+Если Pages когда-нибудь придётся включить заново (новый форк, переезд): **Settings → Pages →
+Build and deployment → Source: GitHub Actions**, затем запустить workflow `Pages` на вкладке **Actions**.
 
 Вручную, без workflow, можно так:
 

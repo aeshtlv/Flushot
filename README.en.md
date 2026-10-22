@@ -4,6 +4,9 @@
 framed, with a soft shadow and rounded corners, at full resolution. Nothing to configure before the
 first run. Windows 10 and 11, x64.
 
+[![CI](https://github.com/aeshtlv/Flushot/actions/workflows/ci.yml/badge.svg)](https://github.com/aeshtlv/Flushot/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-4c8bf5)](LICENSE)
+
 <p align="center">
   <img src="logo/logo.png" alt="Flushot" width="120">
 </p>
