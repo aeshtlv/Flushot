@@ -582,7 +582,13 @@ async function checkSocialPreview() {
 async function checkDownloads() {
   const files = await fs.readdir(path.join(SITE, 'downloads')).catch(() => [])
   if (files.length === 0) {
-    fail('site/downloads is empty, so the download buttons 404')
+    // The archives are build output: `node scripts/build-site.cjs` copies them out of
+    // `share/`. Their absence is normal in a fresh clone, where the page links to
+    // GitHub Releases instead, so point at the right command rather than just failing.
+    fail(
+      'site/downloads is empty, so the download buttons 404 — run `node scripts/build-site.cjs` ' +
+        'to copy the archives from share/, or rerun with --no-archives if they live in GitHub Releases'
+    )
     return
   }
   const html = read('index.html')

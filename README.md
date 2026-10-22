@@ -57,7 +57,8 @@
 Нужны **Windows 10/11 x64** и **Node.js 20.19+ или 22.12+**.
 
 ```bash
-git clone <адрес этого репозитория> && cd Flushot
+git clone <адрес репозитория>
+cd Flushot
 npm install
 npm run dev
 ```
