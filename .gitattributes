@@ -13,6 +13,20 @@
 *.css text eol=lf
 *.html text eol=lf
 *.md text eol=lf
+*.svg text eol=lf
+*.webmanifest text eol=lf
+
+# The logo is copied into the site as the favicon, so the two must stay
+# byte-identical apart from line endings.
+logo/* text eol=lf
+
+# Anything whose bytes are hashed into a URL must survive a checkout unchanged.
+# site/ references its assets as `styles.css?v=<sha256>`, and the hash is taken
+# from the file on disk; a CRLF on one machine and an LF on another would give
+# two different hashes for the same commit, and the stamp check would fail for
+# whoever cloned last. The rules above already cover css, html, js and svg; this
+# one keeps every remaining text asset in site/ on LF too.
+site/** text eol=lf
 
 # Shell scripts and nginx configs run on the Linux server: a CRLF in them makes
 # bash fail with "bad interpreter" and nginx refuse to start. LF is mandatory,

@@ -15,6 +15,7 @@
 
 const path = require('node:path')
 const fs = require('node:fs/promises')
+const { createHash } = require('node:crypto')
 const { existsSync, readFileSync } = require('node:fs')
 const sharp = require('sharp')
 
@@ -166,12 +167,18 @@ async function checkFiles() {
   // The favicon must be the logo file itself, not a copy that drifted. Both are
   // hand-editable, and a site whose tab icon differs from the app icon is the exact
   // failure this check exists to prevent.
+  //
+  // Compared with line endings normalised: on Windows a checkout can hand back
+  // CRLF, and two files that differ only in where their lines end are still the
+  // same logo. Comparing raw bytes made this check fail depending on who cloned
+  // last, which trains people to ignore it.
   const logoSource = path.join(ROOT, 'logo', 'logo.svg')
   if (existsSync(logoSource)) {
-    const a = readFileSync(logoSource)
-    const b = readFileSync(path.join(SITE, 'favicon.svg'))
-    if (!a.equals(b)) fail('site/favicon.svg differs from logo/logo.svg, so the tab icon is a stale logo')
-    else notes.push('favicon.svg is byte-identical to logo/logo.svg')
+    const strip = (buffer) => buffer.toString('utf8').replace(/\r\n/g, '\n')
+    const a = strip(readFileSync(logoSource))
+    const b = strip(readFileSync(path.join(SITE, 'favicon.svg')))
+    if (a !== b) fail('site/favicon.svg differs from logo/logo.svg, so the tab icon is a stale logo')
+    else notes.push('favicon.svg matches logo/logo.svg')
   }
 }
 
@@ -352,7 +359,9 @@ async function checkMarkup() {
   // standalone: same charset, same stylesheet, a way back.
   const notFound = read('404.html')
   if (!/<meta charset="utf-8">/i.test(notFound)) fail('404.html does not declare UTF-8')
-  if (!/href="styles.css"/.test(notFound)) fail('404.html does not use the site stylesheet')
+  if (!/href="styles\.css(\?v=[0-9a-f]{8})?"/.test(notFound)) {
+    fail('404.html does not use the site stylesheet')
+  }
   if (!/href="index.html"/.test(notFound)) fail('404.html has no link back to the site')
   if (!/name="robots" content="noindex"/.test(notFound)) fail('404.html should be noindex')
 }
@@ -515,9 +524,10 @@ async function checkFonts() {
   }
   if (total > 200 * 1024) fail(`the fonts total ${(total / 1024).toFixed(0)} KB, which is too much for two families`)
 
-  // The page must be told to load the file that carries them.
+  // The page must be told to load the file that carries them. The reference
+  // carries a content hash, so the test allows for it.
   const html = read('index.html')
-  if (!/<link rel="stylesheet" href="fonts.css">/.test(html)) {
+  if (!/<link rel="stylesheet" href="fonts\.css(\?v=[0-9a-f]{8})?">/.test(html)) {
     fail('index.html does not link fonts.css, so the page renders in system fonts')
   }
   notes.push(
@@ -641,6 +651,60 @@ async function checkReleaseLinks() {
   )
 }
 
+/**
+ * Every asset the page loads must carry the hash of the file it points at.
+ *
+ * The server caches these URLs for a year, which is only safe while the URL
+ * changes whenever the file does. A stale stamp would pin one version of the
+ * stylesheet in a visitor's cache for a year, so this is a hard failure with the
+ * command to fix it rather than a note.
+ */
+async function checkAssetStamps() {
+  const ASSET = /\.(css|js|mjs|png|webp|jpg|jpeg|avif|svg|ico|woff2|webmanifest)$/
+  const UNSTAMPED = new Set(['robots.txt', 'sitemap.xml', 'index.html', '404.html'])
+
+  for (const page of ['index.html', '404.html']) {
+    const html = read(page)
+    const pattern = /(?:href|src|content)="([^"]+)"/g
+    let match
+    let checked = 0
+    while ((match = pattern.exec(html)) !== null) {
+      const url = match[1]
+      if (/^(https?:|mailto:|tel:|data:|#|\/\/)/.test(url) && !url.startsWith('https://flushot.ink/')) {
+        continue
+      }
+      const withoutOrigin = url.startsWith('https://flushot.ink/')
+        ? url.slice('https://flushot.ink/'.length)
+        : url
+      const [pathPart, query] = withoutOrigin.split('?')
+      if (!pathPart || UNSTAMPED.has(pathPart) || !ASSET.test(pathPart)) continue
+
+      const file = path.join(SITE, pathPart)
+      if (!existsSync(file)) continue // checkReferences already reports this
+      // Same rule as scripts/stamp-assets.cjs: text is hashed with line endings
+      // normalised so a CRLF checkout agrees with an LF one, and everything else
+      // is hashed as raw bytes.
+      const content = readFileSync(file)
+      const expected = /\.(css|js|mjs|svg|webmanifest|html|json|txt)$/.test(pathPart)
+        ? createHash('sha256')
+            .update(content.toString('latin1').replace(/\r\n/g, '\n'), 'latin1')
+            .digest('hex')
+            .slice(0, 8)
+        : createHash('sha256').update(content).digest('hex').slice(0, 8)
+      const actual = /(?:^|&)v=([0-9a-f]{8})(?:&|$)/.exec(query || '')
+      checked += 1
+      if (!actual) {
+        fail(`${page}: ${pathPart} has no ?v= stamp, so a changed file would be cached for a year`)
+      } else if (actual[1] !== expected) {
+        fail(
+          `${page}: ${pathPart} carries ?v=${actual[1]} but the file hashes to ${expected} — run "node scripts/stamp-assets.cjs"`
+        )
+      }
+    }
+    notes.push(`${page}: ${checked} asset references carry a current content hash`)
+  }
+}
+
 async function reportSize() {
   const assets = await fs.readdir(path.join(SITE, 'assets')).catch(() => [])
   let total = 0
@@ -667,6 +731,7 @@ async function main() {
   await checkSocialPreview()
   await checkBrandMark()
   await checkReleaseLinks()
+  await checkAssetStamps()
   await reportSize()
 
   for (const note of notes) console.log(`  · ${note}`)
