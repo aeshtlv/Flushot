@@ -60,18 +60,16 @@ const PAGE = `<!DOCTYPE html>
     position: relative;
   }
 
-  /* The same grid the hero uses, drawn the same way: one tile with both lines in
+  /* The same mesh the hero uses, drawn the same way: one tile with both lines in
      it, so no pixel is composited twice. Two gradient layers — the obvious way
      to write a grid — make every intersection twice as bright as the lines that
-     form it, which at this size reads as a lattice of dots.
-
-     Coarser than the page (60 px instead of 48) and slightly stronger: the card
-     is displayed at roughly half its size, so a 48 px mesh would turn into a
-     texture too fine to survive the downscale. */
+     form it, and a heavier line every fifth one reads as a stray bright streak
+     rather than as a rhythm. Coarser than the page (60 px instead of 48) because
+     the card is shown at roughly half size, where a finer mesh turns to mush. */
   .grid {
     position: absolute;
     inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M0 .5H60M.5 1V60' stroke='%23fff' stroke-opacity='.13' fill='none'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M0 .5H60M.5 1V60' stroke='%23fff' stroke-opacity='.14' fill='none'/%3E%3C/svg%3E");
     background-size: 60px 60px;
     -webkit-mask-image: radial-gradient(ellipse 88% 82% at 50% 6%, #000 46%, transparent 100%);
     mask-image: radial-gradient(ellipse 88% 82% at 50% 6%, #000 46%, transparent 100%);
