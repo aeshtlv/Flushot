@@ -92,6 +92,85 @@
     window.addEventListener('scroll', updateHeader, { passive: true });
   }
 
+  // Motion is opt-in: everything below is skipped outright when the system asks
+  // for reduced motion, because a fade or a drift is exactly what that setting
+  // is about — shortening it would still be motion.
+  var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---------------------------------------------------------- hero parallax
+  //
+  // The grid drifts a few pixels as the hero scrolls away, slower than the text
+  // in front of it. That difference is the whole depth cue: a backdrop that
+  // moves in lockstep with the content reads as a flat texture pinned to it.
+  var grid = document.querySelector('.hero__grid');
+  if (grid && !still) {
+    var hero = grid.parentElement;
+    var pendingFrame = 0;
+    var paint = function () {
+      pendingFrame = 0;
+      var travelled = Math.min(window.scrollY, 600) * 0.1;
+      grid.style.setProperty('--grid-shift', travelled.toFixed(1) + 'px');
+    };
+    var onScroll = function () {
+      if (!pendingFrame) pendingFrame = window.requestAnimationFrame(paint);
+    };
+    paint();
+    window.addEventListener('scroll', onScroll, { passive: true });
+  }
+
+  // ----------------------------------------------------------- scroll reveal
+  //
+  // Blocks fade up as they enter the viewport. The classes are added here and
+  // never written into the markup: with the script off — or if it fails to
+  // load — the page is a plain document with nothing hidden and nothing to
+  // animate.
+  if ('IntersectionObserver' in window && !still) {
+    var revealTargets = document.querySelectorAll(
+      [
+        '.section-head',
+        '.feature',
+        '.compare__card',
+        '.save-grid > *',
+        '.hotkeys',
+        '.gallery',
+        '.dl-card',
+        '.limit',
+        '.faq details',
+        '.cta__inner'
+      ].join(',')
+    );
+
+    var observer = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add('is-in');
+          observer.unobserve(entry.target);
+        });
+      },
+      // The bottom margin keeps a block from starting its fade while it is still
+      // only half over the fold, where the movement would be read as a jitter.
+      { rootMargin: '0px 0px -6% 0px', threshold: 0.05 }
+    );
+
+    // Anything already on screen is shown at once. A reload halfway down the
+    // page, or a jump to #download, must not animate content the reader was
+    // looking at before the script ran.
+    var fold = window.innerHeight;
+    var perParent = new Map();
+
+    Array.prototype.forEach.call(revealTargets, function (element) {
+      if (element.getBoundingClientRect().top < fold * 0.92) return;
+      var siblings = perParent.get(element.parentElement) || 0;
+      perParent.set(element.parentElement, siblings + 1);
+      // Stagger by position inside the group, capped: a nine-cell grid with a
+      // 70 ms step would otherwise take most of a second to finish.
+      element.style.setProperty('--reveal-delay', Math.min(siblings, 4) * 0.07 + 's');
+      element.classList.add('reveal');
+      observer.observe(element);
+    });
+  }
+
   // ------------------------------------------------------------- tabs
 
   var gallery = document.querySelector('[data-gallery]');

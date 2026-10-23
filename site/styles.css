@@ -36,6 +36,13 @@
   --tint: rgba(255, 255, 255, 0.025);
   --tint-hover: rgba(255, 255, 255, 0.045);
 
+  /* The hero grid is decoration, not an edge: it gets its own tokens instead of
+     borrowing --border, which is tuned to be almost invisible on purpose. Two
+     weights — a fine 48 px mesh and a heavier 240 px one every fifth line — so
+     the surface reads as a measured drawing rather than as noise. */
+  --grid-line: rgba(255, 255, 255, 0.12);
+  --grid-major: rgba(255, 255, 255, 0.22);
+
   --accent: #6b8dff;
   --accent-ink: #09090b;
   --accent-dim: rgba(107, 141, 255, 0.15);
@@ -72,6 +79,9 @@
   --border-strong: rgba(0, 0, 0, 0.16);
   --tint: rgba(0, 0, 0, 0.018);
   --tint-hover: rgba(0, 0, 0, 0.04);
+
+  --grid-line: rgba(0, 0, 0, 0.085);
+  --grid-major: rgba(0, 0, 0, 0.17);
 
   --accent: #3b5bdb;
   --accent-ink: #ffffff;
@@ -459,16 +469,39 @@ code {
   padding: 72px 0 60px;
 }
 
+/* An accent halo behind the grid. It is what makes the grid look lit rather
+   than printed: the lines cross a surface that has a light source. Breathes
+   very slowly — 18 seconds is long enough to be felt, not watched. */
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -340px;
+  left: 50%;
+  width: 1040px;
+  height: 760px;
+  margin-left: -520px;
+  pointer-events: none;
+  background: radial-gradient(closest-side, var(--accent-dim), transparent);
+  animation: halo 18s ease-in-out infinite alternate;
+}
+
 .hero__grid {
   position: absolute;
-  inset: 0;
+  /* Room to drift: the parallax in app.js moves this layer by a few pixels, and
+     a layer that ends exactly on the hero edge would show the seam. */
+  inset: -80px 0;
   pointer-events: none;
-  opacity: 0.7;
-  background-image: linear-gradient(90deg, var(--border) 1px, transparent 1px),
-    linear-gradient(var(--border) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: radial-gradient(80% 60% at 50% 40%, #000 40%, transparent 100%);
-  -webkit-mask-image: radial-gradient(80% 60% at 50% 40%, #000 40%, transparent 100%);
+  background-image:
+    linear-gradient(90deg, var(--grid-major) 1px, transparent 1px),
+    linear-gradient(var(--grid-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(var(--grid-line) 1px, transparent 1px);
+  background-size: 240px 240px, 240px 240px, 48px 48px, 48px 48px;
+  mask-image: radial-gradient(82% 62% at 50% 38%, #000 38%, transparent 100%);
+  -webkit-mask-image: radial-gradient(82% 62% at 50% 38%, #000 38%, transparent 100%);
+  /* --grid-shift is written by app.js while the hero scrolls. */
+  transform: translate3d(0, var(--grid-shift, 0px), 0);
+  animation: grid-in 1.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .hero__inner {
@@ -639,6 +672,17 @@ code {
 
 .feature:hover {
   background: var(--tint-hover);
+}
+
+/* The mark lifts off the cell on hover. Two pixels is enough to read as "this
+   cell is awake" without the block appearing to come apart. */
+.feature__mark {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s;
+}
+
+.feature:hover .feature__mark {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
 }
 
 .feature__mark {
@@ -1067,12 +1111,15 @@ code {
   background: linear-gradient(var(--tint), transparent);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  transition: border-color 0.2s, background 0.2s;
+  transition: border-color 0.25s, background 0.25s, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s;
 }
 
 .dl-card:hover {
   border-color: var(--border-strong);
   background: var(--tint-hover);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-card);
 }
 
 .dl-card--main {
@@ -1365,9 +1412,67 @@ code {
   }
 }
 
+/* The hero grid settles rather than appears: a slight scale-out reads as the
+   surface coming into focus, which a plain fade does not.
+
+   `scale` is animated as its own property, not inside `transform`, so that the
+   parallax in app.js can keep writing `transform` on the same element — an
+   animation with `fill-mode: both` would otherwise win over the inline style
+   for as long as the page is open. */
+@keyframes grid-in {
+  from {
+    opacity: 0;
+    scale: 1.04;
+  }
+
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+@keyframes halo {
+  from {
+    opacity: 0.5;
+    transform: scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
 [data-rise] {
   animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
   animation-delay: var(--d, 0s);
+}
+
+/* Scroll reveal. Both classes are put there by app.js and never written into the
+   markup: with the script off — or if it fails to load — the page is a plain
+   document with nothing hidden and nothing to animate.
+
+   An animation rather than a transition, because these blocks already use
+   transition for their own hover states and a second declaration on the same
+   property would silently replace it. */
+.reveal {
+  opacity: 0;
+}
+
+.reveal.is-in {
+  animation: reveal-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) var(--reveal-delay, 0s) both;
+}
+
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* --------------------------------------------------------------- responsive */
@@ -1612,7 +1717,19 @@ code {
   }
 
   [data-rise],
-  .term__caret {
+  .term__caret,
+  .hero::before,
+  .hero__grid {
+    animation: none;
+  }
+
+  /* app.js already refuses to add these classes here; the rule stays so that a
+     stale class from a previous visit cannot hide a block. */
+  .reveal {
+    opacity: 1;
+  }
+
+  .reveal.is-in {
     animation: none;
   }
 
@@ -1622,7 +1739,9 @@ code {
     transition: none;
   }
 
-  .btn--primary:hover {
+  .btn--primary:hover,
+  .dl-card:hover,
+  .feature:hover .feature__mark {
     transform: none;
   }
 }

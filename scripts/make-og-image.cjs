@@ -60,16 +60,34 @@ const PAGE = `<!DOCTYPE html>
     position: relative;
   }
 
-  /* The same faint grid the hero uses, masked out towards the edges. */
+  /* The same grid the hero uses — minor and major lines, masked towards the
+     edges. Kept in step with --grid-line / --grid-major in site/styles.css: a
+     preview card that is dimmer than the page it advertises looks like an old
+     screenshot of it. The mask is wider than the hero's because this card is
+     mostly empty space, and a grid that fades out by the middle would leave the
+     lower half flat. */
   .grid {
     position: absolute;
     inset: 0;
     background-image:
-      linear-gradient(to right, rgba(255,255,255,.055) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255,255,255,.055) 1px, transparent 1px);
-    background-size: 60px 60px;
-    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 40%, transparent 100%);
-    mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 40%, transparent 100%);
+      linear-gradient(to right, rgba(255,255,255,.22) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,.22) 1px, transparent 1px),
+      linear-gradient(to right, rgba(255,255,255,.11) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,.11) 1px, transparent 1px);
+    background-size: 240px 240px, 240px 240px, 48px 48px, 48px 48px;
+    -webkit-mask-image: radial-gradient(ellipse 88% 82% at 50% 6%, #000 46%, transparent 100%);
+    mask-image: radial-gradient(ellipse 88% 82% at 50% 6%, #000 46%, transparent 100%);
+  }
+
+  /* The same accent halo the hero paints behind its grid. */
+  .glow {
+    position: absolute;
+    top: -320px;
+    left: 50%;
+    width: 900px;
+    height: 700px;
+    margin-left: -450px;
+    background: radial-gradient(closest-side, rgba(107,141,255,.15), transparent);
   }
 
   .inner { position: relative; padding: 52px 64px; height: 100%; display: flex; flex-direction: column; }
@@ -149,6 +167,7 @@ const PAGE = `<!DOCTYPE html>
 </style>
 </head>
 <body>
+<div class="glow"></div>
 <div class="grid"></div>
 <div class="inner">
   <div class="top">
@@ -159,7 +178,7 @@ const PAGE = `<!DOCTYPE html>
     </div>
   </div>
 
-  <h1 class="title">Скриншот<br>без фотошопа<br>и без возни</h1>
+  <h1 class="title">Скриншот,<br>готовый<br>к публикации</h1>
   <p class="sub">Рамка, тень и скругления — сразу. Windows 10 и 11, бесплатно.</p>
 
   <div class="foot">
