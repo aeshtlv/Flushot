@@ -60,21 +60,19 @@ const PAGE = `<!DOCTYPE html>
     position: relative;
   }
 
-  /* The same grid the hero uses — minor and major lines, masked towards the
-     edges. Kept in step with --grid-line / --grid-major in site/styles.css: a
-     preview card that is dimmer than the page it advertises looks like an old
-     screenshot of it. The mask is wider than the hero's because this card is
-     mostly empty space, and a grid that fades out by the middle would leave the
-     lower half flat. */
+  /* The same grid the hero uses, drawn the same way: one tile with both lines in
+     it, so no pixel is composited twice. Two gradient layers — the obvious way
+     to write a grid — make every intersection twice as bright as the lines that
+     form it, which at this size reads as a lattice of dots.
+
+     Coarser than the page (60 px instead of 48) and slightly stronger: the card
+     is displayed at roughly half its size, so a 48 px mesh would turn into a
+     texture too fine to survive the downscale. */
   .grid {
     position: absolute;
     inset: 0;
-    background-image:
-      linear-gradient(to right, rgba(255,255,255,.22) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255,255,255,.22) 1px, transparent 1px),
-      linear-gradient(to right, rgba(255,255,255,.11) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255,255,255,.11) 1px, transparent 1px);
-    background-size: 240px 240px, 240px 240px, 48px 48px, 48px 48px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M0 .5H60M.5 1V60' stroke='%23fff' stroke-opacity='.13' fill='none'/%3E%3C/svg%3E");
+    background-size: 60px 60px;
     -webkit-mask-image: radial-gradient(ellipse 88% 82% at 50% 6%, #000 46%, transparent 100%);
     mask-image: radial-gradient(ellipse 88% 82% at 50% 6%, #000 46%, transparent 100%);
   }

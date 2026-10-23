@@ -36,12 +36,24 @@
   --tint: rgba(255, 255, 255, 0.025);
   --tint-hover: rgba(255, 255, 255, 0.045);
 
-  /* The hero grid is decoration, not an edge: it gets its own tokens instead of
-     borrowing --border, which is tuned to be almost invisible on purpose. Two
-     weights — a fine 48 px mesh and a heavier 240 px one every fifth line — so
-     the surface reads as a measured drawing rather than as noise. */
-  --grid-line: rgba(255, 255, 255, 0.12);
-  --grid-major: rgba(255, 255, 255, 0.22);
+  /* The hero grid is decoration, not an edge: it gets its own colour instead of
+     borrowing --border, which is tuned to be almost invisible on purpose.
+
+     One weight, no hierarchy. A heavier line every fifth one was tried and
+     removed: against a near-black surface the eye has no middle ground, so any
+     difference large enough to see reads as a stray bright line rather than as a
+     rhythm. A single even mesh looks deliberate; a nearly-even one looks like a
+     mistake.
+
+     The mesh is a 48 × 48 tile with both lines in it. Two separate gradient
+     layers would be the obvious way to write it, but where they cross the
+     browser composites their alpha twice (0.12 over 0.12 lands at 0.23), so
+     every intersection came out twice as bright as the lines that form it — a
+     lattice of dots. The vertical stroke starts at y = 1 rather than y = 0 for
+     the same reason: inside one path the corner pixel would still be painted
+     twice. The two strokes now meet without ever overlapping, so every pixel of
+     the mesh carries the same alpha. */
+  --grid-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Cpath d='M0 .5H48M.5 1V48' stroke='%23fff' stroke-opacity='.12' fill='none'/%3E%3C/svg%3E");
 
   --accent: #6b8dff;
   --accent-ink: #09090b;
@@ -80,8 +92,7 @@
   --tint: rgba(0, 0, 0, 0.018);
   --tint-hover: rgba(0, 0, 0, 0.04);
 
-  --grid-line: rgba(0, 0, 0, 0.085);
-  --grid-major: rgba(0, 0, 0, 0.17);
+  --grid-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Cpath d='M0 .5H48M.5 1V48' stroke='%23000' stroke-opacity='.085' fill='none'/%3E%3C/svg%3E");
 
   --accent: #3b5bdb;
   --accent-ink: #ffffff;
@@ -491,12 +502,8 @@ code {
      a layer that ends exactly on the hero edge would show the seam. */
   inset: -80px 0;
   pointer-events: none;
-  background-image:
-    linear-gradient(90deg, var(--grid-major) 1px, transparent 1px),
-    linear-gradient(var(--grid-major) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
-    linear-gradient(var(--grid-line) 1px, transparent 1px);
-  background-size: 240px 240px, 240px 240px, 48px 48px, 48px 48px;
+  background-image: var(--grid-tile);
+  background-size: 48px 48px;
   mask-image: radial-gradient(82% 62% at 50% 38%, #000 38%, transparent 100%);
   -webkit-mask-image: radial-gradient(82% 62% at 50% 38%, #000 38%, transparent 100%);
   /* --grid-shift is written by app.js while the hero scrolls. */
