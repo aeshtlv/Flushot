@@ -36,6 +36,21 @@
   --tint: rgba(255, 255, 255, 0.025);
   --tint-hover: rgba(255, 255, 255, 0.045);
 
+  /* Structure, not decoration. `--border` is deliberately almost invisible — it
+     outlines cards, which the fill and the shadow already carry. A divider that
+     is the *only* thing separating one block from the next cannot afford that:
+     at 1.2:1 the section breaks and the FAQ rows disappeared, and the page read
+     as one continuous column of text. `--rule` is measured at 1.63:1 against the
+     page in this theme and 1.60:1 in the light one. */
+  --rule: rgba(255, 255, 255, 0.18);
+
+  /* Small icon buttons in the header. They have no fill of their own, so their
+     border is the whole control: at `--border` the button was a floating glyph
+     with no shape around it. These give it a surface and an edge at ~2:1. */
+  --control-bg: rgba(255, 255, 255, 0.05);
+  --control-bg-hover: rgba(255, 255, 255, 0.1);
+  --control-border: rgba(255, 255, 255, 0.22);
+
   /* The hero grid is decoration, not an edge: it gets its own colour instead of
      borrowing --border, which is tuned to be almost invisible on purpose.
 
@@ -102,6 +117,18 @@
   --border-strong: rgba(0, 0, 0, 0.16);
   --tint: rgba(0, 0, 0, 0.018);
   --tint-hover: rgba(0, 0, 0, 0.04);
+
+  /* The light theme needed more ink than the dark one for the same job: 9 %
+     black on near-white lands at 1.22:1 and the line stops existing, while 8 %
+     white on near-black at least reads as a seam. 20 % black gives 1.60:1. */
+  --rule: rgba(0, 0, 0, 0.2);
+
+  /* The button gets a white fill of its own here, so the border sits on white
+     rather than on the page: 30 % black over that fill is 2.02:1, and the fill
+     itself separates the control from a page that is only 1.04:1 from white. */
+  --control-bg: #ffffff;
+  --control-bg-hover: #f1f1f4;
+  --control-border: rgba(0, 0, 0, 0.3);
 
   --grid-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Cpath d='M0 .5H48M.5 1V48' stroke='%23000' stroke-opacity='.085' fill='none'/%3E%3C/svg%3E");
 
@@ -335,13 +362,14 @@ a.link:hover {
 
 .btn--ghost {
   color: var(--fg-muted);
-  border: 1px solid var(--border);
+  background: var(--control-bg);
+  border: 1px solid var(--control-border);
 }
 
 .btn--ghost:hover {
   color: var(--fg);
-  border-color: var(--border-strong);
-  background: var(--tint);
+  border-color: var(--fg-dim);
+  background: var(--control-bg-hover);
 }
 
 .btn--lg {
@@ -436,7 +464,7 @@ a.link:hover {
   font-size: 10px;
   line-height: 1.4;
   color: var(--fg-dim);
-  border: 1px solid var(--border);
+  border: 1px solid var(--rule);
   border-radius: 999px;
 }
 
@@ -467,7 +495,12 @@ a.link:hover {
 
 /* A square button like the menu one beside it, not a pill: the pill read as a
    switch and switched nothing — it had no track and no knob, so the only thing
-   the shape promised was a state it did not have. */
+   the shape promised was a state it did not have.
+
+   It carries a fill and an edge of its own, from --control-*. With the plain
+   --border it had neither: the outline was 1.22:1 against the page, so on the
+   light theme the button was a moon floating in the header with nothing around
+   it, and the hover state was the first time you saw a shape. */
 .theme-toggle {
   display: grid;
   place-items: center;
@@ -475,15 +508,16 @@ a.link:hover {
   height: 36px;
   margin-left: 4px;
   color: var(--fg-muted);
-  border: 1px solid var(--border);
+  background: var(--control-bg);
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-sm);
   transition: color 0.18s, border-color 0.18s, background 0.18s;
 }
 
 .theme-toggle:hover {
   color: var(--fg);
-  border-color: var(--border-strong);
-  background: var(--tint);
+  border-color: var(--fg-dim);
+  background: var(--control-bg-hover);
 }
 
 .theme-toggle svg {
@@ -513,7 +547,8 @@ a.link:hover {
   width: 36px;
   height: 36px;
   color: var(--fg-muted);
-  border: 1px solid var(--border);
+  background: var(--control-bg);
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-sm);
 }
 
@@ -1046,7 +1081,7 @@ a.link:hover {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   overflow: hidden;
-  border: 1px solid var(--border);
+  border: 1px solid var(--rule);
   border-radius: var(--radius);
 }
 
@@ -1056,7 +1091,7 @@ a.link:hover {
 }
 
 .compare__card + .compare__card {
-  border-left: 1px solid var(--border);
+  border-left: 1px solid var(--rule);
 }
 
 .compare__card--after {
@@ -1065,9 +1100,9 @@ a.link:hover {
 
 .compare__title {
   margin-bottom: 18px;
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
 }
 
 /* ----------------------------------------------------------------- code */
@@ -1283,8 +1318,10 @@ code {
 
 .section {
   position: relative;
-  padding: 96px 0;
-  border-top: 1px solid var(--border);
+  padding: 104px 0;
+  /* --rule, not --border: this line is the only thing that says a new section
+     starts here, and at 1.2:1 it did not say it. */
+  border-top: 1px solid var(--rule);
 }
 
 .section-head {
@@ -1292,14 +1329,39 @@ code {
   margin-bottom: 56px;
 }
 
+/* The label that opens a section carries a short accent dash. Without it the
+   eyebrow was the only small element in a page of big ones, and it read as a
+   stray slogan rather than as the mark that says "a new section begins". The
+   dash is 22 px of --accent, which is already the page's one colour. It hangs to
+   the left of the label, so the label sits 32 px in from the column edge and the
+   title below stays on that edge: the rule marks the start, the title marks the
+   heading, and only one of them moves. */
 .section-head .eyebrow {
-  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.section-head .eyebrow::before {
+  content: '';
+  flex: none;
+  width: 22px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
 }
 
 .section-title {
   margin-bottom: 18px;
   font-size: clamp(30px, 4vw, 46px);
-  font-weight: 500;
+  /* 600, not 500: at this size the lighter weight sat between "heading" and
+     "large paragraph", and the lead underneath looked like its continuation.
+     The tracking stays at -0.035em rather than opening up with the weight: the
+     heavier glyphs are 2 % wider, and at -0.032em "Всё, что нужно от снимка
+     экрана" started wrapping onto a second line — a heavier heading that also
+     grows a line is a layout change, not a weight change. */
+  font-weight: 600;
   line-height: 1.06;
   letter-spacing: -0.035em;
   text-wrap: balance;
@@ -1319,6 +1381,12 @@ code {
   text-align: center;
 }
 
+/* The eyebrow is a flex row now, so text-align no longer places it: a centred
+   head would have its label and its dash pinned to the left edge. */
+.section-head--center .eyebrow {
+  justify-content: center;
+}
+
 .section-head--center .section-lead {
   margin-right: auto;
   margin-left: auto;
@@ -1326,13 +1394,15 @@ code {
 
 /* ------------------------------------------------------------- feature grid
    One bordered block subdivided by hairlines — no gaps, no per-card borders.
-   Reads as a single object rather than six. */
+   Reads as a single object rather than six. The frame and the dividers both use
+   --rule: an outer edge that is fainter than the lines inside it makes the grid
+   look unfinished at its border. */
 
 .feature-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   overflow: hidden;
-  border: 1px solid var(--border);
+  border: 1px solid var(--rule);
   border-radius: var(--radius);
 }
 
@@ -1343,8 +1413,8 @@ code {
   gap: 14px;
   padding: 26px 24px;
   background: linear-gradient(var(--tint), transparent);
-  border-right: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
   transition: background 0.2s;
 }
 
@@ -1391,10 +1461,14 @@ code {
   height: 18px;
 }
 
+/* The heading of a cell, not a label inside it. At 15 px against 14 px body
+   text it was the same size as what it headed, so a grid of nine read as one
+   wall: nothing said where a cell began. 17 px against 14 is a visible step at
+   reading distance, and the weight does the rest. */
 .feature__name {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
 }
 
 .feature__text {
@@ -1599,7 +1673,7 @@ code {
 }
 
 .hotkey-row + .hotkey-row {
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--rule);
 }
 
 .hotkey-text {
@@ -1677,7 +1751,7 @@ code {
 
 .hotkey-notes h3 {
   margin-bottom: 16px;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   letter-spacing: -0.015em;
 }
@@ -1722,7 +1796,7 @@ code {
   margin-bottom: 20px;
   padding: 4px;
   background: var(--tint);
-  border: 1px solid var(--border);
+  border: 1px solid var(--rule);
   border-radius: 10px;
 }
 
@@ -1758,7 +1832,7 @@ code {
 
 .gallery__side h3 {
   margin-bottom: 14px;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   letter-spacing: -0.015em;
 }
@@ -1874,9 +1948,9 @@ code {
 }
 
 .dl-card__name {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
 }
 
 .dl-card__badge {
@@ -1944,11 +2018,11 @@ code {
 
 .faq {
   max-width: 760px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--rule);
 }
 
 .faq details {
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--rule);
 }
 
 .faq summary {
@@ -1956,10 +2030,13 @@ code {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 18px 0;
-  font-size: 15px;
-  font-weight: 500;
-  letter-spacing: -0.01em;
+  padding: 20px 0;
+  /* A question is the heading of its answer, so it sits above body size and
+     above body weight. At 15 px / 500 it was indistinguishable from the answer
+     once the answer was open, and the section read as one long column. */
+  font-size: 16px;
+  font-weight: 550;
+  letter-spacing: -0.012em;
   list-style: none;
   cursor: pointer;
 }
@@ -1997,7 +2074,7 @@ code {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   overflow: hidden;
-  border: 1px solid var(--border);
+  border: 1px solid var(--rule);
   border-radius: var(--radius);
 }
 
@@ -2009,11 +2086,11 @@ code {
   font-size: 14px;
   line-height: 1.55;
   color: var(--fg-muted);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--rule);
 }
 
 .limit:nth-child(odd) {
-  border-right: 1px solid var(--border);
+  border-right: 1px solid var(--rule);
 }
 
 .limit:nth-last-child(-n + 2) {
@@ -2058,7 +2135,7 @@ code {
   overflow: hidden;
   padding: 120px 0;
   text-align: center;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--rule);
 }
 
 .cta::before {
@@ -2112,7 +2189,9 @@ code {
 
 .footer {
   padding: 40px 0 32px;
-  border-top: 1px solid var(--border);
+  /* The same line as a section's top edge: the footer is a block that starts,
+     not a card that ends. */
+  border-top: 1px solid var(--rule);
 }
 
 .footer__inner {
@@ -2263,7 +2342,7 @@ code {
   }
 
   .feature:nth-child(3n) {
-    border-right: 1px solid var(--border);
+    border-right: 1px solid var(--rule);
   }
 
   .feature:nth-child(2n) {
@@ -2271,7 +2350,7 @@ code {
   }
 
   .feature:nth-last-child(-n + 3) {
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
   }
 
   /* Nine cells in two columns leave the last row holding one: only that cell has
@@ -2293,7 +2372,7 @@ code {
   }
 
   .limit:nth-last-child(-n + 2) {
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
   }
 
   .limit:last-child {
@@ -2374,13 +2453,13 @@ code {
     gap: 0;
     padding: 8px var(--pad) 16px;
     background: var(--bg);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
   }
 
   .nav-right.is-open .nav-link {
     padding: 12px 0;
     font-size: 15px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
   }
 
   .nav-right.is-open .nav-link:last-child {
@@ -2392,7 +2471,7 @@ code {
   }
 
   .compare__card + .compare__card {
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--rule);
     border-left: 0;
   }
 
@@ -2467,14 +2546,14 @@ code {
 
   .feature {
     border-right: 0 !important;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
   }
 
   /* One column: every cell keeps its separator except the very last one, which
      the grid's own border closes. The two-column rule above removes the border
      from the last two cells, which is wrong here — so it is undone first. */
   .feature:nth-last-child(-n + 2) {
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
   }
 
   .feature:last-child {
