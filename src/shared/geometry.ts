@@ -63,7 +63,16 @@ export function selectionPixelSize(selection: Rect, display: DisplayGeometry): {
   return { width: rect.width, height: rect.height }
 }
 
+/**
+ * The smallest region a drag may produce.
+ *
+ * Shared by the overlay (which refuses to keep a smaller rectangle) and by the
+ * release rules, so "too small to be a screenshot" cannot mean two different sizes
+ * in two places.
+ */
+export const MIN_SELECTION_PX = 8
+
 /** Reject accidental micro-selections (clicks, jitter). */
-export function isUsableSelection(rect: Rect, minimum = 8): boolean {
+export function isUsableSelection(rect: Rect, minimum = MIN_SELECTION_PX): boolean {
   return rect.width >= minimum && rect.height >= minimum
 }

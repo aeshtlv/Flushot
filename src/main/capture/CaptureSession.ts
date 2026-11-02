@@ -77,6 +77,15 @@ export class CaptureSession {
    */
   private pendingPng: Promise<Buffer | null> | null = null
   private starting = false
+  /**
+   * Set once the user has been told that a copy could not also be written to a file.
+   *
+   * The picture is already on the clipboard at that point, so the failure is not worth
+   * interrupting with per capture — but it must not be silent either, because "снимки
+   * перестали появляться в папке" is otherwise discovered days later. One tray notice
+   * per session, then the log.
+   */
+  private copySaveWarned = false
   /** True while a selection round is on screen (windows may stay alive hidden). */
   private active = false
   /** Overlay renderers that finished booting and called getInit. */
@@ -152,7 +161,7 @@ export class CaptureSession {
 
       const captureTimings: CaptureTimings = {}
       // Settings are tiny but independent of the capture, so both run together.
-      const [, natives] = await Promise.all([this.deps.settings.load(), captureDisplays(captureTimings)])
+      const [liveSettings, natives] = await Promise.all([this.deps.settings.load(), captureDisplays(captureTimings)])
       mark('capture')
       this.natives = new Map(natives.map((snapshot) => [snapshot.display.id, snapshot]))
       this.virtualRaw = await this.buildVirtualDesktop(natives)
@@ -164,12 +173,19 @@ export class CaptureSession {
       this.lastTimings = { ...timings, getSources: captureTimings.getSources ?? 0 }
 
       // A warm window pulls nothing: its frame is pushed, which skips a round
-      // trip and lets it paint immediately.
+      // trip and lets it paint immediately. The settings travel with it, because a
+      // warm window otherwise keeps whatever it read when it booted — a change made
+      // in the settings window would sit there doing nothing until the app restarted.
       const virtual = this.virtualRaw
       if (virtual && this.virtualDescriptor) {
         for (const win of this.overlays) {
           if (this.booted.has(win.webContents.id)) {
-            win.webContents.send('overlay:frame', { display: this.virtualDescriptor, shot: virtual, fullscreen: this.fullscreen })
+            win.webContents.send('overlay:frame', {
+              display: this.virtualDescriptor,
+              shot: virtual,
+              fullscreen: this.fullscreen,
+              settings: liveSettings
+            })
           }
         }
       }
@@ -508,9 +524,13 @@ export class CaptureSession {
         copyTimings[name] = Math.round(performance.now() - t0)
       }
 
-      // Ctrl+C while the region is being drawn: the overlay is hidden first and
-      // only then is the card composed and copied, so the user never watches a
-      // frozen picture while sharp works.
+      // Straight to the clipboard, without the editor: what releasing the mouse does
+      // in the default mode, and what Ctrl+C does while the region is being drawn.
+      //
+      // The overlay is hidden first and only then is the card composed, so the user
+      // never watches a frozen picture while sharp works — the desktop is back one
+      // frame after the button comes up, and Ctrl+V works a few dozen milliseconds
+      // later.
       if (selection.intent === 'copy') {
         this.hideOverlays()
         markCopy('hide')
@@ -523,6 +543,28 @@ export class CaptureSession {
         this.lastCopyTimings = copyTimings
         this.result = null
         this.pendingPng = null
+
+        // "Copy to clipboard" and "save to a folder" are not alternatives, and
+        // treating them as one would quietly stop writing files for everybody who
+        // relies on them. The file is written after the clipboard is already set and
+        // is not awaited: pasting must never wait for the disk.
+        if (copied.ok && settings.saveMode === 'folder') {
+          const directory = settings.saveDirectory
+          void saveToFolder({ raster: card.raster, layout: card.layout, settings, window: null, png: copied.png })
+            .then((saved) => {
+              if (saved.ok) return
+              console.warn('Снимок скопирован, но не сохранён:', saved.message)
+              // The picture is safe on the clipboard, so this is a warning and not an
+              // error — but it is the only way the user finds out that the folder has
+              // gone away. Once, so it does not talk over every later screenshot.
+              if (!this.copySaveWarned) {
+                this.copySaveWarned = true
+                this.deps.onError(`Снимок скопирован, но не сохранён в папку «${directory}». Выберите другую в настройках.`)
+              }
+            })
+            .catch((error: unknown) => console.warn('Не удалось сохранить снимок', error))
+        }
+
         this.cancel()
         return copied.ok
           ? { ok: true, message: `Скопировано в буфер обмена · ${card.raster.width} × ${card.raster.height}`, width: card.raster.width, height: card.raster.height }

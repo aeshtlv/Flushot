@@ -3,6 +3,16 @@ export type BackgroundPreset = 'white' | 'gray' | 'custom'
 export type ImageFormat = 'png' | 'jpeg' | 'webp'
 export type SaveMode = 'folder' | 'ask'
 
+/**
+ * What happens the moment the mouse button is released after drawing a region.
+ *
+ * `copy` is the fast path: the card is composed and put on the clipboard, and the
+ * overlay closes, so the next keystroke is `Ctrl+V` in whatever the user was
+ * writing. `edit` keeps the region on screen and opens the result, which is where
+ * annotations, text recognition and saving live.
+ */
+export type AfterRegion = 'copy' | 'edit'
+
 /** Persisted user preferences. */
 export interface ScreenshotSettings {
   theme: ThemeMode
@@ -38,6 +48,11 @@ export interface ScreenshotSettings {
   hotkeyFullscreen: string
   /** Start Flushot in the tray when the user logs in to Windows. */
   launchAtLogin: boolean
+  /**
+   * Whether releasing the mouse copies the region straight to the clipboard or
+   * opens it for annotations. See `AfterRegion`.
+   */
+  afterRegion: AfterRegion
 }
 
 // ---------------------------------------------------------------------------
@@ -259,6 +274,14 @@ export interface OverlayFrame {
   shot: OverlayShot
   /** See `OverlayInit.fullscreen`: the region arrives already selected. */
   fullscreen?: boolean
+  /**
+   * Settings as they are *now*, not as they were when the window booted.
+   *
+   * A warm window lives for the whole session, so without this it would keep the
+   * settings it read at startup: anything changed afterwards — the frame colour, the
+   * shadow, what releasing the mouse should do — only took effect after a restart.
+   */
+  settings: ScreenshotSettings
 }
 
 export interface ActionResult {

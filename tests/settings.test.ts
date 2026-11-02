@@ -95,6 +95,23 @@ describe('sanitizeSettings', () => {
     expect(sanitizeSettings({ launchAtLogin: 1 }, PICTURES).launchAtLogin).toBe(false)
   })
 
+  it('copies on release unless asked otherwise', () => {
+    // The shipped default is the fast path: the picture is on the clipboard the moment
+    // the mouse button comes up.
+    expect(defaultSettings(PICTURES).afterRegion).toBe('copy')
+    expect(sanitizeSettings({}, PICTURES).afterRegion).toBe('copy')
+    expect(sanitizeSettings({ afterRegion: 'edit' }, PICTURES).afterRegion).toBe('edit')
+    expect(sanitizeSettings({ afterRegion: 'copy' }, PICTURES).afterRegion).toBe('copy')
+  })
+
+  it('recovers from a value that is not one of the two modes', () => {
+    // A settings file from a hand edit, a typo or a future version must not leave the
+    // overlay without an instruction.
+    for (const broken of ['hold', 'COPY', '', 0, 1, true, null, ['copy'], { mode: 'copy' }]) {
+      expect(sanitizeSettings({ afterRegion: broken }, PICTURES).afterRegion).toBe('copy')
+    }
+  })
+
   it('keeps only valid, unique palette colours, up to the limit', () => {
     const settings = sanitizeSettings(
       { paletteColors: ['#ff0000', 'red', '#FF0000', '#00ff00', 42, null, '#0000ff', '#123456', '#abcdef', '#fedcba'] },

@@ -9,6 +9,7 @@ import {
   type PointerEvent as ReactPointerEvent
 } from 'react'
 import { selectionPixelSize, selectionToImageRect } from '../../shared/geometry'
+import { decideRegion } from '../../shared/afterRegion'
 import type {
   Annotation,
   AnnotationLayerPayload,
@@ -55,7 +56,7 @@ import {
   ZoomInIcon,
   ZoomOutIcon
 } from './icons'
-import { useSelection, type Handle } from './useSelection'
+import { useSelection, type Handle, type RegionRelease } from './useSelection'
 
 type Stage = 'selecting' | 'result' | 'busy'
 
@@ -125,7 +126,8 @@ const DEMO_INIT: OverlayInit = {
     jpegQuality: 94,
     hotkey: 'CommandOrControl+Shift+S',
     hotkeyFullscreen: 'CommandOrControl+Shift+3',
-    launchAtLogin: false
+    launchAtLogin: false,
+    afterRegion: 'copy'
   },
   hotkey: 'CommandOrControl+Shift+S'
 }
@@ -336,6 +338,8 @@ export function OverlayApp(): JSX.Element {
   // it from acting on a stale selection (e.g. Enter pressed right after a drag).
   const rectRef = useRef(selection.rect)
   rectRef.current = selection.rect
+  /** True while a copy is in flight, so one release cannot start two copies. */
+  const copyingRef = useRef(false)
 
   useEffect(() => {
     const onResize = (): void => setViewport({ width: window.innerWidth, height: window.innerHeight })
@@ -367,6 +371,9 @@ export function OverlayApp(): JSX.Element {
     const unsubscribe = api.onOverlayReset(() => {
       setStage('selecting')
       setPreview(null)
+      // The copy guard belongs to the round that just ended: a new round must be able
+      // to copy even if the last one was closed the instant it copied.
+      copyingRef.current = false
       // The previous picture's numbers must go too: the result card is rendered
       // during the busy phase as well, and a stale "728 × 528" caption under a
       // new capture reads as if the new selection had that size.
@@ -388,10 +395,18 @@ export function OverlayApp(): JSX.Element {
     // Warm windows receive their frame instead of pulling it, which saves a
     // round trip on every hotkey press.
     const stopFrames = api.onOverlayFrame?.((frame) => {
-      setInit((current) => (current ? { ...current, display: frame.display, fullscreen: frame.fullscreen } : current))
+      // Settings come with the frame so a warm window follows the settings window.
+      // Without them it kept the values it read when it booted, which is a whole
+      // session of nothing happening after the user changed something.
+      setInit((current) =>
+        current
+          ? { ...current, display: frame.display, fullscreen: frame.fullscreen, settings: frame.settings ?? current.settings }
+          : current
+      )
       setShot(frame.shot)
       setShotUrl(null)
       setStage('selecting')
+      copyingRef.current = false
       setPreview(null)
       setSize(null)
       setToast(null)
@@ -461,9 +476,10 @@ export function OverlayApp(): JSX.Element {
     setBlanked(false)
   }, [selection])
 
-  const confirmSelection = useCallback(async () => {
-    if (!init || !rectRef.current) return
-    const rect = rectRef.current
+  const confirmSelection = useCallback(async (region?: Rect) => {
+    if (!init) return
+    const rect = region ?? rectRef.current
+    if (!rect) return
     if (rect.width < 8 || rect.height < 8) return
 
     if (DEMO) {
@@ -504,12 +520,22 @@ export function OverlayApp(): JSX.Element {
   }, [hostFor, init, showToast, viewport])
 
   /**
-   * Ctrl+C while the region is being drawn: copy the composed result straight to
-   * the clipboard and close the overlay, without the preview step.
+   * Copy the composed card to the clipboard and close, without the preview step.
+   *
+   * Two callers: `Ctrl+C` while the region is being drawn, and the automatic copy
+   * that happens when the mouse button comes up in `copy` mode. The region travels
+   * as an argument because the automatic caller has the rectangle from the release
+   * event, which is newer than anything React has committed to state.
+   *
+   * The overlay is blanked before it is hidden, exactly as `runAction` does for the
+   * same reason: Windows can keep the last frame of a transparent always-on-top
+   * window on screen for a moment, and on this path the window is hidden by the
+   * main process before the card even exists.
    */
-  const copySelection = useCallback(async () => {
-    if (!init || !rectRef.current) return
-    const rect = rectRef.current
+  const copySelection = useCallback(async (region?: Rect) => {
+    if (!init) return
+    const rect = region ?? rectRef.current
+    if (!rect) return
     if (rect.width < 8 || rect.height < 8) {
       showToast('Слишком маленькая область — выделите не меньше 8 × 8 пикселей', 'error')
       return
@@ -520,7 +546,16 @@ export function OverlayApp(): JSX.Element {
       return
     }
 
+    // One copy at a time. Releasing the mouse already starts a copy, and the global
+    // Ctrl+C arrives in the same few milliseconds if the user presses it out of habit
+    // — the second request would land on a session that has already been torn down and
+    // put a "capture is stale" error on screen right after a successful copy.
+    if (copyingRef.current) return
+    copyingRef.current = true
+
     setStage('busy')
+    setBlanked(true)
+    await afterPaint()
     try {
       const result = await window.flushot.captureSelection({
         displayId: init.display.id,
@@ -530,18 +565,27 @@ export function OverlayApp(): JSX.Element {
       })
 
       if (!result.ok) {
+        // The main process put the overlay back, because there is nothing else to
+        // show: the user has to see why the picture did not arrive. The guard is
+        // released, so the next Ctrl+C or release can try again.
+        copyingRef.current = false
+        setBlanked(false)
         setStage('selecting')
         showToast(result.message, 'error')
         return
       }
 
-      // The overlay is closed by the main process; show the note briefly anyway.
+      // Success needs no confirmation here: the overlay is gone and the next
+      // keystroke is Ctrl+V, which is the confirmation. The note below is only
+      // reached when the window is still alive (the self-test and demo runs).
       showToast(result.message, 'ok')
     } catch (error) {
+      copyingRef.current = false
+      setBlanked(false)
       setStage('selecting')
       showToast(error instanceof Error ? error.message : 'Не удалось скопировать снимок', 'error')
     }
-  }, [init, showToast, viewport])
+  }, [afterPaint, init, showToast, viewport])
 
   /**
    * The drawing as raw pixels, cropped to the area that actually has paint on it.
@@ -819,6 +863,34 @@ export function OverlayApp(): JSX.Element {
   }, [copySelection, runAction, stage])
 
   /**
+   * Act on the region the moment the mouse button comes up.
+   *
+   * This is the fast path the product exists for: press the key, drag, let go, and
+   * the picture is already on the clipboard — the next keystroke is `Ctrl+V` in the
+   * chat or document the user was writing. No extra `Ctrl+C`, no overlay to dismiss.
+   *
+   * An effect rather than a call from the pointer handler, because deciding needs
+   * `init`, the current settings and `copySelection` — none of which the drag handler
+   * can reach, and all of which are only correct after the render that follows the
+   * release. The release object carries the rectangle computed from the pointer's own
+   * final position, so nothing here reads a stale selection.
+   */
+  const handledRelease = useRef<RegionRelease | null>(null)
+  useEffect(() => {
+    const release = selection.release
+    if (!release || !init || stage !== 'selecting') return
+    // One release is one decision. A re-render or a StrictMode double-effect must not
+    // copy the same region twice.
+    if (handledRelease.current === release) return
+    handledRelease.current = release
+
+    const decision = decideRegion(release.dragged ? release.rect : null, init.settings.afterRegion, release.shift)
+    if (decision.action === 'copy') void copySelection(release.rect)
+    // 'hold' and 'ignore' both leave the overlay exactly as it is: the confirm bar is
+    // already on screen and the user drives from there.
+  }, [copySelection, init, selection.release, stage])
+
+  /**
    * The size the file will really have.
    *
    * On a mixed-DPI desk the old estimate — rectangle × the composite's scale
@@ -917,11 +989,14 @@ export function OverlayApp(): JSX.Element {
   }, [bounds, init, selection.rect, shot])
 
   /**
-   * Full-screen round: confirm on its own once the region is in place.
+   * Full-screen round: act on its own once the region is in place.
    *
-   * The point of the second hotkey is one press and done — asking for Enter on
-   * top of it would make it no faster than drawing the region by hand. The result
-   * window still opens, so saving, copying and annotating all stay available.
+   * The point of the second hotkey is one press and done — asking for Enter on top of
+   * it would make it no faster than drawing the region by hand. Which action it takes
+   * follows the same setting the mouse release does: in the fast mode the whole screen
+   * is on the clipboard and the overlay is gone, so `Ctrl+Shift+3`, `Ctrl+V` is the
+   * entire gesture. In editor mode the result window still opens, so saving, copying
+   * and annotating all stay available.
    *
    * Declared above the `!init` early return: a hook after a conditional return
    * changes the hook count between renders, and React rejects that outright.
@@ -933,8 +1008,13 @@ export function OverlayApp(): JSX.Element {
     if (!area || area.width < 8 || area.height < 8) return
     if (fullscreenConfirmed.current === init) return
     fullscreenConfirmed.current = init
-    void confirmSelection()
-  }, [confirmSelection, init, selection.rect, stage])
+    // No Shift to check here: the hotkey is the whole command, and reaching the
+    // editor from a full-screen press is what an ordinary key on the result screen is
+    // for (Enter is not available — nothing is going to wait for it).
+    const decision = decideRegion(area, init.settings.afterRegion, false)
+    if (decision.action === 'copy') void copySelection(area)
+    else void confirmSelection()
+  }, [confirmSelection, copySelection, init, selection.rect, stage])
 
   if (!init) {
     return <div className="overlay-root" />
@@ -1028,10 +1108,21 @@ export function OverlayApp(): JSX.Element {
       {stage === 'selecting' && !rect && (
         <div className="hint" style={hintStyle}>
           <p className="hint__title">Выделите область экрана</p>
-          <p className="hint__subtitle">
-            Перетащите мышь, чтобы создать снимок · <kbd>Enter</kbd> — готово · <kbd>Ctrl</kbd>+<kbd>C</kbd> — скопировать ·{' '}
-            <kbd>Esc</kbd> — отмена
-          </p>
+          {/* The hint promises what actually happens on release. In the fast mode that
+              is the clipboard, and holding Shift is the only way to reach the editor
+              from there — so both are stated before the user starts dragging, not in a
+              tooltip nobody opens. */}
+          {init.settings.afterRegion === 'edit' ? (
+            <p className="hint__subtitle">
+              Перетащите мышь, чтобы создать снимок · <kbd>Enter</kbd> — готово · <kbd>Ctrl</kbd>+<kbd>C</kbd> —
+              скопировать · <kbd>Esc</kbd> — отмена
+            </p>
+          ) : (
+            <p className="hint__subtitle">
+              Отпустите мышь — снимок сразу в буфере обмена · <kbd>Shift</kbd> при отпускании — перейти к пометкам ·{' '}
+              <kbd>Esc</kbd> — отмена
+            </p>
+          )}
         </div>
       )}
 

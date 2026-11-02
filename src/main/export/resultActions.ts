@@ -119,7 +119,20 @@ export async function saveResult(
     : saveWithDialog(result, annotations, beforeEncode)
 }
 
-export async function copyResult(result: ResultContext, annotations?: AnnotationLayerPayload): Promise<ActionResult> {
+/** Outcome of a clipboard copy, with the bytes that went on it. */
+export interface CopyOutcome extends ActionResult {
+  /**
+   * The PNG handed to the clipboard.
+   *
+   * Returned so a caller that also writes a file can write the very same buffer
+   * instead of encoding the card a second time — on the automatic-copy path the
+   * file is written right after the copy and there is no reason to pay for the
+   * encode twice.
+   */
+  png?: Buffer
+}
+
+export async function copyResult(result: ResultContext, annotations?: AnnotationLayerPayload): Promise<CopyOutcome> {
   const raster = finish(result, annotations)
   if (raster.width === 0 || raster.height === 0) {
     return { ok: false, message: 'Не удалось подготовить изображение для буфера обмена' }
@@ -134,5 +147,5 @@ export async function copyResult(result: ResultContext, annotations?: Annotation
   // A Buffer is already a Uint8Array, so it is wrapped without an extra copy.
   const blob = new Blob([png], { type: 'image/png' })
   await clipboard.write([new ClipboardItem({ 'image/png': blob })])
-  return { ok: true, message: 'Скопировано в буфер обмена' }
+  return { ok: true, message: 'Скопировано в буфер обмена', png }
 }

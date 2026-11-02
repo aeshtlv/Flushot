@@ -11,7 +11,7 @@ import {
   normalizeAccelerator,
   reservedByWindows
 } from '../../shared/hotkey'
-import type { BackgroundPreset, ImageFormat, SaveMode, ScreenshotSettings, ThemeMode } from '../../shared/types'
+import type { AfterRegion, BackgroundPreset, ImageFormat, SaveMode, ScreenshotSettings, ThemeMode } from '../../shared/types'
 import { BrandMark } from '../BrandMark'
 
 const BACKDROP_OPTIONS: { value: BackgroundPreset; label: string; swatch: string }[] = [
@@ -359,6 +359,24 @@ export function SettingsApp(): JSX.Element {
                 fallback={DEFAULT_FULLSCREEN_HOTKEY}
                 fallbackLabel={formatAccelerator(DEFAULT_FULLSCREEN_HOTKEY)}
                 onCommit={(hotkey) => void saveHotkey('hotkeyFullscreen', hotkey)}
+              />
+            </Row>
+
+            <Row
+              label="После выделения"
+              hint={
+                settings.afterRegion === 'copy'
+                  ? 'Отпустили мышь — снимок уже в буфере, вставляйте через Ctrl+V. Shift при отпускании открывает пометки'
+                  : 'Снимок открывается для пометок; скопировать можно по Ctrl+C'
+              }
+            >
+              <Segmented<AfterRegion>
+                value={settings.afterRegion}
+                options={[
+                  { value: 'copy', label: 'Сразу в буфер' },
+                  { value: 'edit', label: 'Открывать' }
+                ]}
+                onChange={(afterRegion) => void patch({ afterRegion })}
               />
             </Row>
 
