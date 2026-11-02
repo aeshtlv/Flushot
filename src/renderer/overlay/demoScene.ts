@@ -98,31 +98,42 @@ export function demoSceneSvg(): string {
   const winY = 44
   const winW = 1120
   const winH = 632
-  const titleH = 44
+  const titleH = 40
   const sideW = 232
   const contentX = 344
   const contentRight = winX + winW - 40
 
-  // Title bar
+  // Title bar. A Windows one: the app mark and the title on the left, the three
+  // boxed caption buttons flush against the right edge. An earlier version drew
+  // three coloured circles on the left, which is macOS — in a picture that is
+  // used to advertise a Windows program, on a page that shows a Windows program,
+  // it put a foreign operating system in every screenshot on the site.
   let svg = ''
   svg += shadow(winX, winY, winW, winH, 14)
-  svg += `<rect x="${winX}" y="${winY}" width="${winW}" height="${winH}" rx="14" fill="#ffffff"/>`
-  // Clip the flat title bar to the rounded corners of the window.
-  svg += `<path d="M${winX + 14} ${winY}h${winW - 28}a14 14 0 0 1 14 14v${titleH - 14}H${winX}v${14 - titleH}a14 14 0 0 1 14-14z" fill="#f7f8fa"/>`
+  svg += `<g clip-path="url(#win)">`
+  svg += `<rect x="${winX}" y="${winY}" width="${winW}" height="${winH}" fill="#ffffff"/>`
+  svg += `<rect x="${winX}" y="${winY}" width="${winW}" height="${titleH}" fill="#f7f8fa"/>`
   svg += `<rect x="${winX}" y="${winY + titleH}" width="${winW}" height="1" fill="#e7e9ee"/>`
 
-  svg += `<circle cx="${winX + 26}" cy="${winY + 22}" r="6" fill="#ff5f57"/>`
-  svg += `<circle cx="${winX + 46}" cy="${winY + 22}" r="6" fill="#febc2e"/>`
-  svg += `<circle cx="${winX + 66}" cy="${winY + 22}" r="6" fill="#28c840"/>`
+  svg += `<rect x="${winX + 16}" y="${winY + 13}" width="14" height="14" rx="3" fill="#2563eb"/>`
   svg += text({
-    x: winX + winW / 2,
-    y: winY + 27,
-    size: 13,
+    x: winX + 38,
+    y: winY + 25,
+    size: 12.5,
     weight: 500,
-    fill: '#6b7280',
-    anchor: 'middle',
+    fill: '#3f4451',
     content: 'Квартальный отчёт — Q3 2026'
   })
+
+  // The caption buttons, at the size Windows draws them: 46 px wide and the full
+  // height of the bar, with 1 px glyphs. Drawn as a group so the close button can
+  // run into the rounded corner the way it does in a real window.
+  const capW = 46
+  const capMid = winY + titleH / 2
+  const capRight = winX + winW
+  svg += `<rect x="${capRight - capW * 3 + 18}" y="${capMid}" width="10" height="1" fill="#4b5563"/>`
+  svg += `<rect x="${capRight - capW * 2 + 18.5}" y="${capMid - 4.5}" width="9" height="9" fill="none" stroke="#4b5563" stroke-width="1"/>`
+  svg += `<path d="M${capRight - capW + 19} ${capMid - 5}l10 10M${capRight - capW + 29} ${capMid - 5}l-10 10" stroke="#4b5563" stroke-width="1" fill="none"/>`
 
   // Sidebar
   svg += `<rect x="${winX}" y="${winY + titleH + 1}" width="${sideW}" height="${winH - titleH - 1}" fill="#fafbfc"/>`
@@ -259,13 +270,13 @@ export function demoSceneSvg(): string {
 
   // Status bar
   const statusY = winY + winH - 34
-  svg += `<rect x="${winX + 1}" y="${statusY}" width="${winW - 2}" height="33" fill="#fafbfc"/>`
-  svg += `<path d="M${winX + 1} ${statusY + 33}h${winW - 2}v-14a14 14 0 0 0-14-14H${winX + 15}a14 14 0 0 0-14 14z" fill="#fafbfc"/>`
-  svg += `<rect x="${winX + 1}" y="${statusY}" width="${winW - 2}" height="1" fill="#e7e9ee"/>`
+  svg += `<rect x="${winX}" y="${statusY}" width="${winW}" height="34" fill="#fafbfc"/>`
+  svg += `<rect x="${winX}" y="${statusY}" width="${winW}" height="1" fill="#e7e9ee"/>`
   svg += text({ x: contentX, y: statusY + 21, size: 11.5, fill: '#8a93a3', content: 'Все изменения сохранены' })
   svg += circleAvatar(winX + winW - 120, statusY + 17, '#c7d2fe', '#4338ca', 'АС', 11)
   svg += circleAvatar(winX + winW - 98, statusY + 17, '#bbf7d0', '#15803d', 'МК', 11)
   svg += text({ x: winX + winW - 80, y: statusY + 21, size: 11.5, fill: '#8a93a3', content: '+3' })
+  svg += `</g>`
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
 <defs>
@@ -282,6 +293,12 @@ export function demoSceneSvg(): string {
     <stop offset="0" stop-color="#8b5cf6" stop-opacity="0.3"/>
     <stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/>
   </radialGradient>
+  <!-- The window is drawn inside this, so the title bar and the status bar need
+       no corner paths of their own and the caption buttons can run into the
+       rounded corner exactly as they do in a real Windows window. -->
+  <clipPath id="win">
+    <rect x="${winX}" y="${winY}" width="${winW}" height="${winH}" rx="14"/>
+  </clipPath>
 </defs>
 <rect width="${W}" height="${H}" fill="url(#wall)"/>
 <circle cx="1080" cy="80" r="420" fill="url(#glowA)"/>

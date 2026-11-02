@@ -388,7 +388,13 @@ async function main() {
 
   const init = {
     display: DISPLAY,
-    settings: defaults,
+    // `edit`, not the shipping default `copy`: with `copy` the mouse coming up
+    // sends the overlay straight to the result stage, and the first shot — the
+    // one that has to show the selection with its toolbars — would be taken of a
+    // window that had already left that state. The shot is of the moment the
+    // region is still being adjusted, so the settings are the ones that keep it
+    // there.
+    settings: { ...defaults, afterRegion: 'edit' },
     hotkey: 'CommandOrControl+Shift+S'
   }
 
@@ -574,7 +580,10 @@ async function main() {
               imageHeight: UNION.height,
               monitors
             },
-            settings: defaults,
+            // Same reason as the first shot: the picture has to show the
+            // selection crossing the seam, so the release must not send the
+            // overlay to the result stage.
+            settings: { ...defaults, afterRegion: 'edit' },
             hotkey: 'CommandOrControl+Shift+S'
           },
           settings: defaults,

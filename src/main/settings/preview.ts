@@ -3,37 +3,53 @@ import type { ScreenshotSettings } from '../../shared/types'
 import { PREVIEW_DEFAULT_WIDTH, clampPreviewWidth } from '../../shared/preview'
 import { composeOptionsFromSettings, composePreview } from '../imaging/compose'
 
+/**
+ * The picture the settings preview is built on top of.
+ *
+ * It has to look like something a Windows user would actually have on screen,
+ * because the point of the preview is «this is what your screenshot will look
+ * like». An earlier version was a macOS window — three coloured circles in the
+ * corner and SF blue everywhere — which meant the preview of a Windows program's
+ * output showed a foreign desktop. This one is a Windows window: a flat title bar
+ * with the title on the left and three boxed caption buttons on the right, and
+ * the accent colour Windows uses.
+ */
 const MOCK_SCREENSHOT = `
 <svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
   <defs>
     <linearGradient id="wall" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#1F2937"/>
-      <stop offset="0.5" stop-color="#312E81"/>
+      <stop offset="0.5" stop-color="#243B55"/>
       <stop offset="1" stop-color="#0F172A"/>
     </linearGradient>
     <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#FFFFFF"/>
-      <stop offset="1" stop-color="#F2F2F7"/>
+      <stop offset="1" stop-color="#F7F8FA"/>
     </linearGradient>
+    <clipPath id="win">
+      <rect x="270" y="190" width="900" height="520" rx="10"/>
+    </clipPath>
   </defs>
   <rect width="1440" height="900" fill="url(#wall)"/>
-  <circle cx="1180" cy="140" r="220" fill="#5E5CE6" opacity="0.28"/>
-  <circle cx="240" cy="780" r="260" fill="#0A84FF" opacity="0.22"/>
-  <g>
-    <rect x="270" y="190" width="900" height="520" rx="18" fill="url(#card)"/>
-    <rect x="270" y="190" width="900" height="46" rx="18" fill="#E9E9EF"/>
-    <rect x="270" y="222" width="900" height="14" fill="#E9E9EF"/>
-    <circle cx="302" cy="213" r="7" fill="#FF5F57"/>
-    <circle cx="326" cy="213" r="7" fill="#FEBC2E"/>
-    <circle cx="350" cy="213" r="7" fill="#28C840"/>
-    <rect x="310" y="286" width="270" height="20" rx="10" fill="#1D1D1F" opacity="0.82"/>
-    <rect x="310" y="330" width="420" height="11" rx="5.5" fill="#1D1D1F" opacity="0.28"/>
-    <rect x="310" y="356" width="380" height="11" rx="5.5" fill="#1D1D1F" opacity="0.2"/>
-    <rect x="310" y="382" width="440" height="11" rx="5.5" fill="#1D1D1F" opacity="0.16"/>
-    <rect x="310" y="446" width="180" height="40" rx="10" fill="#0A84FF"/>
-    <rect x="512" y="446" width="150" height="40" rx="10" fill="#0A84FF" opacity="0.14"/>
-    <rect x="800" y="286" width="330" height="200" rx="14" fill="#0A84FF" opacity="0.12"/>
-    <rect x="800" y="516" width="330" height="120" rx="14" fill="#34C759" opacity="0.14"/>
+  <circle cx="1180" cy="140" r="220" fill="#0078D4" opacity="0.26"/>
+  <circle cx="240" cy="780" r="260" fill="#2B88D8" opacity="0.2"/>
+  <g clip-path="url(#win)">
+    <rect x="270" y="190" width="900" height="520" fill="url(#card)"/>
+    <rect x="270" y="190" width="900" height="42" fill="#F3F3F3"/>
+    <rect x="270" y="231" width="900" height="1" fill="#E5E5E5"/>
+    <rect x="286" y="203" width="14" height="14" rx="3" fill="#0078D4"/>
+    <rect x="310" y="208" width="150" height="6" rx="3" fill="#3F4451" opacity="0.75"/>
+    <rect x="1020" y="211" width="10" height="1" fill="#4B5563"/>
+    <rect x="1066" y="206.5" width="9" height="9" fill="none" stroke="#4B5563" stroke-width="1"/>
+    <path d="M1113 206l10 10M1123 206l-10 10" stroke="#4B5563" stroke-width="1" fill="none"/>
+    <rect x="310" y="286" width="270" height="20" rx="4" fill="#1D1D1F" opacity="0.82"/>
+    <rect x="310" y="330" width="420" height="11" rx="2" fill="#1D1D1F" opacity="0.28"/>
+    <rect x="310" y="356" width="380" height="11" rx="2" fill="#1D1D1F" opacity="0.2"/>
+    <rect x="310" y="382" width="440" height="11" rx="2" fill="#1D1D1F" opacity="0.16"/>
+    <rect x="310" y="446" width="180" height="40" rx="4" fill="#0078D4"/>
+    <rect x="512" y="446" width="150" height="40" rx="4" fill="#0078D4" opacity="0.14"/>
+    <rect x="800" y="286" width="330" height="200" rx="6" fill="#0078D4" opacity="0.12"/>
+    <rect x="800" y="516" width="330" height="120" rx="6" fill="#107C10" opacity="0.14"/>
   </g>
 </svg>`
 

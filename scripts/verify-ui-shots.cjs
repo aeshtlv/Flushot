@@ -460,7 +460,12 @@ async function main() {
     await browser.send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 720, deviceScaleFactor: 2, mobile: false })
     await browser.send('Page.addScriptToEvaluateOnNewDocument', {
       source: stubSource({
-        init: { display: DISPLAY, settings: defaults, hotkey: 'CommandOrControl+Shift+S' },
+        // `edit`, not the shipping default `copy`. The checks below inspect the
+        // selection: eight handles, the size badge, the confirm bar. With `copy`
+        // the mouse coming up sends the overlay to the result stage and blanks
+        // it, so every one of those checks reports "missing" — which says
+        // nothing about the UI and everything about the setting.
+        init: { display: DISPLAY, settings: { ...defaults, afterRegion: 'edit' }, hotkey: 'CommandOrControl+Shift+S' },
         settings: defaults,
         capture,
         card,
@@ -1267,7 +1272,7 @@ async function main() {
               imageHeight: UNION.height,
               monitors
             },
-            settings: defaults,
+            settings: { ...defaults, afterRegion: 'edit' },
             hotkey: 'CommandOrControl+Shift+S'
           },
           settings: defaults,

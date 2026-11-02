@@ -465,6 +465,9 @@ a.link:hover {
   color: var(--fg);
 }
 
+/* A square button like the menu one beside it, not a pill: the pill read as a
+   switch and switched nothing — it had no track and no knob, so the only thing
+   the shape promised was a state it did not have. */
 .theme-toggle {
   display: grid;
   place-items: center;
@@ -473,7 +476,7 @@ a.link:hover {
   margin-left: 4px;
   color: var(--fg-muted);
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   transition: color 0.18s, border-color 0.18s, background 0.18s;
 }
 
@@ -486,6 +489,22 @@ a.link:hover {
 .theme-toggle svg {
   width: 16px;
   height: 16px;
+}
+
+/* One icon at a time: the button shows the theme it switches *to*, a sun while
+   the page is dark and a moon while it is light. Both icons used to be in the
+   flow at once, so the button drew a sun and a moon stacked in its 36 px box and
+   the lower one hung outside the border. */
+.theme-toggle .icon-moon {
+  display: none;
+}
+
+:root[data-theme='light'] .theme-toggle .icon-sun {
+  display: none;
+}
+
+:root[data-theme='light'] .theme-toggle .icon-moon {
+  display: block;
 }
 
 .nav-toggle {
@@ -1744,13 +1763,45 @@ code {
   letter-spacing: -0.015em;
 }
 
-/* The two-monitor picture sits beside its caption rather than above it. */
+/* The two-monitor picture sits beside its text rather than above it, and the
+   text comes first so its heading starts on the container's left edge — the same
+   edge as the section title above it. With the picture first the heading began
+   400 px in, which read as an accident of the grid rather than a decision.
+
+   The block is narrower than the section on purpose: the picture is portrait
+   (840×945), so a text column stretched to the full 1176 px would leave a
+   couple of hundred pixels of nothing between the two. The columns are sized so
+   the text fills its side, and the whole row is centred against a picture of
+   roughly the same height. */
 .monitors {
   display: grid;
-  grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
-  gap: 32px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 400px);
+  gap: 48px;
   align-items: center;
-  margin-top: 16px;
+  max-width: 1010px;
+  margin-top: 28px;
+}
+
+.monitors__body {
+  max-width: 560px;
+}
+
+.monitors__title {
+  margin: 10px 0 12px;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.monitors__lead {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--fg-muted);
+}
+
+.monitors__notes {
+  margin-top: 20px;
 }
 
 .shot {
@@ -2287,8 +2338,18 @@ code {
     gap: 20px;
   }
 
+  /* One column: the picture goes back above its text, where a screenshot
+     introduces what the text is about instead of trailing it. */
   .monitors {
     max-width: 460px;
+  }
+
+  .monitors .shot {
+    order: -1;
+  }
+
+  .monitors__body {
+    max-width: none;
   }
 }
 

@@ -288,7 +288,7 @@ function bandMock({ top, bottom, frame, width, centreX }) {
 }
 
 /** A mock application window, drawn rather than captured. */
-function mockWindow({ x, y, width, frame = 22, radius = 18, aspect = 0.615 }) {
+function mockWindow({ x, y, width, frame = 22, radius = 10, aspect = 0.615 }) {
   const innerW = width - frame * 2
   const innerH = Math.round(innerW * aspect)
   const totalH = innerH + frame * 2
@@ -302,13 +302,36 @@ function mockWindow({ x, y, width, frame = 22, radius = 18, aspect = 0.615 }) {
   let svg = shadow({ x, y, width, height: totalH, radius })
   svg += `<rect x="${x}" y="${y}" width="${width}" height="${totalH}" rx="${radius}" fill="#FFFFFF"/>\n`
   svg += `<rect x="${x + frame}" y="${top}" width="${innerW}" height="${innerH}" rx="${Math.max(2, radius - 6)}" fill="#F7F8FB"/>\n`
-  svg += `<rect x="${x + frame}" y="${top}" width="${innerW}" height="${bar}" rx="${Math.max(2, radius - 6)}" fill="#ECEEF4"/>\n`
-  svg += `<rect x="${x + frame}" y="${top + bar - 8}" width="${innerW}" height="8" fill="#ECEEF4"/>\n`
-  const dot = Math.max(3, Math.round(bar * 0.17))
-  const dotY = top + Math.round(bar / 2)
-  ;['#FF5F57', '#FEBC2E', '#28C840'].forEach((color, index) => {
-    svg += `<circle cx="${x + frame + Math.round(bar * 0.42) + index * dot * 3.1}" cy="${dotY}" r="${dot}" fill="${color}"/>\n`
-  })
+  svg += `<rect x="${x + frame}" y="${top}" width="${innerW}" height="${bar}" rx="${Math.max(2, radius - 6)}" fill="#F3F3F3"/>\n`
+  svg += `<rect x="${x + frame}" y="${top + bar - 8}" width="${innerW}" height="8" fill="#F3F3F3"/>\n`
+
+  // A Windows title bar: the app mark on the left, and minimize / maximize /
+  // close drawn as glyphs on the right. The three coloured circles that used to
+  // sit here were the macOS window controls, which is not the window this
+  // program draws.
+  const mark = Math.max(6, Math.round(bar * 0.42))
+  svg += `<rect x="${x + frame + Math.round(bar * 0.42)}" y="${top + Math.round((bar - mark) / 2)}" width="${mark}" height="${mark}" rx="2" fill="${C.accent}"/>\n`
+
+  const stroke = Math.max(1, Math.round(bar * 0.05))
+  const glyphW = Math.max(4, Math.round(bar * 0.28))
+  const glyphH = Math.max(3, Math.round(bar * 0.22))
+  const glyphY = top + Math.round(bar / 2)
+  const buttonW = Math.round(bar * 0.9)
+  const barRight = x + frame + innerW - Math.round(bar * 0.25)
+  for (let index = 0; index < 3; index += 1) {
+    const cx = barRight - buttonW * (3 - index) + Math.round(buttonW / 2)
+    const left = cx - Math.round(glyphW / 2)
+    if (index === 0) {
+      svg += `<rect x="${left}" y="${glyphY}" width="${glyphW}" height="${stroke}" fill="#5B6070"/>\n`
+    } else if (index === 1) {
+      svg += `<rect x="${left}" y="${glyphY - Math.round(glyphH / 2)}" width="${glyphW}" height="${glyphH}" fill="none" stroke="#5B6070" stroke-width="${stroke}"/>\n`
+    } else {
+      const top2 = glyphY - Math.round(glyphH / 2)
+      const bottom2 = glyphY + Math.round(glyphH / 2)
+      const right = left + glyphW
+      svg += `<path d="M${left} ${top2}L${right} ${bottom2}M${right} ${top2}L${left} ${bottom2}" stroke="#5B6070" stroke-width="${stroke}" fill="none"/>\n`
+    }
+  }
 
   const sideX = x + frame
   const sideY = top + bar
