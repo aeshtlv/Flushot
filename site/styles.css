@@ -1,5 +1,5 @@
 /* ============================================================================
-   Flushot — site styles
+   Flushot вЂ” site styles
    ----------------------------------------------------------------------------
    Visual language: near-black surface, one accent, mono for anything the
    machine says (filenames, shortcuts, versions) and a geometric sans for
@@ -7,10 +7,10 @@
    Dark is the default; the light theme is the same scale inverted.
 
    Fonts are self-hosted (fonts/), so the page still renders identically
-   offline and from file:// — no CDN, no network, no tracking.
+   offline and from file:// вЂ” no CDN, no network, no tracking.
    ========================================================================== */
 
-/* Fonts live in fonts.css, inlined as data: URLs — a font loaded from file://
+/* Fonts live in fonts.css, inlined as data: URLs вЂ” a font loaded from file://
    is blocked by CORS, so a linked file silently falls back to a system face
    when the page is opened by double-click. See scripts/build-fonts.cjs. */
 /* ----------------------------------------------------------------- tokens */
@@ -45,10 +45,10 @@
      rhythm. A single even mesh looks deliberate; a nearly-even one looks like a
      mistake.
 
-     The mesh is a 48 × 48 tile with both lines in it. Two separate gradient
+     The mesh is a 48 Г— 48 tile with both lines in it. Two separate gradient
      layers would be the obvious way to write it, but where they cross the
      browser composites their alpha twice (0.12 over 0.12 lands at 0.23), so
-     every intersection came out twice as bright as the lines that form it — a
+     every intersection came out twice as bright as the lines that form it вЂ” a
      lattice of dots. The vertical stroke starts at y = 1 rather than y = 0 for
      the same reason: inside one path the corner pixel would still be painted
      twice. The two strokes now meet without ever overlapping, so every pixel of
@@ -446,7 +446,7 @@ a.link:hover {
   border-radius: var(--radius-sm);
 }
 
-/* The header "Скачать" button must stay white on the accent fill; the generic
+/* The header "РЎРєР°С‡Р°С‚СЊ" button must stay white on the accent fill; the generic
    .nav-link rule would otherwise win on specificity and leave it invisible. */
 .nav-right .nav-cta {
   padding: 8px 14px;
@@ -467,8 +467,8 @@ a.link:hover {
  *
  * The "screenshot" is a real crop of a real element, not a picture: the scene is
  * a small document built in HTML, and the result is a clone of it inside an
- * overflow:hidden box offset by the drag. That keeps the demo honest — what you
- * see in the card is what you selected — and it costs no extra bytes.
+ * overflow:hidden box offset by the drag. That keeps the demo honest вЂ” what you
+ * see in the card is what you selected вЂ” and it costs no extra bytes.
  */
 
 .section--try {
@@ -667,7 +667,7 @@ a.link:hover {
 }
 
 /* A finger is not a mouse: the hint and the keyboard shortcut change with the
-   input device, because «проведите мышью» on a phone is simply wrong. */
+   input device, because В«РїСЂРѕРІРµРґРёС‚Рµ РјС‹С€СЊСЋВ» on a phone is simply wrong. */
 .try__hint-coarse {
   display: none;
 }
@@ -829,7 +829,7 @@ a.link:hover {
 
 /* The paste step. The card was already in the clipboard in the real program, so
    this is the only part of the demo that is a re-enactment rather than a
-   measurement — which is why it takes a click instead of happening by itself. */
+   measurement вЂ” which is why it takes a click instead of happening by itself. */
 .try__msg {
   display: flex;
   gap: 10px;
@@ -940,7 +940,7 @@ code {
 
 /* An accent halo behind the grid. It is what makes the grid look lit rather
    than printed: the lines cross a surface that has a light source. Breathes
-   very slowly — 18 seconds is long enough to be felt, not watched. */
+   very slowly вЂ” 18 seconds is long enough to be felt, not watched. */
 .hero::before {
   content: '';
   position: absolute;
@@ -1007,7 +1007,7 @@ code {
 }
 
 /* One quiet line under the buttons: what the download costs and what it does
-   not do. Kept as a sentence rather than a table — the numbers live in the
+   not do. Kept as a sentence rather than a table вЂ” the numbers live in the
    download section, where a reader who wants them is already looking. */
 .hero__note {
   display: inline-flex;
@@ -1036,20 +1036,29 @@ code {
 /* The card leans towards the pointer. Two degrees is the whole effect: enough
    that the frame feels like a physical object on the page, not enough to bend
    the screenshot inside it. --tilt-x / --tilt-y are written by app.js only for
-   a fine pointer, so a touch screen keeps the flat rest state. */
+   a fine pointer, so a touch screen keeps the flat rest state.
+
+   The rotation lives on the frame and not on .hero__preview: the wrapper carries
+   data-rise, and an animation on transform outranks a plain declaration вЂ” a tilt
+   written there would be overwritten by the entrance animation and never paint. */
 .hero__preview {
   max-width: 1120px;
   margin: 0 auto;
-  transform: perspective(2000px) rotateX(calc(2deg + var(--tilt-x, 0deg))) rotateY(var(--tilt-y, 0deg));
-  transform-style: preserve-3d;
-  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.hero__preview:hover {
-  transform: perspective(2000px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+.hero__frame {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-hero);
+  transform: perspective(2000px) rotateX(calc(2deg + var(--tilt-x, 0deg))) rotateY(var(--tilt-y, 0deg));
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.45s;
 }
 
 .hero__preview:hover .hero__frame {
+  transform: perspective(2000px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
   box-shadow: var(--shadow-hero), 0 0 0 1px var(--border-strong);
 }
 
@@ -1071,15 +1080,6 @@ code {
 
 .hero__preview:hover .hero__frame::after {
   opacity: 1;
-}
-
-.hero__frame {
-  position: relative;
-  overflow: hidden;
-  background: var(--bg-elev);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-hero);
 }
 
 .hero__frame img {
@@ -1133,7 +1133,7 @@ code {
 }
 
 /* ------------------------------------------------------------- feature grid
-   One bordered block subdivided by hairlines — no gaps, no per-card borders.
+   One bordered block subdivided by hairlines вЂ” no gaps, no per-card borders.
    Reads as a single object rather than six. */
 
 .feature-grid {
@@ -1829,7 +1829,7 @@ code {
 
 /* Body links inherit the colour and carry no underline by default, which is right
    for navigation and wrong for a link inside a sentence: it reads as a word.
-   Scoped to the places a sentence can hold a link — never to `.btn`, whose colours
+   Scoped to the places a sentence can hold a link вЂ” never to `.btn`, whose colours
    are the button's own. */
 .limit a,
 .faq a,
@@ -1976,7 +1976,7 @@ code {
    surface coming into focus, which a plain fade does not.
 
    `scale` is animated as its own property, not inside `transform`, so that the
-   parallax in app.js can keep writing `transform` on the same element — an
+   parallax in app.js can keep writing `transform` on the same element вЂ” an
    animation with `fill-mode: both` would otherwise win over the inline style
    for as long as the page is open. */
 @keyframes grid-in {
@@ -2009,7 +2009,7 @@ code {
 }
 
 /* Scroll reveal. Both classes are put there by app.js and never written into the
-   markup: with the script off — or if it fails to load — the page is a plain
+   markup: with the script off вЂ” or if it fails to load вЂ” the page is a plain
    document with nothing hidden and nothing to animate.
 
    An animation rather than a transition, because these blocks already use
@@ -2128,8 +2128,8 @@ code {
     grid-column: 2;
   }
 
-  .hero__preview,
-  .hero__preview:hover {
+  .hero__frame,
+  .hero__preview:hover .hero__frame {
     transform: none;
   }
 
@@ -2256,7 +2256,7 @@ code {
 
   /* One column: every cell keeps its separator except the very last one, which
      the grid's own border closes. The two-column rule above removes the border
-     from the last two cells, which is wrong here — so it is undone first. */
+     from the last two cells, which is wrong here вЂ” so it is undone first. */
   .feature:nth-last-child(-n + 2) {
     border-bottom: 1px solid var(--border);
   }
@@ -2298,9 +2298,9 @@ code {
   }
 }
 
-/* Short windows: a laptop at 1366 × 768 loses about 140 px to browser chrome, so
-   the viewport is roughly 625 px tall, and there the screenshot of the program —
-   the only real proof on the page that this is a finished desktop application —
+/* Short windows: a laptop at 1366 Г— 768 loses about 140 px to browser chrome, so
+   the viewport is roughly 625 px tall, and there the screenshot of the program вЂ”
+   the only real proof on the page that this is a finished desktop application вЂ”
    sits below the fold. Under 820 px of viewport height the hero tightens: smaller
    heading, tighter spacing. The threshold sits in the gap between 800 and 900 px,
    the two window heights people actually use, so the switch never happens on a
@@ -2355,8 +2355,8 @@ code {
     animation: none;
   }
 
-  .hero__preview,
-  .hero__preview:hover {
+  .hero__frame,
+  .hero__preview:hover .hero__frame {
     transform: none;
     transition: none;
   }
