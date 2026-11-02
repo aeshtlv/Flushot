@@ -1,11 +1,11 @@
 # Flushot
 
-A screenshot tool for Windows. Select a region and get a finished picture in a neat frame with a soft
-shadow and rounded corners, at full resolution. Windows 10 and 11, x64.
+A screenshot tool for Windows. Select a region and the picture is already on the clipboard, ready to
+paste, in a neat frame with a soft shadow and rounded corners, at full resolution. Windows 10 and 11, x64.
 
 [![CI](https://github.com/aeshtlv/Flushot/actions/workflows/ci.yml/badge.svg)](https://github.com/aeshtlv/Flushot/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-4c8bf5)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.2.8-4c8bf5)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.3.0-4c8bf5)](CHANGELOG.md)
 
 <p align="center">
   <img src="logo/logo.png" alt="Flushot" width="112">
@@ -17,17 +17,22 @@ shadow and rounded corners, at full resolution. Windows 10 and 11, x64.
 
 ## Features
 
+- **Select, release, paste.** Letting go of the mouse button copies the finished picture to the
+  clipboard and closes the overlay, so `Ctrl+V` is the only key left to press. `Ctrl+C` is not needed.
 - **Any region.** The result is your selection plus a frame, so any size works: 300×270 or 3840×2160.
   Pixels are copied one to one; nothing is stretched.
 - **Framing.** Frame width 0–200 px on all four sides, colour of your choice, rounded corners, a soft
   shadow with adjustable intensity and radius — or a clean screenshot with no border.
 - **Annotations.** Arrow, line, rectangle, freehand, text with word wrapping, numbered steps, blur and
-  pixelate. Finished annotations can be moved.
+  pixelate. Finished annotations can be moved. Holding `Shift` while releasing the mouse opens the
+  picture for annotating instead of copying it.
 - **Text recognition.** The "Text" button reads the screenshot or a selected fragment with the built-in
   Windows OCR engine: offline, nothing downloaded, the image never leaves the machine. The recognised
   text is editable in the panel.
-- **Copy and save.** `Ctrl+C` straight to the clipboard, even mid-selection. `Ctrl+S` to a file.
-  Optional auto-save, filenames like `screenshot_2026-10-17_14-30-25.png`, PNG, JPEG and WebP.
+- **Copy and save.** `Ctrl+C` to the clipboard at any moment, including mid-selection. `Ctrl+S` to a
+  file. Optional auto-save — the file is still written after an automatic copy, placed after the
+  clipboard and never delaying the paste. Filenames like `screenshot_2026-10-17_14-30-25.png`,
+  PNG, JPEG and WebP.
 - **Monitors and DPI.** The selection crosses monitor boundaries and the result is stitched at native
   resolution. Correct at Windows scaling 100, 125, 150 and 200 %.
 - **Tray and hotkeys.** Separate hotkeys for a region and for the whole screen, run at login, tray icon
@@ -40,9 +45,9 @@ all three; only the installation method differs.
 
 | File | Description |
 |---|---|
-| **[Flushot-2.2.8-win64.zip](../../releases/latest/download/Flushot-2.2.8-win64.zip)** | 161 MB. Unpack anywhere and run `Flushot.exe`. Does not need a writable `%TEMP%` — recommended |
-| [Flushot-2.2.8-installer.zip](../../releases/latest/download/Flushot-2.2.8-installer.zip) | 113 MB. NSIS installer: Start menu shortcuts, install location, uninstaller |
-| [Flushot-2.2.8-portable.zip](../../releases/latest/download/Flushot-2.2.8-portable.zip) | 113 MB. Portable single file, no installation |
+| **[Flushot-2.3.0-win64.zip](../../releases/latest/download/Flushot-2.3.0-win64.zip)** | 161 MB. Unpack anywhere and run `Flushot.exe`. Does not need a writable `%TEMP%` — recommended |
+| [Flushot-2.3.0-installer.zip](../../releases/latest/download/Flushot-2.3.0-installer.zip) | 113 MB. NSIS installer: Start menu shortcuts, install location, uninstaller |
+| [Flushot-2.3.0-portable.zip](../../releases/latest/download/Flushot-2.3.0-portable.zip) | 113 MB. Portable single file, no installation |
 
 The binaries are not code-signed, so SmartScreen warns on first launch: **More info → Run anyway**.
 That is standard behaviour for an unsigned executable.
@@ -62,7 +67,7 @@ npm run dev
 
 ```bash
 npm run typecheck    # tsc for main and renderer
-npm test             # 351 tests in 23 files
+npm test             # 360 tests in 24 files
 npm run build        # production build in out/
 npm run dist         # installer and portable build in release/
 npm run self-test    # end-to-end check on a live system
@@ -74,7 +79,9 @@ npm run self-test    # end-to-end check on a live system
 |---|---|
 | `Ctrl+Shift+S` | start selecting a region |
 | `Ctrl+Shift+3` | capture the whole screen |
-| `Enter` | confirm the selection |
+| release the mouse | the picture is already on the clipboard |
+| `Shift` on release | open the picture for annotating instead of copying |
+| `Enter` | confirm the selection and open the picture |
 | `Ctrl+C` | copy to the clipboard without a preview |
 | `Ctrl+S` | save the result |
 | `Ctrl+Z` | undo the last annotation |
@@ -82,6 +89,9 @@ npm run self-test    # end-to-end check on a live system
 | `Shift` while drawing a line | snap to 0°, 45° or 90° |
 
 Both capture hotkeys are configurable, including a single key without modifiers.
+
+Copying on release can be turned off: settings → "Снимок" → "После выделения" → "Открывать".
+Releasing the mouse then shows the annotation bar and `Ctrl+C` copies, as it did before.
 
 ## Limitations
 

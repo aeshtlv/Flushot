@@ -170,12 +170,12 @@ const PAGE = `<!DOCTYPE html>
     <div class="brand">
       <span class="mark">${logoMark(30)}</span>
       <span class="name">Flushot</span>
-      <span class="ver">2.2.8</span>
+      <span class="ver">2.3.0</span>
     </div>
   </div>
 
-  <h1 class="title">Скриншот,<br>готовый<br>к публикации</h1>
-  <p class="sub">Рамка, тень и скругления — сразу. Windows 10 и 11, бесплатно.</p>
+  <h1 class="title">Выделил.<br>Отпустил.<br>Вставил.</h1>
+  <p class="sub">Снимок уже в буфере, в рамке с тенью и скруглениями. Windows 10 и 11, бесплатно.</p>
 
   <div class="foot">
     <span>PNG</span><span class="dot"></span><span>JPEG</span><span class="dot"></span><span>без потерь</span>

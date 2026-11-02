@@ -29,7 +29,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=980e5cca">
 <link rel="manifest" href="site.webmanifest?v=06f0995b">
 <link rel="stylesheet" href="fonts.css?v=0b21389f">
-<link rel="stylesheet" href="styles.css?v=8ecff7f0">
+<link rel="stylesheet" href="styles.css?v=79581812">
 <link rel="preload" as="image" href="assets/hero.webp?v=8e6805fc" type="image/webp">
 
 <script>
@@ -59,7 +59,7 @@
            22 px, and declaring the intrinsic size keeps the aspect ratio honest. -->
       <img class="brand__mark" src="favicon.svg?v=a7643679" width="200" height="200" alt="" aria-hidden="true">
       <span class="brand__name">Flushot</span>
-      <span class="brand__ver">2.2.8</span>
+      <span class="brand__ver">2.3.0</span>
     </a>
 
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav" aria-label="Меню">
@@ -94,15 +94,16 @@
   <section class="hero" id="top">
     <div class="hero__grid" aria-hidden="true"></div>
     <div class="wrap hero__inner">
-      <p class="eyebrow" data-rise style="--d: 0.05s">Windows 10 и 11 · версия 2.2.8 · бесплатно</p>
+      <p class="eyebrow" data-rise style="--d: 0.05s">Windows 10 и 11 · версия 2.3.0 · бесплатно</p>
       <h1 class="hero__title" data-rise style="--d: 0.1s">
-        <span>Скриншот</span>
-        <span>за пару секунд</span>
-        <span>и без возни.</span>
+        <span>Выделил.</span>
+        <span>Отпустил.</span>
+        <span>Вставил.</span>
       </h1>
       <p class="hero__sub" data-rise style="--d: 0.16s">
-        Выделили область — снимок уже в рамке, с мягкой тенью и скруглёнными углами.
-        Ровная линия для подчёркивания, снимок всего экрана одной клавишей, PNG без потерь.
+        Между горячей клавишей и <kbd>Ctrl</kbd>+<kbd>V</kbd> больше нет ни одного нажатия: снимок
+        оказывается в буфере обмена в тот момент, когда вы отпустили кнопку мыши. Уже в рамке,
+        с мягкой тенью и скруглёнными углами.
       </p>
       <div class="hero__actions" data-rise style="--d: 0.22s">
         <a class="btn btn--primary btn--lg" href="#download">
@@ -140,6 +141,15 @@
       </div>
 
       <div class="feature-grid">
+        <article class="feature">
+          <div class="feature__mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3" stroke-dasharray="3 3"/><path d="M8 12h8"/><path d="M13 9l3 3-3 3"/></svg>
+          </div>
+          <h3 class="feature__name">Сразу в буфере</h3>
+          <p class="feature__text">Отпустили кнопку мыши — снимок готов к вставке. Ни <kbd>Ctrl</kbd>+<kbd>C</kbd>, ни лишнего окна.</p>
+          <p class="feature__tag">выделил → вставил</p>
+        </article>
+
         <article class="feature">
           <div class="feature__mark" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 17h16"/><circle cx="4" cy="17" r="1.6"/><circle cx="20" cy="17" r="1.6"/></svg>
@@ -187,19 +197,10 @@
 
         <article class="feature">
           <div class="feature__mark" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 15h10"/></svg>
-          </div>
-          <h3 class="feature__name">Кнопки не пропадают</h3>
-          <p class="feature__text">Выделили весь экран — панель с кнопками осталась на виду, искать её по краям не нужно.</p>
-          <p class="feature__tag">даже у края экрана</p>
-        </article>
-
-        <article class="feature">
-          <div class="feature__mark" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 8V4h4M21 8V4h-4M3 16v4h4M21 16v4h-4"/><path d="M9 12h6"/></svg>
           </div>
           <h3 class="feature__name">Живой размер</h3>
-          <p class="feature__text">Размер в пикселях обновляется, пока тянете рамку. Рамку можно двигать целиком и менять за любой край.</p>
+          <p class="feature__text">Размер в пикселях обновляется, пока тянете рамку. Рамку можно двигать целиком, менять за любой край — и панель никогда не уезжает за экран.</p>
           <p class="feature__tag">1280 × 720 px</p>
         </article>
 
@@ -246,7 +247,7 @@
         <div class="pitch">
           <div class="section-head" style="margin-bottom: 0">
             <p class="eyebrow">Как это работает</p>
-            <h2 class="section-title" id="how-title">Три шага, пара секунд</h2>
+            <h2 class="section-title" id="how-title">Два шага, одно вставление</h2>
           </div>
 
           <ol class="pitch__list">
@@ -256,17 +257,13 @@
             </li>
             <li class="pitch__item">
               <span class="pitch__num" aria-hidden="true">2</span>
-              <span><strong>Выделите область.</strong> Размер показан рядом с рамкой и обновляется на ходу. Отпустили мышь — снимок готов.</span>
-            </li>
-            <li class="pitch__item">
-              <span class="pitch__num" aria-hidden="true">3</span>
-              <span><strong><kbd>Ctrl</kbd>+<kbd>C</kbd> или <kbd>Ctrl</kbd>+<kbd>S</kbd>.</strong> Снимок уходит в буфер или в папку — с датой в имени, поэтому ничего не перезаписывается.</span>
+              <span><strong>Отпустите мышь.</strong> Размер показан рядом с рамкой и обновляется на ходу. В момент отпускания снимок уже в буфере обмена — остаётся нажать <kbd>Ctrl</kbd>+<kbd>V</kbd> там, куда его вставляете.</span>
             </li>
           </ol>
 
           <p class="pitch__meta">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
-            PNG без потерь · JPEG и WebP по желанию
+            PNG без потерь · файл в папке · пометки по <kbd>Shift</kbd>
           </p>
         </div>
       </div>
@@ -513,7 +510,7 @@
     <div class="wrap">
       <div class="section-head">
         <p class="eyebrow">Скачать</p>
-        <h2 class="section-title" id="download-title">Версия 2.2.8 для Windows</h2>
+        <h2 class="section-title" id="download-title">Версия 2.3.0 для Windows</h2>
         <p class="section-lead">Три варианта одной и той же сборки. Программа внутри одинаковая — выбирайте по способу установки.</p>
       </div>
 
@@ -525,16 +522,16 @@
           </div>
           <p class="dl-card__text">Распаковать в любую папку и запустить <code>Flushot.exe</code>. Ничего не устанавливается, временная папка Windows не нужна.</p>
           <p class="dl-card__meta"><span>161 МБ</span><span>ZIP</span><span>без установки</span></p>
-          <a class="btn btn--primary" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.2.8-win64.zip">Скачать ZIP</a>
+          <a class="btn btn--primary" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.3.0-win64.zip">Скачать ZIP</a>
         </article>
 
         <article class="dl-card">
           <div class="dl-card__top">
             <h3 class="dl-card__name">Установщик</h3>
           </div>
-          <p class="dl-card__text">Внутри <code>Flushot-2.2.8-x64.exe</code>. Двойной клик, «Установить» — появятся ярлыки в меню «Пуск» и строка удаления.</p>
+          <p class="dl-card__text">Внутри <code>Flushot-2.3.0-x64.exe</code>. Двойной клик, «Установить» — появятся ярлыки в меню «Пуск» и строка удаления.</p>
           <p class="dl-card__meta"><span>113 МБ</span><span>ZIP</span><span>NSIS</span></p>
-          <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.2.8-installer.zip">Скачать ZIP</a>
+          <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.3.0-installer.zip">Скачать ZIP</a>
         </article>
 
         <article class="dl-card">
@@ -543,7 +540,7 @@
           </div>
           <p class="dl-card__text">Один файл без установки. При первом запуске распаковывается во временную папку, поэтому нужен рабочий <code>%TEMP%</code>.</p>
           <p class="dl-card__meta"><span>113 МБ</span><span>ZIP</span><span>один файл</span></p>
-          <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.2.8-portable.zip">Скачать ZIP</a>
+          <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.3.0-portable.zip">Скачать ZIP</a>
         </article>
       </div>
 
@@ -562,6 +559,12 @@
       </div>
 
       <div class="faq">
+        <details open>
+          <summary>Снимок попал в буфер сам. Так и должно быть?</summary>
+          <p>Да, это основной режим. Отпускание кнопки мыши копирует готовую карточку в буфер обмена и закрывает оверлей, поэтому вставлять можно сразу: <kbd>Ctrl</kbd>+<kbd>V</kbd> в чате, письме или документе. Нажимать <kbd>Ctrl</kbd>+<kbd>C</kbd> не нужно.</p>
+          <p>Пометки и сохранение никуда не делись: <kbd>Shift</kbd>, удерживаемый в момент отпускания, открывает снимок в редакторе, и то же самое делает переключатель «После выделения → Открывать» в настройках. Случайное нажатие и область меньше 24 × 24 px не копируются — буфер обмена остаётся прежним.</p>
+        </details>
+
         <details>
           <summary>Windows пишет, что программа небезопасна. Это опасно?</summary>
           <p>Нет. Предупреждение появляется из-за отсутствия цифровой подписи, а не из-за содержимого. Подпись — платный сертификат, который для бесплатной программы не покупают. Нажмите «Подробнее» → «Выполнить всё равно».</p>
@@ -570,7 +573,7 @@
         <details>
           <summary>Куда сохраняются снимки?</summary>
           <p>По умолчанию в <code>Изображения\Flushot</code>. Папку можно сменить в настройках, там же есть кнопка, которая открывает её в проводнике. Имя файла — дата и время, поэтому ничего не перезаписывается.</p>
-          <p>После «Создать» над карточкой появляется подпись «Сохранено · имя файла» — над кнопками, а не поверх них, и всегда на основном мониторе, даже если область выделяли на втором.</p>
+          <p>Файл пишется и тогда, когда снимок ушёл в буфер обмена: запись идёт после копирования и вставку не задерживает.</p>
         </details>
 
         <details>
@@ -675,7 +678,7 @@
           <svg class="btn__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>
           </svg>
-          Скачать Flushot 2.2.8
+          Скачать Flushot 2.3.0
         </a>
         <a class="btn btn--ghost btn--lg" href="#faq">Сначала вопросы</a>
       </div>
@@ -688,7 +691,7 @@
   <div class="footer__inner">
     <div class="footer__brand">
       <img class="brand__mark" src="favicon.svg?v=a7643679" width="200" height="200" alt="" aria-hidden="true">
-      <span>Версия 2.2.8 · Windows 10 и 11 · © 2026 Flushot</span>
+      <span>Версия 2.3.0 · Windows 10 и 11 · © 2026 Flushot</span>
     </div>
     <nav class="footer__links" aria-label="Навигация в подвале">
       <a href="#features">Возможности</a>
@@ -708,7 +711,7 @@
   "name": "Flushot",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Windows 10, Windows 11",
-  "softwareVersion": "2.2.8",
+  "softwareVersion": "2.3.0",
   "description": "Бесплатная программа для скриншотов на Windows: выделение области, рамка с тенью, ровная линия для подчёркивания, снимок всего экрана одной клавишей.",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "RUB" },
   "inLanguage": "ru"

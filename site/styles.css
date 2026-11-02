@@ -666,13 +666,14 @@ code {
   transition: background 0.2s;
 }
 
+/* The right-hand column of the grid ends at the grid's own border, so those
+   cells drop their right border or the line doubles. */
 .feature:nth-child(3n) {
   border-right: 0;
 }
 
-/* The closing edge is the grid's own border, so the cells in the final row must
-   drop theirs or the line doubles. Nine features in three columns make a full
-   final row, so all three of its cells lose the border. */
+/* Same for the closing edge: the last row is full, so all three of its cells drop
+   their bottom border. */
 .feature:nth-last-child(-n + 3) {
   border-bottom: 0;
 }

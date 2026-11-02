@@ -18,7 +18,7 @@ npm run dev
 
 ```bash
 npm run typecheck    # обязателен: tsc для main и renderer
-npm test             # обязателен: 351 тест
+npm test             # обязателен: 360 тестов
 ```
 
 Оба шага прогоняет CI (`.github/workflows/ci.yml`) на Windows. Если правка касается интерфейса,

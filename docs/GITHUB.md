@@ -30,11 +30,13 @@
    - `Flushot-<версия>-installer.zip`
    - `Flushot-<версия>-portable.zip`
 
-Через веб-интерфейс: **Releases → Draft a new release**. Через GitHub CLI:
+Через веб-интерфейс: **Releases → Draft a new release**. Через GitHub CLI — версию
+берём из `package.json`, чтобы команда не разошлась с тем, что собрано:
 
 ```bash
-gh release create v2.2.8 --title "Flushot 2.2.8" --notes-file CHANGELOG.md ^
-  share/Flushot-2.2.8-win64.zip share/Flushot-2.2.8-installer.zip share/Flushot-2.2.8-portable.zip
+V=$(node -p "require('./package.json').version")
+gh release create "v$V" --title "Flushot $V" --notes-file CHANGELOG.md \
+  "share/Flushot-$V-win64.zip" "share/Flushot-$V-installer.zip" "share/Flushot-$V-portable.zip"
 ```
 
 4. Обновить `CHANGELOG.md` и имена архивов в `README.md`, `README.en.md` и `site/index.html`,

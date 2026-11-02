@@ -28,8 +28,8 @@
 
 ```bash
 ssh root@78.17.32.87
-bash /root/deploy-site.sh          # ветка main
-bash /root/deploy-site.sh v2.2.8   # или конкретный тег
+bash /root/deploy-site.sh            # ветка main
+bash /root/deploy-site.sh v2.3.0     # или конкретный тег
 ```
 
 Скрипт и конфиги лежат в репозитории, в папке `deploy/`; на сервере они просто скопированы.
