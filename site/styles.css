@@ -477,7 +477,7 @@ code {
 .hero {
   position: relative;
   overflow: hidden;
-  padding: 64px 0 56px;
+  padding: 72px 0 60px;
 }
 
 /* An accent halo behind the grid. It is what makes the grid look lit rather
@@ -518,7 +518,7 @@ code {
 
 .hero__title {
   max-width: 20ch;
-  margin: 16px auto 20px;
+  margin: 20px auto 22px;
   font-size: clamp(38px, 5.6vw, 74px);
   font-weight: 500;
   line-height: 1.05;
@@ -532,7 +532,7 @@ code {
 
 .hero__sub {
   max-width: 620px;
-  margin: 0 auto 28px;
+  margin: 0 auto 32px;
   font-size: clamp(16px, 1.4vw, 18px);
   line-height: 1.55;
   letter-spacing: -0.005em;
@@ -548,48 +548,31 @@ code {
   margin-bottom: 18px;
 }
 
-/* A specification strip, not a slogan: four numbers a visitor actually asks for
-   before downloading — does it phone home, what format, how much drawing, how
-   big. Laid out as a table so it reads as a spec sheet, which is what it is. The
-   hairline rules are the same ones the feature block uses, so the top of the
-   page and the body of the page speak the same language. */
-.hero__facts {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  max-width: 800px;
-  margin: 26px auto 44px;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-}
-
-.fact {
-  display: flex;
-  /* `column-reverse` puts the value above its label while the markup keeps the
-     order a <dl> requires: term, then description. */
-  flex-direction: column-reverse;
-  gap: 5px;
-  padding: 15px 18px;
-  border-left: 1px solid var(--border);
-}
-
-.fact:first-child {
-  border-left: 0;
-}
-
-.fact dt {
-  font-size: 12px;
-  line-height: 1.4;
+/* One quiet line under the buttons: what the download costs and what it does
+   not do. Kept as a sentence rather than a table — the numbers live in the
+   download section, where a reader who wants them is already looking. */
+.hero__note {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 52px;
+  font-size: 13px;
   color: var(--fg-dim);
 }
 
-.fact dd {
-  margin: 0;
-  font-family: var(--font-mono);
-  font-size: 16px;
-  font-weight: 500;
-  letter-spacing: -0.01em;
+.hero__note a {
+  color: var(--fg-muted);
+  text-decoration: underline;
+  text-decoration-color: var(--fg-faint);
+  text-underline-offset: 3px;
+  transition: color 0.18s, text-decoration-color 0.18s;
+}
+
+.hero__note a:hover {
   color: var(--fg);
-  white-space: nowrap;
+  text-decoration-color: var(--fg);
 }
 
 .hero__preview {
@@ -1200,55 +1183,95 @@ code {
   margin-top: auto;
 }
 
-/* The digest of the exact archive the button above downloads.
-   It is here for one reason: the program is unsigned, so SmartScreen warns about
-   it, and a warning plus no way to check what you received is what an untrusted
-   download looks like. A 64-character hash that wraps is set in the mono face at
-   a size where it can be read and compared character by character. */
-.dl-card__hash {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  font-size: 11px;
-  line-height: 1.5;
-  color: var(--fg-dim);
-}
-
-.dl-card__hash span {
-  flex: none;
-  font-family: var(--font-mono);
-  letter-spacing: 0.04em;
-}
-
-.dl-card__hash code {
-  overflow-wrap: anywhere;
-  font-size: 11px;
-  color: var(--fg-muted);
-}
-
-.dl-checksum-note {
+/* The published checksums, folded away. A reader who wants them opens the
+   summary; everyone else sees a download section instead of three 64-character
+   strings, which in a card next to a button read as a warning rather than a
+   reassurance. */
+.dl-check {
   max-width: 720px;
-  margin-top: 18px;
+  margin-top: 16px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.dl-check > summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+  font-size: 13px;
+  color: var(--fg-muted);
+  cursor: pointer;
+  list-style: none;
+}
+
+.dl-check > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* A marker drawn rather than inherited: the native triangle sits on the baseline
+   and jumps by a pixel between browsers. */
+.dl-check > summary::before {
+  content: '+';
+  flex: none;
+  width: 14px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1;
+  color: var(--fg-dim);
+  text-align: center;
+}
+
+.dl-check[open] > summary::before {
+  content: '\2212';
+}
+
+.dl-check > summary:hover {
+  color: var(--fg);
+}
+
+.dl-check > p {
   font-size: 13px;
   line-height: 1.6;
   color: var(--fg-muted);
 }
 
-.dl-checksum-note code {
+.dl-check > p + p {
+  margin-top: 10px;
+}
+
+.dl-check__list {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.dl-check__list li {
+  display: grid;
+  gap: 2px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--fg-dim);
+}
+
+.dl-check__list code {
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-muted);
+}
+
+.dl-check a,
+.dl-check > p code {
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--fg);
 }
 
-.dl-checksum-note a {
-  color: var(--fg);
+.dl-check a {
   text-decoration: underline;
   text-decoration-color: var(--fg-faint);
   text-underline-offset: 3px;
-}
-
-.dl-checksum-note a:hover {
-  text-decoration-color: var(--fg);
 }
 
 /* What the download needs to work. A requirements block is the least glamorous
@@ -1857,46 +1880,18 @@ code {
     grid-column: 1;
     justify-self: start;
   }
-
-  /* Two by two: four cells across 320 px would break every label onto three
-     lines. The rule between the columns moves with the layout, so the left cell
-     of each row keeps no left border. */
-  .hero__facts {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    margin-bottom: 42px;
-  }
-
-  .fact {
-    padding: 13px 14px;
-  }
-
-  .fact:nth-child(odd) {
-    border-left: 0;
-  }
-
-  /* The closing edge of the strip: cells in the upper row need a rule under
-     them, or the second row reads as part of the first. */
-  .fact:nth-child(-n + 2) {
-    border-bottom: 1px solid var(--border);
-  }
 }
 
 /* Short windows: a laptop at 1366 × 768 loses about 140 px to browser chrome, so
    the viewport is roughly 625 px tall, and there the screenshot of the program —
    the only real proof on the page that this is a finished desktop application —
-   started below the fold entirely. Under 820 px of viewport height the
-   specification strip moves below the preview: a visitor who can see the product
-   can scroll for the numbers, but not the other way round. The threshold sits in
-   the gap between 800 and 900 px, the two window heights people actually use, so
-   the switch never happens on a screen someone recognises. */
+   sits below the fold. Under 820 px of viewport height the hero tightens: smaller
+   heading, tighter spacing. The threshold sits in the gap between 800 and 900 px,
+   the two window heights people actually use, so the switch never happens on a
+   screen someone recognises. */
 @media (min-width: 821px) and (max-height: 820px) {
   .hero {
     padding: 36px 0 40px;
-  }
-
-  .hero__inner {
-    display: flex;
-    flex-direction: column;
   }
 
   .hero__title {
@@ -1909,17 +1904,13 @@ code {
   }
 
   .hero__actions {
-    margin-bottom: 26px;
+    margin-bottom: 14px;
   }
 
-  .hero__preview {
-    order: 1;
+  /* Still above the preview: a note that floats between the screenshot and the
+     next section reads as a stray sentence. Only its bottom margin gives way. */
+  .hero__note {
     margin-bottom: 26px;
-  }
-
-  .hero__facts {
-    order: 2;
-    margin: 0 auto;
   }
 }
 

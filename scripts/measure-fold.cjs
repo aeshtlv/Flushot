@@ -58,7 +58,7 @@ const PROBE = `(() => {
     title: at('.hero__title'),
     sub: at('.hero__sub'),
     actions: at('.hero__actions'),
-    facts: at('.hero__facts'),
+    note: at('.hero__note'),
     preview: at('.hero__preview'),
     features: at('.feature-grid')
   }
@@ -154,7 +154,7 @@ async function main() {
         ['заголовок', m.title],
         ['подзаголовок', m.sub],
         ['кнопки', m.actions],
-        ['таблица фактов', m.facts],
+        ['строка под кнопками', m.note],
         ['снимок программы', m.preview],
         ['возможности', m.features]
       ]) {
