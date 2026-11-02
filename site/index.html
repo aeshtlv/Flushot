@@ -29,7 +29,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=980e5cca">
 <link rel="manifest" href="site.webmanifest?v=06f0995b">
 <link rel="stylesheet" href="fonts.css?v=0b21389f">
-<link rel="stylesheet" href="styles.css?v=1d62bbdf">
+<link rel="stylesheet" href="styles.css?v=f7127da3">
 <link rel="preload" as="image" href="assets/hero.webp?v=8e6805fc" type="image/webp">
 
 <script>
@@ -543,49 +543,10 @@
         </article>
       </div>
 
-      <dl class="dl-spec">
-        <div class="dl-spec__row">
-          <dt>Система</dt>
-          <dd>Windows 10 или 11, 64-разрядная</dd>
-        </div>
-        <div class="dl-spec__row">
-          <dt>Место на диске</dt>
-          <dd>397 МБ после распаковки</dd>
-        </div>
-        <div class="dl-spec__row">
-          <dt>Права</dt>
-          <dd>Права администратора не нужны</dd>
-        </div>
-        <div class="dl-spec__row">
-          <dt>Интернет</dt>
-          <dd>Не нужен: программа никуда не обращается</dd>
-        </div>
-      </dl>
-
       <div class="dl-note">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 9v5"/><path d="M12 17h.01"/><path d="M10.3 3.9L2.4 18a1.9 1.9 0 0 0 1.7 2.9h15.8a1.9 1.9 0 0 0 1.7-2.9L13.7 3.9a1.9 1.9 0 0 0-3.4 0z"/></svg>
         <p><strong>Про синее окно Windows.</strong> При первом запуске SmartScreen покажет «Windows защитила ваш компьютер». Так бывает с любым файлом без платного сертификата разработчика. Нажмите «Подробнее» → «Выполнить всё равно».</p>
       </div>
-
-      <!-- Hidden behind a summary on purpose. A checksum is what a careful reader
-           wants and what a first-time visitor does not: three 64-character strings
-           under the buttons read as a warning. The values are still on the page, so
-           `verify-site.cjs` can hold them against `share/` and fail the build when
-           a rebuilt archive stops matching. -->
-      <details class="dl-check">
-        <summary>Проверить, что файл не подменили</summary>
-        <p>
-          У каждого архива есть контрольная сумма SHA-256. После скачивания её можно сверить
-          командой <code>Get-FileHash Flushot-2.3.0-win64.zip -Algorithm SHA256</code> в PowerShell:
-          если значения совпали, файл дошёл без изменений.
-        </p>
-        <ul class="dl-check__list">
-          <li><span>Папка с программой</span><code>88edf4cfd2e4c5b178e1d9935394170d146bcd71ce691e73ae33d85366810c79</code></li>
-          <li><span>Установщик</span><code>02294e97bc6694bcb76cab67486387ae6ed33383403dcfb3d146837265ef430b</code></li>
-          <li><span>Portable</span><code>79aa56223300a8c86f77c38ebac56bd86c956643e7fd0e505d7bc43658d33fdc</code></li>
-        </ul>
-        <p>Что изменилось в этой версии — в <a href="https://github.com/aeshtlv/Flushot/releases">заметках к выпуску</a>.</p>
-      </details>
     </div>
   </section>
 
