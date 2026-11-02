@@ -356,7 +356,6 @@
     var MIN = 24;
     var drag = null;
     var lastRect = null;
-    var keyboardToken = 0;
 
     var sceneSize = function () {
       return { w: scene.clientWidth, h: scene.clientHeight };
@@ -468,7 +467,6 @@
     };
 
     var resetDemo = function (note) {
-      keyboardToken += 1;
       lastRect = null;
       drag = null;
       slot.replaceChildren();
@@ -517,30 +515,6 @@
     scene.addEventListener('pointercancel', function () {
       drag = null;
       clearSelection();
-    });
-
-    scene.addEventListener('keydown', function (event) {
-      if (event.key === 'Escape') {
-        resetDemo('');
-        return;
-      }
-      if (event.key !== 'Enter' && event.key !== ' ') return;
-      event.preventDefault();
-      // A keyboard has no drag, so the selected region is the entire window —
-      // the one region a visitor can name without moving a pointer, and the one
-      // the program's second shortcut takes as a whole. The overlay is drawn
-      // first and the card appears on top of it, so the keyboard path shows the
-      // same two steps a drag does.
-      var size = sceneSize();
-      var rect = { x: 0, y: 0, w: size.w, h: size.h };
-      var token = ++keyboardToken;
-      demo.classList.add('try--started');
-      paintSelection(rect);
-      window.setTimeout(function () {
-        if (token !== keyboardToken) return;
-        clearSelection();
-        showResult(rect);
-      }, still ? 0 : 420);
     });
 
     if (pasteButton) {

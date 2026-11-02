@@ -613,11 +613,6 @@ a.link:hover {
   -webkit-user-select: none;
 }
 
-.try__scene:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: -3px;
-}
-
 .try__doc {
   height: 100%;
   /* The paper of the document, carried by the document itself rather than by the
@@ -947,12 +942,6 @@ a.link:hover {
 .try__idle-text {
   font-size: 13px;
   line-height: 1.55;
-  color: var(--fg-dim);
-}
-
-.try__idle-hint {
-  margin-top: 2px;
-  font-size: 12px;
   color: var(--fg-dim);
 }
 

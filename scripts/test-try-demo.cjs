@@ -303,24 +303,33 @@ async function main() {
   await evaluate(`document.querySelector('[data-try-reset]').click()`)
   await sleep(250)
 
-  await evaluate(`document.querySelector('[data-try-scene]').focus()`)
-  const scenePx = await evaluate(`(() => {
-    const s = document.querySelector('[data-try-scene]');
-    return { w: s.clientWidth, h: s.clientHeight };
+  // The window is a pointer target and nothing else. It used to answer Enter,
+  // but a click on it calls preventDefault on pointerdown — which is what keeps
+  // the browser from starting a text selection inside the fake document — so
+  // the element never took focus and the keydown listener never fired. The
+  // shortcut only worked after a Tab, so the hint promising it was removed
+  // along with the listener. This check keeps a promise from coming back
+  // without a working path behind it.
+  const keyboard = await evaluate(`(() => {
+    const idle = document.querySelector('[data-try-idle]');
+    const scene = document.querySelector('[data-try-scene]');
+    return {
+      kbds: idle.querySelectorAll('kbd').length,
+      mentionsEnter: /Enter/i.test(document.querySelector('[data-try]').textContent),
+      tabStop: scene.hasAttribute('tabindex'),
+      role: scene.getAttribute('role') || ''
+    };
   })()`)
-  await send('Input.dispatchKeyEvent', { type: 'keyDown', windowsVirtualKeyCode: 13, code: 'Enter', key: 'Enter', text: '\r' })
-  await send('Input.dispatchKeyEvent', { type: 'keyUp', windowsVirtualKeyCode: 13, code: 'Enter', key: 'Enter' })
-  // The overlay is drawn first and the card lands on top of it, so the keyboard
-  // path takes as long as a drag does instead of snapping.
-  await sleep(800)
-  const keyed = await state()
-  record('Enter makes a card for a keyboard user', keyed.hasCard, true)
-  record('Enter selects the whole window', keyed.dims, `${scenePx.w} × ${scenePx.h} px`)
+  record('the empty panel promises no key', keyboard.kbds, 0)
+  record('the demo never mentions Enter', keyboard.mentionsEnter, false)
+  record('the window is not a tab stop', keyboard.tabStop, false)
+  record('and has no application role', keyboard.role, '')
 
-  await send('Input.dispatchKeyEvent', { type: 'keyDown', windowsVirtualKeyCode: 27, code: 'Escape', key: 'Escape' })
-  await send('Input.dispatchKeyEvent', { type: 'keyUp', windowsVirtualKeyCode: 27, code: 'Escape', key: 'Escape' })
+  // Pressing Enter anywhere in the demo must leave it where it was, rather than
+  // half-working: that is the state the reader complained about.
+  await evaluate(`document.querySelector('[data-try-scene]').dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))`)
   await sleep(300)
-  record('Escape clears the demo', (await state()).hasCard, false)
+  record('Enter in the demo makes no card', (await state()).hasCard, false)
 
   // ------------------------------------------------------------- overflow
   const overflow = await evaluate(`(() => {
@@ -344,7 +353,7 @@ async function main() {
     for (const problem of problems) console.error(`  · ${problem}`)
     process.exit(1)
   }
-  console.log('The demo behaves: drag, minimum, paste, reset, keyboard.')
+  console.log('The demo behaves: drag, minimum, paste, reset, and no dead keys.')
 }
 
 main().catch((error) => {
