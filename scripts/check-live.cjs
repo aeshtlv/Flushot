@@ -155,9 +155,18 @@ async function main() {
       // Some screenshots on the page carry `loading="lazy"`, so they only start
       // downloading once they come near the viewport. Scroll the whole page first,
       // otherwise an image that has not been reached yet looks like a broken one.
+      //
+      // The stylesheet asks for `scroll-behavior: smooth`, which is right for a
+      // visitor following an anchor and wrong for a measuring pass: each
+      // `scrollTo` starts an animation that the next one interrupts, so the page
+      // never actually travels the requested distance and the last section is
+      // never visited. A lazy image down there then reads as broken while the
+      // server is serving it perfectly. Switching the behaviour off makes the
+      // pass deterministic; it is a property of the measurement, not of the page.
       await cdp.send('Runtime.evaluate', {
         awaitPromise: true,
         expression: `(async () => {
+          document.documentElement.style.scrollBehavior = 'auto'
           const step = window.innerHeight * 0.8
           for (let y = 0; y < document.documentElement.scrollHeight; y += step) {
             window.scrollTo(0, y)
