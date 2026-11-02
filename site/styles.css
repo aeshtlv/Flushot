@@ -1286,6 +1286,20 @@ code {
   color: var(--fg-muted);
 }
 
+/* The two-column table needs about 90 px for the answer before the longest word
+   in it — «администратора» — stops fitting. Below that the label and the answer
+   stack, which is how a specification reads on a phone anyway. */
+@media (max-width: 560px) {
+  .dl-spec {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dl-spec dt {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+}
+
 .dl-note {
   display: flex;
   align-items: flex-start;

@@ -182,10 +182,15 @@ async function main() {
         returnByValue: true,
         expression: `(() => {
           const doc = document.documentElement
+          // Which elements stick out of the page. An element parked far off the
+          // left edge on purpose — the skip link waits there until it has focus —
+          // cannot push the page wider, so it is not a suspect; a box that is
+          // half outside the left edge is, because that part of it is unreadable.
           const wide = [...document.querySelectorAll('body *')]
             .filter((el) => {
               const r = el.getBoundingClientRect()
-              return r.width > 0 && (r.right > doc.clientWidth + 1 || r.left < -1)
+              if (r.width === 0) return false
+              return r.right > doc.clientWidth + 1 || (r.left < -1 && r.right > 0)
             })
             .slice(0, 5)
             .map((el) => el.tagName + '.' + (el.className || '').toString().slice(0, 30))
