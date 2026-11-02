@@ -441,12 +441,24 @@ async function checkNoExternalRequests() {
   const external = loadingUrls.filter((url) => /^(https?:)?\/\//.test(url) && !url.startsWith('data:'))
   if (external.length > 0) fail(`the page loads from the network: ${[...new Set(external)].slice(0, 3).join(', ')}`)
 
-  // The download buttons are the one deliberate navigation away from the page.
+  // The links that deliberately leave the page all lead to the project's own
+  // repository: the download buttons, the release notes, the source. The list
+  // stays closed on purpose — anything else would point a reader at a page this
+  // project does not control, and nothing here would check it.
+  const pkg = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8'))
+  const slug = (pkg.repository?.url ?? '')
+    .replace(/^git\+/, '')
+    .replace(/^https:\/\/github\.com\//, '')
+    .replace(/\.git$/, '')
+    .replace(/\/$/, '')
+  if (!slug) fail('package.json has no repository.url, so external links cannot be tied to the project')
+
   const buttons = [...html.matchAll(/<a\s[^>]*href="(https?:\/\/[^"]+)"/g)].map((m) => m[1])
-  const unexpected = buttons.filter((url) => !/^https:\/\/github\.com\/[^/]+\/[^/]+\/releases\//.test(url))
+  const own = new RegExp(`^https://github\\.com/${slug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(/|$)`, 'i')
+  const unexpected = buttons.filter((url) => !own.test(url))
   if (unexpected.length > 0) fail(`unexpected external link: ${[...new Set(unexpected)].slice(0, 3).join(', ')}`)
 
-  notes.push(`no external resources; ${new Set(buttons).size} outbound links, all to the release`)
+  notes.push(`no external resources; ${new Set(buttons).size} outbound links, all into ${slug}`)
 }
 
 /**
@@ -652,6 +664,57 @@ async function checkReleaseLinks() {
 }
 
 /**
+ * The published SHA-256 digests must be the digests of the archives we ship.
+ *
+ * The program is unsigned, so Windows warns about it, and the page answers that
+ * warning with a hash the reader can compare against the file they received. A
+ * hash that does not match the archive is worse than no hash at all: it reads as
+ * tampering. `share/` is the only source of truth here — the files in it are the
+ * ones uploaded to the release — so every archive there must be advertised with
+ * the digest the file actually has, and the page must not carry a digest for
+ * anything that is not in `share/`.
+ *
+ * When `share/` holds no archives for the current version (a fresh clone) this is
+ * skipped, like the release-link check above: the page is then checked against
+ * nothing it could contradict.
+ */
+async function checkArchiveDigests() {
+  const html = read('index.html')
+  const pkg = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8'))
+  const archives = (await fs.readdir(path.join(ROOT, 'share')).catch(() => [])).filter((name) => name.endsWith('.zip'))
+  const shipped = archives.filter((name) => name.includes(pkg.version))
+
+  // Every 64-character hex run on the page, whichever card it sits in.
+  const claimed = new Set([...html.matchAll(/\b[0-9a-f]{64}\b/g)].map((match) => match[0]))
+
+  if (shipped.length === 0) {
+    if (claimed.size > 0) {
+      notes.push(`${claimed.size} digest(s) on the page cannot be checked: share/ holds no ${pkg.version} archives`)
+    }
+    return
+  }
+
+  const actual = new Map()
+  for (const name of shipped) {
+    const data = await fs.readFile(path.join(ROOT, 'share', name))
+    actual.set(name, createHash('sha256').update(data).digest('hex'))
+  }
+
+  for (const [name, digest] of actual) {
+    if (!html.includes(digest)) {
+      fail(`share/${name} hashes to ${digest.slice(0, 16)}…, and the page does not show that digest`)
+    }
+  }
+  for (const digest of claimed) {
+    if (![...actual.values()].includes(digest)) {
+      fail(`the page shows SHA-256 ${digest.slice(0, 16)}…, which matches no archive in share/`)
+    }
+  }
+
+  notes.push(`${shipped.length} archive digests on the page match share/ (SHA-256)`)
+}
+
+/**
  * Every asset the page loads must carry the hash of the file it points at.
  *
  * The server caches these URLs for a year, which is only safe while the URL
@@ -731,6 +794,7 @@ async function main() {
   await checkSocialPreview()
   await checkBrandMark()
   await checkReleaseLinks()
+  await checkArchiveDigests()
   await checkAssetStamps()
   await reportSize()
 

@@ -174,11 +174,11 @@ const PAGE = `<!DOCTYPE html>
     </div>
   </div>
 
-  <h1 class="title">Выделил.<br>Отпустил.<br>Вставил.</h1>
-  <p class="sub">Снимок уже в буфере, в рамке с тенью и скруглениями. Windows 10 и 11, бесплатно.</p>
+  <h1 class="title">Снимок экрана,<br>готовый<br>к вставке</h1>
+  <p class="sub">Отпустили кнопку мыши — карточка уже в буфере, с рамкой, тенью и скруглениями. Windows 10 и 11, бесплатно.</p>
 
   <div class="foot">
-    <span>PNG</span><span class="dot"></span><span>JPEG</span><span class="dot"></span><span>без потерь</span>
+    <span>PNG без потерь</span><span class="dot"></span><span>пометки</span><span class="dot"></span><span>распознавание текста</span>
   </div>
 </div>
 
@@ -252,6 +252,77 @@ async function main() {
     await send('Runtime.evaluate', { expression: 'document.fonts.ready', awaitPromise: true })
     await sleep(300)
 
+    // Measure before capturing. The card is 1200 × 630 and shown small in every
+    // place it appears, so a word that runs out of the block or slides under the
+    // screenshot is invisible here and obvious in a timeline.
+    //
+    // The measurement is of the glyphs, not of the blocks: `getClientRects()` on a
+    // Range returns the box each line of text actually paints, and a block whose
+    // `line-height` is tighter than its font (the title is 1.06) reports a
+    // smaller content box than the letters it draws. Sizing against the block
+    // would have flagged a 4 px "overflow" that no one can see, and missed a real
+    // collision between two blocks.
+    const measure = await send('Runtime.evaluate', {
+      returnByValue: true,
+      expression: `(() => {
+        const painted = (selector) => {
+          const element = document.querySelector(selector)
+          if (!element) return null
+          const range = document.createRange()
+          range.selectNodeContents(element)
+          const rects = [...range.getClientRects()].filter((rect) => rect.width > 0 && rect.height > 0)
+          if (rects.length === 0) return null
+          return {
+            selector,
+            left: Math.min(...rects.map((r) => r.left)),
+            right: Math.max(...rects.map((r) => r.right)),
+            top: Math.min(...rects.map((r) => r.top)),
+            bottom: Math.max(...rects.map((r) => r.bottom)),
+            // One box per line: the footer is a row of spans, so counting rects
+            // would report its pieces rather than the lines it occupies.
+            lines: new Set(rects.map((r) => Math.round(r.top))).size,
+            clipped: element.scrollWidth - element.clientWidth
+          }
+        }
+        const box = (selector) => {
+          const element = document.querySelector(selector)
+          if (!element) return null
+          const rect = element.getBoundingClientRect()
+          return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom }
+        }
+        const inner = box('.inner')
+        const pad = 52
+        const shot = box('.shot')
+        const cap = box('.shot__cap')
+        // The title and the lede wrap, so their lines are what must stay inside;
+        // the footer is one row of spans, so its block box is the honest measure.
+        const pieces = [...['.title', '.sub'].map(painted), box('.foot') && { selector: '.foot', lines: 1, clipped: 0, ...box('.foot') }].filter(Boolean)
+        const problems = []
+        const observed = []
+        for (const piece of pieces) {
+          observed.push(piece.selector + ': ' + piece.lines + ' lines, ends at y=' + Math.round(piece.bottom))
+          if (piece.left < pad - 1 || piece.right > inner.right - pad + 1) {
+            problems.push(piece.selector + ' leaves the padded area horizontally')
+          }
+          if (piece.top < pad - 1 || piece.bottom > 630 - pad + 1) {
+            problems.push(piece.selector + ' leaves the padded area vertically')
+          }
+          if (piece.clipped > 1) problems.push(piece.selector + ' is clipped horizontally by ' + piece.clipped + 'px')
+          for (const obstacle of [shot, cap]) {
+            if (!obstacle) continue
+            if (piece.right > obstacle.left + 1 && piece.bottom > obstacle.top + 1 && piece.top < obstacle.bottom - 1) {
+              problems.push(piece.selector + ' runs into ' + (obstacle === shot ? 'the screenshot' : 'its caption'))
+            }
+          }
+        }
+        return { problems, observed }
+      })()`
+    })
+    const { problems, observed } = measure.result.value
+    if (problems.length > 0) {
+      throw new Error('the card does not fit:\n  ' + problems.join('\n  '))
+    }
+
     const shot = await send('Page.captureScreenshot', {
       format: 'png',
       clip: { x: 0, y: 0, width: 1200, height: 630, scale: 1 }
@@ -267,6 +338,7 @@ async function main() {
 
     const meta = await sharp(png).metadata()
     console.log(`og-image.png  ${meta.width}×${meta.height}  ${(png.length / 1024).toFixed(0)} KB`)
+    console.log(`  text measured: ${observed.join(' · ')}`)
     console.log(`copied to smm/02-превью-ссылки-1200x630.png`)
   } finally {
     edge.kill()

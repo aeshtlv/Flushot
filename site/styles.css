@@ -477,7 +477,7 @@ code {
 .hero {
   position: relative;
   overflow: hidden;
-  padding: 72px 0 60px;
+  padding: 64px 0 56px;
 }
 
 /* An accent halo behind the grid. It is what makes the grid look lit rather
@@ -518,7 +518,7 @@ code {
 
 .hero__title {
   max-width: 20ch;
-  margin: 20px auto 22px;
+  margin: 16px auto 20px;
   font-size: clamp(38px, 5.6vw, 74px);
   font-weight: 500;
   line-height: 1.05;
@@ -532,7 +532,7 @@ code {
 
 .hero__sub {
   max-width: 620px;
-  margin: 0 auto 32px;
+  margin: 0 auto 28px;
   font-size: clamp(16px, 1.4vw, 18px);
   line-height: 1.55;
   letter-spacing: -0.005em;
@@ -548,28 +548,48 @@ code {
   margin-bottom: 18px;
 }
 
-.hero__note {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  margin-bottom: 52px;
-  font-size: 13px;
+/* A specification strip, not a slogan: four numbers a visitor actually asks for
+   before downloading — does it phone home, what format, how much drawing, how
+   big. Laid out as a table so it reads as a spec sheet, which is what it is. The
+   hairline rules are the same ones the feature block uses, so the top of the
+   page and the body of the page speak the same language. */
+.hero__facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  max-width: 800px;
+  margin: 26px auto 44px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.fact {
+  display: flex;
+  /* `column-reverse` puts the value above its label while the markup keeps the
+     order a <dl> requires: term, then description. */
+  flex-direction: column-reverse;
+  gap: 5px;
+  padding: 15px 18px;
+  border-left: 1px solid var(--border);
+}
+
+.fact:first-child {
+  border-left: 0;
+}
+
+.fact dt {
+  font-size: 12px;
+  line-height: 1.4;
   color: var(--fg-dim);
 }
 
-.hero__note a {
-  color: var(--fg-muted);
-  text-decoration: underline;
-  text-decoration-color: var(--fg-faint);
-  text-underline-offset: 3px;
-  transition: color 0.18s, text-decoration-color 0.18s;
-}
-
-.hero__note a:hover {
+.fact dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
   color: var(--fg);
-  text-decoration-color: var(--fg);
+  white-space: nowrap;
 }
 
 .hero__preview {
@@ -1180,6 +1200,92 @@ code {
   margin-top: auto;
 }
 
+/* The digest of the exact archive the button above downloads.
+   It is here for one reason: the program is unsigned, so SmartScreen warns about
+   it, and a warning plus no way to check what you received is what an untrusted
+   download looks like. A 64-character hash that wraps is set in the mono face at
+   a size where it can be read and compared character by character. */
+.dl-card__hash {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--fg-dim);
+}
+
+.dl-card__hash span {
+  flex: none;
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+}
+
+.dl-card__hash code {
+  overflow-wrap: anywhere;
+  font-size: 11px;
+  color: var(--fg-muted);
+}
+
+.dl-checksum-note {
+  max-width: 720px;
+  margin-top: 18px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--fg-muted);
+}
+
+.dl-checksum-note code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--fg);
+}
+
+.dl-checksum-note a {
+  color: var(--fg);
+  text-decoration: underline;
+  text-decoration-color: var(--fg-faint);
+  text-underline-offset: 3px;
+}
+
+.dl-checksum-note a:hover {
+  text-decoration-color: var(--fg);
+}
+
+/* What the download needs to work. A requirements block is the least glamorous
+   thing on a landing page and the first thing a careful reader looks for, so it
+   is set as a two-column table with the term fixed and the answer allowed to
+   wrap — the same shape as the hero's spec strip, one level down. */
+.dl-spec {
+  display: grid;
+  grid-template-columns: minmax(0, 200px) minmax(0, 1fr);
+  gap: 0;
+  max-width: 720px;
+  margin-top: 22px;
+  border-top: 1px solid var(--border);
+}
+
+.dl-spec__row {
+  display: contents;
+}
+
+.dl-spec dt,
+.dl-spec dd {
+  padding: 10px 0;
+  font-size: 13px;
+  line-height: 1.55;
+  border-bottom: 1px solid var(--border);
+}
+
+.dl-spec dt {
+  padding-right: 18px;
+  color: var(--fg-dim);
+}
+
+.dl-spec dd {
+  margin: 0;
+  color: var(--fg-muted);
+}
+
 .dl-note {
   display: flex;
   align-items: flex-start;
@@ -1293,6 +1399,26 @@ code {
   flex: none;
   margin-top: 3px;
   color: var(--fg-dim);
+}
+
+/* Body links inherit the colour and carry no underline by default, which is right
+   for navigation and wrong for a link inside a sentence: it reads as a word.
+   Scoped to the places a sentence can hold a link — never to `.btn`, whose colours
+   are the button's own. */
+.limit a,
+.faq a,
+.cta__sub a {
+  color: var(--fg);
+  text-decoration: underline;
+  text-decoration-color: var(--fg-faint);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.18s;
+}
+
+.limit a:hover,
+.faq a:hover,
+.cta__sub a:hover {
+  text-decoration-color: var(--fg);
 }
 
 .limit strong {
@@ -1716,6 +1842,70 @@ code {
     grid-row: auto;
     grid-column: 1;
     justify-self: start;
+  }
+
+  /* Two by two: four cells across 320 px would break every label onto three
+     lines. The rule between the columns moves with the layout, so the left cell
+     of each row keeps no left border. */
+  .hero__facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-bottom: 42px;
+  }
+
+  .fact {
+    padding: 13px 14px;
+  }
+
+  .fact:nth-child(odd) {
+    border-left: 0;
+  }
+
+  /* The closing edge of the strip: cells in the upper row need a rule under
+     them, or the second row reads as part of the first. */
+  .fact:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+/* Short windows: a laptop at 1366 × 768 loses about 140 px to browser chrome, so
+   the viewport is roughly 625 px tall, and there the screenshot of the program —
+   the only real proof on the page that this is a finished desktop application —
+   started below the fold entirely. Under 820 px of viewport height the
+   specification strip moves below the preview: a visitor who can see the product
+   can scroll for the numbers, but not the other way round. The threshold sits in
+   the gap between 800 and 900 px, the two window heights people actually use, so
+   the switch never happens on a screen someone recognises. */
+@media (min-width: 821px) and (max-height: 820px) {
+  .hero {
+    padding: 36px 0 40px;
+  }
+
+  .hero__inner {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .hero__title {
+    margin: 12px auto 14px;
+    font-size: clamp(34px, 4.4vw, 54px);
+  }
+
+  .hero__sub {
+    margin-bottom: 20px;
+  }
+
+  .hero__actions {
+    margin-bottom: 26px;
+  }
+
+  .hero__preview {
+    order: 1;
+    margin-bottom: 26px;
+  }
+
+  .hero__facts {
+    order: 2;
+    margin: 0 auto;
   }
 }
 

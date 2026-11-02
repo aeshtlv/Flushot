@@ -107,6 +107,56 @@ const MEASURE = `(() => {
   }
   out.gridGaps = out.gridGaps.slice(0, 8);
 
+  // The hero's spec strip. Four cells divided by hairlines, each holding a value
+  // and its label. On a phone a cell is barely 130 px wide and the values are
+  // monospace and deliberately unbreakable, so a longer fact would spill into its
+  // neighbour — invisible to a page-level overflow check, because the spill stays
+  // inside the viewport and inside the strip.
+  out.facts = null;
+  const strip = document.querySelector('.hero__facts');
+  if (strip) {
+    const cells = [...strip.querySelectorAll('.fact')].map((cell) => {
+      const rect = cell.getBoundingClientRect();
+      const style = getComputedStyle(cell);
+      const content =
+        cell.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+      const texts = [...cell.querySelectorAll('dt, dd')].map((node) => {
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        const rects = [...range.getClientRects()].filter((r) => r.width > 0);
+        const width = rects.length
+          ? Math.max(...rects.map((r) => r.right)) - Math.min(...rects.map((r) => r.left))
+          : 0;
+        return { text: node.textContent.trim().slice(0, 24), width: Math.round(width) };
+      });
+      return { left: Math.round(rect.left), right: Math.round(rect.right), top: Math.round(rect.top), content: Math.round(content), texts };
+    });
+    const overlaps = [];
+    for (let i = 1; i < cells.length; i += 1) {
+      // Only neighbours in the same row can collide: the grid wraps to two
+      // columns on a phone, where cell 3 sits under cell 1 and legitimately
+      // starts at the strip's left edge.
+      if (Math.abs(cells[i].top - cells[i - 1].top) > 4) continue;
+      if (cells[i].left < cells[i - 1].right - 1) {
+        overlaps.push(cells[i].texts.map((t) => t.text).join(' / '));
+      }
+    }
+    const tooWide = [];
+    for (const cell of cells) {
+      for (const text of cell.texts) {
+        if (text.width > cell.content + 1) {
+          tooWide.push(text.text + ': ' + text.width + 'px в поле ' + cell.content + 'px');
+        }
+      }
+    }
+    out.facts = {
+      columns: getComputedStyle(strip).gridTemplateColumns.split(' ').length,
+      cells: cells.length,
+      overlaps,
+      tooWide
+    };
+  }
+
   // Contrast of the rendered result, not of the stylesheet: this catches a
   // colour inherited from the wrong parent or a background that never painted.
   const parse = (value) => {
@@ -130,7 +180,7 @@ const MEASURE = `(() => {
     return body && body.a > 0.95 ? body : { r: 255, g: 255, b: 255 };
   };
   const bad = [];
-  for (const el of document.querySelectorAll('p, li, h1, h2, h3, summary, a, .eyebrow, .download__size')) {
+  for (const el of document.querySelectorAll('p, li, h1, h2, h3, summary, a, dt, dd, .eyebrow, .download__size')) {
     const text = el.textContent.trim();
     if (!text) continue;
     const style = getComputedStyle(el);
@@ -290,7 +340,13 @@ async function main() {
 
     // Walk the page once so lazy images are actually requested, then come back.
     // Without this every below-the-fold picture looks broken.
+    //
+    // `scroll-behavior: smooth` is switched off first: each `scrollTo` would
+    // otherwise start an animation the next call interrupts, the walk never
+    // reaches the bottom, and the last pictures stay unrequested — reported as
+    // broken while the files are perfectly fine.
     await evaluate(`(async () => {
+      document.documentElement.style.scrollBehavior = 'auto';
       const step = Math.round(window.innerHeight * 0.8);
       for (let y = 0; y < document.documentElement.scrollHeight; y += step) {
         window.scrollTo(0, y);
@@ -386,6 +442,18 @@ async function main() {
       problems += 1
     }
     if (metrics.clipped.length) console.log(`  CLIPPED: ${JSON.stringify(metrics.clipped)}`)
+    if (metrics.facts) {
+      const { columns, cells, overlaps, tooWide } = metrics.facts
+      console.log(`  spec strip: ${cells} cells in ${columns} columns`)
+      if (overlaps.length) {
+        console.log(`  SPEC OVERLAP: ${JSON.stringify(overlaps)}`)
+        problems += 1
+      }
+      if (tooWide.length) {
+        console.log(`  SPEC TOO WIDE: ${JSON.stringify(tooWide)}`)
+        problems += 1
+      }
+    }
     if (metrics.brokenImages.length) console.log(`  BROKEN IMAGES: ${JSON.stringify(metrics.brokenImages)}`)
     if (metrics.contrastFailures.length) console.log(`  CONTRAST: ${JSON.stringify(metrics.contrastFailures)}`)
     console.log(`  panels: ${metrics.visiblePanels.join(', ')}  nav visible: ${metrics.navVisible}  header: ${metrics.headerHeight}px`)

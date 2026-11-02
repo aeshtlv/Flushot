@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Flushot — скриншоты с рамкой, тенью и пометками для Windows</title>
-<meta name="description" content="Flushot — бесплатная программа для скриншотов на Windows 10 и 11. Выделил область, и снимок уже в рамке с тенью. Ровная линия для подчёркивания, снимок всего экрана одной клавишей, PNG без потерь.">
+<title>Flushot — снимки экрана для Windows: рамка, пометки, распознавание текста</title>
+<meta name="description" content="Flushot — бесплатная программа для снимков экрана на Windows 10 и 11. Отпустили кнопку мыши — готовое изображение уже в буфере обмена: рамка, тень и скруглённые углы применены. Пометки, распознавание текста, PNG без потерь, работа без интернета.">
 <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)">
 <meta name="color-scheme" content="dark light">
@@ -13,23 +13,23 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Flushot">
 <meta property="og:url" content="https://flushot.ink/">
-<meta property="og:title" content="Flushot — скриншоты, готовые к публикации">
-<meta property="og:description" content="Выделили область — снимок уже в рамке, с мягкой тенью и скруглёнными углами. Пометки, распознавание текста, PNG без потерь. Windows 10 и 11, бесплатно.">
-<meta property="og:image" content="https://flushot.ink/og-image.png?v=42d30ef1">
+<meta property="og:title" content="Flushot — снимки экрана для Windows">
+<meta property="og:description" content="Отпустили кнопку мыши — готовый снимок уже в буфере обмена: рамка, тень и скруглённые углы применены. Пометки, распознавание текста, PNG без потерь. Windows 10 и 11, бесплатно.">
+<meta property="og:image" content="https://flushot.ink/og-image.png?v=87ac9524">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ru_RU">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Flushot — скриншоты, готовые к публикации">
-<meta name="twitter:description" content="Рамка, тень и пометки в один клик. Windows 10 и 11, бесплатно.">
-<meta name="twitter:image" content="https://flushot.ink/og-image.png?v=42d30ef1">
+<meta name="twitter:title" content="Flushot — снимки экрана для Windows">
+<meta name="twitter:description" content="Готовый снимок в буфере обмена в момент отпускания мыши. Пометки, распознавание текста, PNG без потерь. Windows 10 и 11, бесплатно.">
+<meta name="twitter:image" content="https://flushot.ink/og-image.png?v=87ac9524">
 
 <link rel="icon" href="favicon.svg?v=a7643679" type="image/svg+xml">
 <link rel="icon" href="favicon-32.png?v=67a7ece7" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=980e5cca">
 <link rel="manifest" href="site.webmanifest?v=06f0995b">
 <link rel="stylesheet" href="fonts.css?v=0b21389f">
-<link rel="stylesheet" href="styles.css?v=79581812">
+<link rel="stylesheet" href="styles.css?v=92e288d9">
 <link rel="preload" as="image" href="assets/hero.webp?v=8e6805fc" type="image/webp">
 
 <script>
@@ -96,14 +96,13 @@
     <div class="wrap hero__inner">
       <p class="eyebrow" data-rise style="--d: 0.05s">Windows 10 и 11 · версия 2.3.0 · бесплатно</p>
       <h1 class="hero__title" data-rise style="--d: 0.1s">
-        <span>Выделил.</span>
-        <span>Отпустил.</span>
-        <span>Вставил.</span>
+        <span>Снимок экрана,</span>
+        <span>готовый к вставке</span>
       </h1>
       <p class="hero__sub" data-rise style="--d: 0.16s">
-        Между горячей клавишей и <kbd>Ctrl</kbd>+<kbd>V</kbd> больше нет ни одного нажатия: снимок
-        оказывается в буфере обмена в тот момент, когда вы отпустили кнопку мыши. Уже в рамке,
-        с мягкой тенью и скруглёнными углами.
+        Flushot — настольная программа для снимков экрана. Выделяете область и отпускаете кнопку
+        мыши: готовое изображение уже в буфере обмена, с рамкой, тенью и скруглёнными углами.
+        Пометки и распознавание текста — в той же программе.
       </p>
       <div class="hero__actions" data-rise style="--d: 0.22s">
         <a class="btn btn--primary btn--lg" href="#download">
@@ -114,10 +113,28 @@
         </a>
         <a class="btn btn--ghost btn--lg" href="#features">Что внутри</a>
       </div>
-      <p class="hero__note" data-rise style="--d: 0.26s">
-        <span>Без рекламы и интернета ·</span>
-        <a href="#download">есть portable и архив без установки</a>
-      </p>
+
+      <!-- Hard numbers instead of adjectives. Each is measured, not estimated:
+           the network count is zero by construction, the tools are counted in
+           AnnotationTool, the size is the installer that ships in Releases. -->
+      <dl class="hero__facts" data-rise style="--d: 0.26s">
+        <div class="fact">
+          <dt>Сетевых запросов</dt>
+          <dd>0</dd>
+        </div>
+        <div class="fact">
+          <dt>Без потерь</dt>
+          <dd>PNG</dd>
+        </div>
+        <div class="fact">
+          <dt>Инструментов пометок</dt>
+          <dd>7</dd>
+        </div>
+        <div class="fact">
+          <dt>Установщик или portable</dt>
+          <dd>113 МБ</dd>
+        </div>
+      </dl>
 
       <figure class="hero__preview" data-rise style="--d: 0.3s">
         <div class="hero__frame">
@@ -137,7 +154,7 @@
       <div class="section-head">
         <p class="eyebrow">Возможности</p>
         <h2 class="section-title" id="features-title">Всё, что нужно от снимка экрана</h2>
-        <p class="section-lead">Девять вещей, из-за которых Flushot ставят вместо «Ножниц» Windows.</p>
+        <p class="section-lead">Девять возможностей, из которых состоит программа. В разделе ограничений — то, чего в ней нет.</p>
       </div>
 
       <div class="feature-grid">
@@ -247,7 +264,7 @@
         <div class="pitch">
           <div class="section-head" style="margin-bottom: 0">
             <p class="eyebrow">Как это работает</p>
-            <h2 class="section-title" id="how-title">Два шага, одно вставление</h2>
+            <h2 class="section-title" id="how-title">От клавиши до вставки</h2>
           </div>
 
           <ol class="pitch__list">
@@ -522,6 +539,7 @@
           </div>
           <p class="dl-card__text">Распаковать в любую папку и запустить <code>Flushot.exe</code>. Ничего не устанавливается, временная папка Windows не нужна.</p>
           <p class="dl-card__meta"><span>161 МБ</span><span>ZIP</span><span>без установки</span></p>
+          <p class="dl-card__hash"><span>SHA-256</span><code>88edf4cfd2e4c5b178e1d9935394170d146bcd71ce691e73ae33d85366810c79</code></p>
           <a class="btn btn--primary" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.3.0-win64.zip">Скачать ZIP</a>
         </article>
 
@@ -531,6 +549,7 @@
           </div>
           <p class="dl-card__text">Внутри <code>Flushot-2.3.0-x64.exe</code>. Двойной клик, «Установить» — появятся ярлыки в меню «Пуск» и строка удаления.</p>
           <p class="dl-card__meta"><span>113 МБ</span><span>ZIP</span><span>NSIS</span></p>
+          <p class="dl-card__hash"><span>SHA-256</span><code>02294e97bc6694bcb76cab67486387ae6ed33383403dcfb3d146837265ef430b</code></p>
           <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.3.0-installer.zip">Скачать ZIP</a>
         </article>
 
@@ -540,9 +559,36 @@
           </div>
           <p class="dl-card__text">Один файл без установки. При первом запуске распаковывается во временную папку, поэтому нужен рабочий <code>%TEMP%</code>.</p>
           <p class="dl-card__meta"><span>113 МБ</span><span>ZIP</span><span>один файл</span></p>
+          <p class="dl-card__hash"><span>SHA-256</span><code>79aa56223300a8c86f77c38ebac56bd86c956643e7fd0e505d7bc43658d33fdc</code></p>
           <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.3.0-portable.zip">Скачать ZIP</a>
         </article>
       </div>
+
+      <p class="dl-checksum-note">
+        Контрольная сумма каждого архива — под кнопкой. После скачивания её можно сверить командой
+        <code>Get-FileHash Flushot-2.3.0-win64.zip -Algorithm SHA256</code> в PowerShell: если значения
+        совпали, файл дошёл без изменений. Что изменилось в этой версии — в
+        <a href="https://github.com/aeshtlv/Flushot/releases">заметках к выпуску</a>.
+      </p>
+
+      <dl class="dl-spec">
+        <div class="dl-spec__row">
+          <dt>Система</dt>
+          <dd>Windows 10 или 11, 64-разрядная</dd>
+        </div>
+        <div class="dl-spec__row">
+          <dt>Место на диске</dt>
+          <dd>397 МБ после распаковки</dd>
+        </div>
+        <div class="dl-spec__row">
+          <dt>Права</dt>
+          <dd>Установщик ставит программу в профиль пользователя: права администратора не нужны</dd>
+        </div>
+        <div class="dl-spec__row">
+          <dt>Интернет</dt>
+          <dd>Не нужен ни при запуске, ни при работе: сетевых запросов нет</dd>
+        </div>
+      </dl>
 
       <div class="dl-note">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 9v5"/><path d="M12 17h.01"/><path d="M10.3 3.9L2.4 18a1.9 1.9 0 0 0 1.7 2.9h15.8a1.9 1.9 0 0 0 1.7-2.9L13.7 3.9a1.9 1.9 0 0 0-3.4 0z"/></svg>
@@ -639,7 +685,7 @@
         </li>
         <li class="limit">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
-          <span><strong>Файлы не подписаны.</strong> SmartScreen предупреждает при первом запуске.</span>
+          <span><strong>Файлы не подписаны.</strong> SmartScreen предупреждает при первом запуске. Исходный код при этом открыт на <a href="https://github.com/aeshtlv/Flushot">GitHub</a> — его можно прочитать до запуска.</span>
         </li>
         <li class="limit">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
