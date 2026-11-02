@@ -170,6 +170,27 @@
       element.classList.add('reveal');
       observer.observe(element);
     });
+
+    // The terminal prints itself. Its lines are already in the markup and stay
+    // readable without the script; this only makes them arrive one after
+    // another, the way a command's output does, instead of all at once with the
+    // block they sit in.
+    var term = document.querySelector('.term__body');
+    if (term && term.getBoundingClientRect().top > fold * 0.92) {
+      term.classList.add('is-armed');
+      var termObserver = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.remove('is-armed');
+            entry.target.classList.add('is-typed');
+            termObserver.unobserve(entry.target);
+          });
+        },
+        { threshold: 0.4 }
+      );
+      termObserver.observe(term);
+    }
   }
 
   // ----------------------------------------------------------- page progress
