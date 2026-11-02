@@ -268,6 +268,7 @@
     var MIN = 24;
     var drag = null;
     var lastRect = null;
+    var keyboardToken = 0;
 
     var sceneSize = function () {
       return { w: scene.clientWidth, h: scene.clientHeight };
@@ -379,6 +380,7 @@
     };
 
     var resetDemo = function (note) {
+      keyboardToken += 1;
       lastRect = null;
       drag = null;
       slot.replaceChildren();
@@ -436,25 +438,21 @@
       }
       if (event.key !== 'Enter' && event.key !== ' ') return;
       event.preventDefault();
-      // A keyboard has no drag, so this picks the part of the page worth
-      // sending: the heading, the paragraph and the chart under them.
+      // A keyboard has no drag, so the selected region is the entire window —
+      // the one region a visitor can name without moving a pointer, and the one
+      // the program's second shortcut takes as a whole. The overlay is drawn
+      // first and the card appears on top of it, so the keyboard path shows the
+      // same two steps a drag does.
       var size = sceneSize();
-      var heading = demo.querySelector('.try__heading');
-      var chart = demo.querySelector('.try__chart');
-      var rect = { x: 16, y: 44, w: Math.min(420, size.w - 32), h: Math.min(240, size.h - 60) };
-      if (heading && chart) {
-        var box = scene.getBoundingClientRect();
-        var top = heading.getBoundingClientRect().top - box.top;
-        var bottom = chart.getBoundingClientRect().bottom - box.top;
-        var left = heading.getBoundingClientRect().left - box.left;
-        rect = {
-          x: Math.max(0, Math.round(left - 10)),
-          y: Math.max(0, Math.round(top - 10)),
-          w: Math.min(size.w, Math.round(300)),
-          h: Math.min(size.h, Math.round(bottom - top + 20))
-        };
-      }
-      showResult(rect);
+      var rect = { x: 0, y: 0, w: size.w, h: size.h };
+      var token = ++keyboardToken;
+      demo.classList.add('try--started');
+      paintSelection(rect);
+      window.setTimeout(function () {
+        if (token !== keyboardToken) return;
+        clearSelection();
+        showResult(rect);
+      }, still ? 0 : 420);
     });
 
     if (pasteButton) {

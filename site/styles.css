@@ -1,5 +1,5 @@
 /* ============================================================================
-   Flushot вЂ” site styles
+   Flushot — site styles
    ----------------------------------------------------------------------------
    Visual language: near-black surface, one accent, mono for anything the
    machine says (filenames, shortcuts, versions) and a geometric sans for
@@ -7,10 +7,10 @@
    Dark is the default; the light theme is the same scale inverted.
 
    Fonts are self-hosted (fonts/), so the page still renders identically
-   offline and from file:// вЂ” no CDN, no network, no tracking.
+   offline and from file:// — no CDN, no network, no tracking.
    ========================================================================== */
 
-/* Fonts live in fonts.css, inlined as data: URLs вЂ” a font loaded from file://
+/* Fonts live in fonts.css, inlined as data: URLs — a font loaded from file://
    is blocked by CORS, so a linked file silently falls back to a system face
    when the page is opened by double-click. See scripts/build-fonts.cjs. */
 /* ----------------------------------------------------------------- tokens */
@@ -45,10 +45,10 @@
      rhythm. A single even mesh looks deliberate; a nearly-even one looks like a
      mistake.
 
-     The mesh is a 48 Г— 48 tile with both lines in it. Two separate gradient
+     The mesh is a 48 × 48 tile with both lines in it. Two separate gradient
      layers would be the obvious way to write it, but where they cross the
      browser composites their alpha twice (0.12 over 0.12 lands at 0.23), so
-     every intersection came out twice as bright as the lines that form it вЂ” a
+     every intersection came out twice as bright as the lines that form it — a
      lattice of dots. The vertical stroke starts at y = 1 rather than y = 0 for
      the same reason: inside one path the corner pixel would still be painted
      twice. The two strokes now meet without ever overlapping, so every pixel of
@@ -60,6 +60,13 @@
   --accent-dim: rgba(107, 141, 255, 0.15);
   --ok: #4ade80;
   --warn: #fbbf24;
+
+  /* The surface the demo's finished card sits on, and the ring that separates a
+     white card from it. Both themes need a value even though only one uses the
+     ring: the card is white in either theme, so the question "what is behind a
+     white frame" has to be answered in both. */
+  --desk: #0b0b0e;
+  --desk-edge: rgba(255, 255, 255, 0.16);
 
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
@@ -99,6 +106,12 @@
   --accent-dim: rgba(59, 91, 219, 0.1);
   --ok: #0f7b56;
   --warn: #a16207;
+
+  /* A grey desk in the light theme, not white on white: the card the demo
+     produces is white in both themes, and on a near-white page a white frame
+     would have no edge to stand on. */
+  --desk: #e7e9f0;
+  --desk-edge: rgba(15, 23, 42, 0.18);
 
   --shadow-card: 0 20px 48px -24px rgba(0, 0, 0, 0.25);
   --shadow-hero: 0 28px 64px -32px rgba(0, 0, 0, 0.3);
@@ -446,7 +459,7 @@ a.link:hover {
   border-radius: var(--radius-sm);
 }
 
-/* The header "РЎРєР°С‡Р°С‚СЊ" button must stay white on the accent fill; the generic
+/* The header "Скачать" button must stay white on the accent fill; the generic
    .nav-link rule would otherwise win on specificity and leave it invisible. */
 .nav-right .nav-cta {
   padding: 8px 14px;
@@ -467,8 +480,8 @@ a.link:hover {
  *
  * The "screenshot" is a real crop of a real element, not a picture: the scene is
  * a small document built in HTML, and the result is a clone of it inside an
- * overflow:hidden box offset by the drag. That keeps the demo honest вЂ” what you
- * see in the card is what you selected вЂ” and it costs no extra bytes.
+ * overflow:hidden box offset by the drag. That keeps the demo honest — what you
+ * see in the card is what you selected — and it costs no extra bytes.
  */
 
 .section--try {
@@ -517,31 +530,91 @@ a.link:hover {
   color: #17171d;
 }
 
-.try__bar {
+/* ------------------------------------------------------------ window chrome */
+/*
+ * One title bar, used twice: on the demo's scene and on the folder view further
+ * down. Two windows drawn to two different operating systems is the kind of
+ * detail that reads as sloppiness without anyone being able to name it, so the
+ * structure lives here once and the two places only differ in colour.
+ *
+ * Windows, not macOS: the title on the left, the three boxed caption controls on
+ * the right. Traffic lights would put a foreign OS in a picture of a Windows
+ * program on a Windows page.
+ */
+.winbar {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 9px 12px;
-  background: #e9e9ef;
-  border-bottom: 1px solid #dcdce4;
+  gap: 8px;
+  height: 34px;
+  padding-left: 12px;
+  border-bottom: 1px solid;
 }
 
-.try__dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: #c3c3cd;
+/* The app mark, the way a window shows its own icon in the caption. */
+.winbar__icon {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
 }
 
-.try__dot:first-child {
-  background: #e5a3a3;
-}
-
-.try__bar-title {
-  margin-left: 8px;
+.winbar__title {
   font-family: var(--font-mono);
   font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The caption buttons at their real 46 × 34 px, drawn rather than wired: these
+   are pictures of windows, and a control that did something would promise what
+   the page cannot do. */
+.winbar__buttons {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  margin-left: auto;
+}
+
+.winbar__buttons svg {
+  display: block;
+  /* content-box, because the global border-box rule would fold the padding into
+     the 8 px glyph and squeeze it to nothing. */
+  box-sizing: content-box;
+  width: 8px;
+  height: 8px;
+  padding: 13px 19px;
+}
+
+/* The demo's scene is a photograph of a window, so it keeps its own light
+   colours in both themes — a screenshot does not repaint itself. */
+.winbar--doc {
+  background: #e9e9ef;
+  border-bottom-color: #dcdce4;
+}
+
+.winbar--doc .winbar__icon {
+  background: linear-gradient(145deg, #6b8fc7, #3f6599);
+}
+
+.winbar--doc .winbar__title,
+.winbar--doc .winbar__buttons svg {
   color: #55555f;
+}
+
+/* The folder view is part of the page, so it takes the theme's colours. */
+.winbar--term {
+  background: var(--tint);
+  border-bottom-color: var(--border);
+}
+
+.winbar--term .winbar__icon {
+  background: var(--border-strong);
+}
+
+.winbar--term .winbar__title,
+.winbar--term .winbar__buttons svg {
+  color: var(--fg-dim);
 }
 
 .try__paper {
@@ -667,7 +740,7 @@ a.link:hover {
 }
 
 /* A finger is not a mouse: the hint and the keyboard shortcut change with the
-   input device, because В«РїСЂРѕРІРµРґРёС‚Рµ РјС‹С€СЊСЋВ» on a phone is simply wrong. */
+   input device, because «проведите мышью» on a phone is simply wrong. */
 .try__hint-coarse {
   display: none;
 }
@@ -689,7 +762,23 @@ a.link:hover {
   flex-direction: column;
   gap: 16px;
   padding: 20px;
-  background: linear-gradient(var(--tint), transparent 60%);
+  /* A desk for the finished card, not a transparent layer over the page. The
+     card is white in both themes, so it needs a surface of its own: over a
+     near-white page a white frame has no edge at all, and the demo would look
+     like it had produced an empty rectangle. */
+  background: var(--desk);
+}
+
+/* Text in this panel sits on --desk, which is a step darker than the page, and
+   the dim ramp loses about 0.2 of a ratio point doing it — enough to drop 4.34:1
+   under the 4.5 that 11 px copy needs. The muted step carries it back over the
+   line in both themes; measured with scripts/test-try-demo.cjs, not assumed. */
+.try__out .try__idle-text,
+.try__out .try__idle-hint,
+.try__out .try__meta,
+.try__out .try__status,
+.try__out .try__msg-text {
+  color: var(--fg-muted);
 }
 
 .try__slot {
@@ -699,20 +788,29 @@ a.link:hover {
 
 /* The frame the program puts around a shot. It stays white on purpose: the
    default settings produce a white card, and a dark one would misrepresent what
-   the download looks like. */
+   the download looks like.
+
+   White on white is the whole difficulty. The card is made to read as a frame by
+   three things that cost nothing: the hairline the crop carries (below), the
+   ring on the card so it separates from a light desk as well, and a shadow deep
+   enough to lift it in both themes. */
 .try__shot {
   max-width: 100%;
-  padding: 12px;
+  padding: 14px;
   background: #ffffff;
   border-radius: 10px;
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--desk-edge);
   animation: shot-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* The shot's own edge. A white frame around a light document has no boundary
+   without it: the frame reads as margin that happens to be there instead of as
+   the frame the program drew. Inset, so it costs no pixels of the picture. */
 .try__crop {
   position: relative;
   overflow: hidden;
   border-radius: 3px;
+  box-shadow: inset 0 0 0 1px rgba(23, 23, 29, 0.18);
 }
 
 .try__crop > .try__doc {
@@ -729,6 +827,9 @@ a.link:hover {
   position: relative;
   overflow: hidden;
   border-radius: 3px;
+  /* Repeated here because the crop inside is scaled: its own hairline would be
+     scaled with it and end up thinner than a pixel. */
+  box-shadow: inset 0 0 0 1px rgba(23, 23, 29, 0.18);
 }
 
 .try__crop-box > .try__crop {
@@ -829,7 +930,7 @@ a.link:hover {
 
 /* The paste step. The card was already in the clipboard in the real program, so
    this is the only part of the demo that is a re-enactment rather than a
-   measurement вЂ” which is why it takes a click instead of happening by itself. */
+   measurement — which is why it takes a click instead of happening by itself. */
 .try__msg {
   display: flex;
   gap: 10px;
@@ -880,7 +981,7 @@ a.link:hover {
 .try__msg-shot .try__shot {
   padding: 6px;
   border-radius: 6px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--desk-edge);
 }
 
 .try__msg-text {
@@ -940,7 +1041,7 @@ code {
 
 /* An accent halo behind the grid. It is what makes the grid look lit rather
    than printed: the lines cross a surface that has a light source. Breathes
-   very slowly вЂ” 18 seconds is long enough to be felt, not watched. */
+   very slowly — 18 seconds is long enough to be felt, not watched. */
 .hero::before {
   content: '';
   position: absolute;
@@ -1007,7 +1108,7 @@ code {
 }
 
 /* One quiet line under the buttons: what the download costs and what it does
-   not do. Kept as a sentence rather than a table вЂ” the numbers live in the
+   not do. Kept as a sentence rather than a table — the numbers live in the
    download section, where a reader who wants them is already looking. */
 .hero__note {
   display: inline-flex;
@@ -1039,7 +1140,7 @@ code {
    a fine pointer, so a touch screen keeps the flat rest state.
 
    The rotation lives on the frame and not on .hero__preview: the wrapper carries
-   data-rise, and an animation on transform outranks a plain declaration вЂ” a tilt
+   data-rise, and an animation on transform outranks a plain declaration — a tilt
    written there would be overwritten by the entrance animation and never paint. */
 .hero__preview {
   max-width: 1120px;
@@ -1133,7 +1234,7 @@ code {
 }
 
 /* ------------------------------------------------------------- feature grid
-   One bordered block subdivided by hairlines вЂ” no gaps, no per-card borders.
+   One bordered block subdivided by hairlines — no gaps, no per-card borders.
    Reads as a single object rather than six. */
 
 .feature-grid {
@@ -1238,31 +1339,6 @@ code {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-card);
-}
-
-.term__head {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 14px;
-  background: var(--tint);
-  border-bottom: 1px solid var(--border);
-}
-
-.term__dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  background: var(--border-strong);
-}
-
-.term__title {
-  flex: 1;
-  margin-left: 10px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--fg-dim);
-  text-align: center;
 }
 
 .term__body {
@@ -1829,7 +1905,7 @@ code {
 
 /* Body links inherit the colour and carry no underline by default, which is right
    for navigation and wrong for a link inside a sentence: it reads as a word.
-   Scoped to the places a sentence can hold a link вЂ” never to `.btn`, whose colours
+   Scoped to the places a sentence can hold a link — never to `.btn`, whose colours
    are the button's own. */
 .limit a,
 .faq a,
@@ -1976,7 +2052,7 @@ code {
    surface coming into focus, which a plain fade does not.
 
    `scale` is animated as its own property, not inside `transform`, so that the
-   parallax in app.js can keep writing `transform` on the same element вЂ” an
+   parallax in app.js can keep writing `transform` on the same element — an
    animation with `fill-mode: both` would otherwise win over the inline style
    for as long as the page is open. */
 @keyframes grid-in {
@@ -2009,7 +2085,7 @@ code {
 }
 
 /* Scroll reveal. Both classes are put there by app.js and never written into the
-   markup: with the script off вЂ” or if it fails to load вЂ” the page is a plain
+   markup: with the script off — or if it fails to load — the page is a plain
    document with nothing hidden and nothing to animate.
 
    An animation rather than a transition, because these blocks already use
@@ -2240,6 +2316,13 @@ code {
     padding: 16px;
   }
 
+  /* Caption buttons keep their real 46 px width, which is right for a desktop
+     window and half the bar on a 282 px one. Narrowed to 32 px here so the
+     proportions of the fake window still look like a window. */
+  .winbar__buttons svg {
+    padding: 13px 12px;
+  }
+
   .try__actions .btn {
     flex: 1 1 auto;
     justify-content: center;
@@ -2256,7 +2339,7 @@ code {
 
   /* One column: every cell keeps its separator except the very last one, which
      the grid's own border closes. The two-column rule above removes the border
-     from the last two cells, which is wrong here вЂ” so it is undone first. */
+     from the last two cells, which is wrong here — so it is undone first. */
   .feature:nth-last-child(-n + 2) {
     border-bottom: 1px solid var(--border);
   }
@@ -2298,9 +2381,9 @@ code {
   }
 }
 
-/* Short windows: a laptop at 1366 Г— 768 loses about 140 px to browser chrome, so
-   the viewport is roughly 625 px tall, and there the screenshot of the program вЂ”
-   the only real proof on the page that this is a finished desktop application вЂ”
+/* Short windows: a laptop at 1366 × 768 loses about 140 px to browser chrome, so
+   the viewport is roughly 625 px tall, and there the screenshot of the program —
+   the only real proof on the page that this is a finished desktop application —
    sits below the fold. Under 820 px of viewport height the hero tightens: smaller
    heading, tighter spacing. The threshold sits in the gap between 800 and 900 px,
    the two window heights people actually use, so the switch never happens on a

@@ -151,7 +151,7 @@ async function main() {
       const shot = slot.querySelector('.try__shot');
       const crop = slot.querySelector('.try__crop');
       const copy = slot.querySelector('.try__crop > .try__doc');
-      const firstChild = copy ? copy.querySelector('.try__bar') : null;
+      const firstChild = copy ? copy.querySelector('.winbar') : null;
       return {
         hasCard: Boolean(shot),
         frameBg: shot ? getComputedStyle(shot).backgroundColor : null,
@@ -277,12 +277,18 @@ async function main() {
   await sleep(250)
 
   await evaluate(`document.querySelector('[data-try-scene]').focus()`)
+  const scenePx = await evaluate(`(() => {
+    const s = document.querySelector('[data-try-scene]');
+    return { w: s.clientWidth, h: s.clientHeight };
+  })()`)
   await send('Input.dispatchKeyEvent', { type: 'keyDown', windowsVirtualKeyCode: 13, code: 'Enter', key: 'Enter', text: '\r' })
   await send('Input.dispatchKeyEvent', { type: 'keyUp', windowsVirtualKeyCode: 13, code: 'Enter', key: 'Enter' })
-  await sleep(350)
+  // The overlay is drawn first and the card lands on top of it, so the keyboard
+  // path takes as long as a drag does instead of snapping.
+  await sleep(800)
   const keyed = await state()
-  record('Enter selects a region for a keyboard user', keyed.hasCard, true)
-  truthy('the keyboard selection is a real size', /^\d+ × \d+ px$/.test(keyed.dims))
+  record('Enter makes a card for a keyboard user', keyed.hasCard, true)
+  record('Enter selects the whole window', keyed.dims, `${scenePx.w} × ${scenePx.h} px`)
 
   await send('Input.dispatchKeyEvent', { type: 'keyDown', windowsVirtualKeyCode: 27, code: 'Escape', key: 'Escape' })
   await send('Input.dispatchKeyEvent', { type: 'keyUp', windowsVirtualKeyCode: 27, code: 'Escape', key: 'Escape' })

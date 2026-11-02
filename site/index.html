@@ -29,7 +29,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=980e5cca">
 <link rel="manifest" href="site.webmanifest?v=06f0995b">
 <link rel="stylesheet" href="fonts.css?v=0b21389f">
-<link rel="stylesheet" href="styles.css?v=958695e6">
+<link rel="stylesheet" href="styles.css?v=cabfbbfc">
 <link rel="preload" as="image" href="assets/hero.webp?v=8e6805fc" type="image/webp">
 
 <script>
@@ -147,11 +147,16 @@
       <div class="try" data-try>
         <div class="try__stage">
           <div class="try__scene" data-try-scene tabindex="0" role="application"
-               aria-label="Окно с отчётом. Проведите мышью, чтобы выделить область, или нажмите Enter, чтобы выделить пример.">
+               aria-label="Окно с отчётом. Проведите мышью, чтобы выделить область, или нажмите Enter, чтобы выделить всё окно.">
             <div class="try__doc" data-try-doc aria-hidden="true">
-              <div class="try__bar">
-                <span class="try__dot"></span><span class="try__dot"></span><span class="try__dot"></span>
-                <span class="try__bar-title">Отчёт за квартал</span>
+              <div class="winbar winbar--doc">
+                <span class="winbar__icon"></span>
+                <span class="winbar__title">Отчёт за квартал</span>
+                <span class="winbar__buttons">
+                  <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1"><path d="M0 5h10"/></svg>
+                  <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1"><rect x="0.5" y="0.5" width="9" height="9"/></svg>
+                  <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1"><path d="M0 0l10 10M10 0L0 10"/></svg>
+                </span>
               </div>
               <div class="try__paper">
                 <p class="try__kicker">Третий квартал</p>
@@ -189,7 +194,7 @@
               С рамкой, скруглёнными углами и тенью — та же карточка, которую вы получите
               в программе.
             </p>
-            <p class="try__idle-hint try__hint-fine"><kbd>Enter</kbd> на окне выделит пример целиком</p>
+            <p class="try__idle-hint try__hint-fine"><kbd>Enter</kbd> выделит всё окно</p>
           </div>
 
           <div class="try__done" data-try-done hidden>
@@ -315,11 +320,14 @@
     <div class="wrap">
       <div class="save-grid">
         <div class="term" role="img" aria-label="Терминал: в папке Изображения\\Flushot лежат снимки с датой в имени файла.">
-          <div class="term__head" aria-hidden="true">
-            <span class="term__dot"></span>
-            <span class="term__dot"></span>
-            <span class="term__dot"></span>
-            <span class="term__title">Изображения\Flushot</span>
+          <div class="winbar winbar--term" aria-hidden="true">
+            <span class="winbar__icon"></span>
+            <span class="winbar__title">Изображения\Flushot</span>
+            <span class="winbar__buttons">
+              <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1"><path d="M0 5h10"/></svg>
+              <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1"><rect x="0.5" y="0.5" width="9" height="9"/></svg>
+              <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1"><path d="M0 0l10 10M10 0L0 10"/></svg>
+            </span>
           </div>
           <div class="term__body" aria-hidden="true">
             <div class="term__line"><span class="term__prompt">$</span>ls</div>
@@ -768,7 +776,7 @@
         </a>
         <a class="btn btn--ghost btn--lg" href="#faq">Сначала вопросы</a>
       </div>
-      <p class="cta__meta">Windows 10 / 11 · 161 МБ · без регистрации</p>
+      <p class="cta__meta">161 МБ · без регистрации · без интернета</p>
     </div>
   </section>
 </main>
@@ -777,7 +785,7 @@
   <div class="footer__inner">
     <div class="footer__brand">
       <img class="brand__mark" src="favicon.svg?v=a7643679" width="200" height="200" alt="" aria-hidden="true">
-      <span>Версия 2.3.0 · Windows 10 и 11 · © 2026 Flushot</span>
+      <span>Версия 2.3.0 · © 2026 Flushot</span>
     </div>
     <nav class="footer__links" aria-label="Навигация в подвале">
       <a href="#features">Возможности</a>
@@ -804,6 +812,6 @@
 }
 </script>
 
-<script src="app.js?v=4bbdad30" defer></script>
+<script src="app.js?v=9be5660f" defer></script>
 </body>
 </html>
