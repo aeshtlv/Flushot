@@ -237,6 +237,94 @@
     });
   }
 
+  // ------------------------------------------------------------- hero glow
+  //
+  // A light under the pointer. The mesh brightens where the cursor is and a soft
+  // accent bloom sits beneath it, both inside one mask that travels with the
+  // pointer. Two details make it read as a lamp rather than a sticker: the light
+  // eases towards the pointer instead of snapping to it, and it fades out over
+  // half a second instead of switching off.
+  //
+  // The easing runs only while there is something to ease — the loop stops as
+  // soon as the light has caught up, so a pointer resting on the hero costs
+  // nothing.
+  var glow = document.querySelector('.hero__glow');
+  if (glow && !still && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    var glowHost = glow.parentElement;
+    var glowTargetX = 0;
+    var glowTargetY = 0;
+    var glowX = 0;
+    var glowY = 0;
+    var glowFrame = 0;
+    var glowPlaced = false;
+
+    var glowPaint = function () {
+      glowFrame = 0;
+      glowX += (glowTargetX - glowX) * 0.16;
+      glowY += (glowTargetY - glowY) * 0.16;
+      glow.style.setProperty('--glow-x', glowX.toFixed(1) + 'px');
+      glow.style.setProperty('--glow-y', glowY.toFixed(1) + 'px');
+      if (Math.abs(glowTargetX - glowX) > 0.5 || Math.abs(glowTargetY - glowY) > 0.5) {
+        glowFrame = window.requestAnimationFrame(glowPaint);
+      }
+    };
+
+    glowHost.addEventListener(
+      'pointermove',
+      function (event) {
+        var box = glow.getBoundingClientRect();
+        if (!box.width || !box.height) return;
+        glowTargetX = event.clientX - box.left;
+        glowTargetY = event.clientY - box.top;
+        if (!glowPlaced) {
+          // The first move places the light where the pointer is. Easing in from
+          // the layer's origin would drag a bright streak across the hero.
+          glowPlaced = true;
+          glowX = glowTargetX;
+          glowY = glowTargetY;
+          glow.style.setProperty('--glow-a', '1');
+        }
+        if (!glowFrame) glowFrame = window.requestAnimationFrame(glowPaint);
+      },
+      { passive: true }
+    );
+
+    glowHost.addEventListener('pointerleave', function () {
+      glow.style.setProperty('--glow-a', '0');
+      glowPlaced = false;
+    });
+  }
+
+  // ------------------------------------------------------- magnetic buttons
+  //
+  // The primary buttons lean a few pixels towards the pointer. It is a small
+  // thing and it is the one that makes a flat rectangle feel like an object with
+  // weight — the cursor pulls on it and it gives slightly, then springs back.
+  //
+  // Twelve percent of the distance from the centre, capped at four pixels: past
+  // that the label starts to look off-centre rather than the button looking
+  // drawn to the pointer. The easing is the transform transition the button
+  // already carries, so there is no second animation loop here.
+  if (!still && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    var clamp = function (value) {
+      return Math.max(-4, Math.min(4, value));
+    };
+    Array.prototype.forEach.call(document.querySelectorAll('.btn--primary'), function (button) {
+      button.addEventListener('pointermove', function (event) {
+        var box = button.getBoundingClientRect();
+        if (!box.width || !box.height) return;
+        var dx = (event.clientX - (box.left + box.width / 2)) * 0.12;
+        var dy = (event.clientY - (box.top + box.height / 2)) * 0.12;
+        button.style.setProperty('--mag-x', clamp(dx).toFixed(1) + 'px');
+        button.style.setProperty('--mag-y', clamp(dy).toFixed(1) + 'px');
+      });
+      button.addEventListener('pointerleave', function () {
+        button.style.removeProperty('--mag-x');
+        button.style.removeProperty('--mag-y');
+      });
+    });
+  }
+
   // ------------------------------------------------------------- live demo
   //
   // The one place on the page where a visitor does the thing instead of reading

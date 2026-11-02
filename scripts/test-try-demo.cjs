@@ -117,13 +117,21 @@ async function main() {
   }
 
   /** Where the scene sits on screen, so the drag lands inside it. */
-  const sceneBox = await evaluate(`(() => {
+  await evaluate(`(() => {
     // Smooth scrolling would still be travelling when the first mouse event
     // arrives, and every coordinate below would be stale.
     document.documentElement.style.scrollBehavior = 'auto';
-    const el = document.querySelector('[data-try-scene]');
-    el.scrollIntoView({ block: 'center', behavior: 'instant' });
-    const r = el.getBoundingClientRect();
+    document.querySelector('[data-try-scene]').scrollIntoView({ block: 'center', behavior: 'instant' });
+    return 1;
+  })()`)
+  // The section fades up when it enters the viewport, and a block in the middle
+  // of its reveal is a few pixels above where it will settle. Measuring before
+  // the movement ends puts the whole drag off by whatever is left of it, which
+  // surfaces as a crop a couple of pixels off the drag — a failure that only
+  // happens on a loaded machine. Wait for the reveal, then measure once.
+  await sleep(900)
+  const sceneBox = await evaluate(`(() => {
+    const r = document.querySelector('[data-try-scene]').getBoundingClientRect();
     return { x: r.x, y: r.y, w: r.width, h: r.height };
   })()`)
   truthy('scene is on screen', sceneBox.w > 200 && sceneBox.h > 200)
@@ -152,10 +160,27 @@ async function main() {
       const crop = slot.querySelector('.try__crop');
       const copy = slot.querySelector('.try__crop > .try__doc');
       const firstChild = copy ? copy.querySelector('.winbar') : null;
+      const rgb = (v) => { const m = v.match(/rgba?\\(([^)]+)\\)/); if (!m) return null; const p = m[1].split(',').map(Number); return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 } };
+      const lum = (c) => { const f = (x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4) }; return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b) };
+      const ratio = (a, b) => { const l1 = lum(a), l2 = lum(b); return Math.round(((Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05)) * 100) / 100 };
+      // The panel paints a gradient over a transparent colour, so "what is
+      // behind the card" is the first opaque ancestor, not the panel itself.
+      const behind = (el) => { let n = el; while (n && n !== document.documentElement) { const c = rgb(getComputedStyle(n).backgroundColor); if (c && c.a > 0.95) return c; n = n.parentElement } return rgb(getComputedStyle(document.body).backgroundColor) };
+      const frame = shot ? rgb(getComputedStyle(shot).backgroundColor) : null;
+      const paper = copy ? rgb(getComputedStyle(copy).backgroundColor) : null;
+      const back = shot ? behind(shot.parentElement) : null;
       return {
         hasCard: Boolean(shot),
         frameBg: shot ? getComputedStyle(shot).backgroundColor : null,
         frameRadius: shot ? getComputedStyle(shot).borderTopLeftRadius : null,
+        // The frame is only a frame if both of its edges are visible: the one
+        // against the document inside it and the one against the page outside.
+        // Measured as a ratio rather than compared to a hard-coded colour, so the
+        // check survives a change of palette but not a change that makes the
+        // frame disappear again.
+        frameVsPaper: frame && paper ? ratio(frame, paper) : null,
+        frameVsPage: frame && back ? ratio(frame, back) : null,
+        cropShadow: crop ? getComputedStyle(crop).boxShadow : null,
         cropW: crop ? Math.round(crop.getBoundingClientRect().width) : null,
         cropH: crop ? Math.round(crop.getBoundingClientRect().height) : null,
         copyOffset: copy ? { x: copy.style.left, y: copy.style.top, w: copy.style.width } : null,
@@ -202,7 +227,9 @@ async function main() {
   record('the result panel is showing', afterDrag.doneVisible, true)
   record('nothing is showing before a drag', (await state()).msgVisible, false)
   record('the dim is cleared after release', await evaluate(`document.querySelector('[data-try-veil]').hidden`), true)
-  record('the card is a white frame', afterDrag.frameBg, 'rgb(255, 255, 255)')
+  record('the frame is drawn, not a ring inside a ring', afterDrag.cropShadow === 'none', true)
+  truthy('the frame separates from the document inside it', afterDrag.frameVsPaper >= 1.3)
+  truthy('the frame separates from the page outside it', afterDrag.frameVsPage >= 1.3)
   truthy('the card is rounded', parseFloat(afterDrag.frameRadius) > 4)
   record('the crop matches the drag width', Math.abs(afterDrag.cropW - (endX - startX)) <= 2, true)
   record('the crop matches the drag height', Math.abs(afterDrag.cropH - (endY - startY)) <= 2, true)

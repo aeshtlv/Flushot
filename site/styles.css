@@ -55,18 +55,17 @@
      the mesh carries the same alpha. */
   --grid-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Cpath d='M0 .5H48M.5 1V48' stroke='%23fff' stroke-opacity='.12' fill='none'/%3E%3C/svg%3E");
 
+  /* The same mesh, drawn brighter. It is a separate tile rather than a filter on
+     the first one: raising the opacity of the lit lines is the effect, and a
+     filter would also brighten the halo behind them. */
+  --grid-tile-lit: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Cpath d='M0 .5H48M.5 1V48' stroke='%23fff' stroke-opacity='.34' fill='none'/%3E%3C/svg%3E");
+  --glow-tint: rgba(107, 141, 255, 0.2);
+
   --accent: #6b8dff;
   --accent-ink: #09090b;
   --accent-dim: rgba(107, 141, 255, 0.15);
   --ok: #4ade80;
   --warn: #fbbf24;
-
-  /* The surface the demo's finished card sits on, and the ring that separates a
-     white card from it. Both themes need a value even though only one uses the
-     ring: the card is white in either theme, so the question "what is behind a
-     white frame" has to be answered in both. */
-  --desk: #0b0b0e;
-  --desk-edge: rgba(255, 255, 255, 0.16);
 
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
@@ -77,6 +76,11 @@
 
   --shadow-card: 0 20px 48px -16px rgba(0, 0, 0, 0.65);
   --shadow-hero: 0 28px 64px -28px rgba(0, 0, 0, 0.75);
+  /* The shadow under the demo's result card. It is separate from --shadow-card
+     because on a dark page the card has to be lifted off the surface, while on a
+     light page a shadow that heavy turns into a dark band right where the frame's
+     edge should be — the two edges would then be the same brightness. */
+  --shadow-shot: 0 18px 44px rgba(0, 0, 0, 0.45);
 
   --max: 1240px;
   --pad: 32px;
@@ -101,20 +105,24 @@
 
   --grid-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Cpath d='M0 .5H48M.5 1V48' stroke='%23000' stroke-opacity='.085' fill='none'/%3E%3C/svg%3E");
 
+  /* Darker, not lighter: on a white page a highlight has to add ink, and the
+     same 0.085 → 0.2 step that brightens a line on black would barely register
+     here at all. */
+  --grid-tile-lit: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Cpath d='M0 .5H48M.5 1V48' stroke='%23000' stroke-opacity='.2' fill='none'/%3E%3C/svg%3E");
+  --glow-tint: rgba(59, 91, 219, 0.11);
+
   --accent: #3b5bdb;
   --accent-ink: #ffffff;
   --accent-dim: rgba(59, 91, 219, 0.1);
   --ok: #0f7b56;
   --warn: #a16207;
 
-  /* A grey desk in the light theme, not white on white: the card the demo
-     produces is white in both themes, and on a near-white page a white frame
-     would have no edge to stand on. */
-  --desk: #e7e9f0;
-  --desk-edge: rgba(15, 23, 42, 0.18);
-
   --shadow-card: 0 20px 48px -24px rgba(0, 0, 0, 0.25);
   --shadow-hero: 0 28px 64px -32px rgba(0, 0, 0, 0.3);
+  /* Lighter here for the same reason the dark theme's is heavy: what has to read
+     is the frame's own edge, and a 45 % shadow on a white page darkens the strip
+     beside it to almost exactly the frame's grey. */
+  --shadow-shot: 0 14px 34px rgba(15, 23, 42, 0.16);
 }
 
 /* ------------------------------------------------------------------ reset */
@@ -280,18 +288,49 @@ a.link:hover {
 }
 
 .btn--primary {
+  position: relative;
+  overflow: hidden;
   background: var(--fg);
   color: var(--bg);
   font-weight: 600;
+  /* --mag-x/--mag-y are written by app.js while the pointer is over the button,
+     --lift by the rules below. They are separate so the magnet does not have to
+     know about the hover lift and the hover lift does not have to know about the
+     magnet; both end up in one transform, and each has a fallback so a button
+     with the script off still sits still. */
+  transform: translate(var(--mag-x, 0px), calc(var(--mag-y, 0px) + var(--lift, 0px)));
+}
+
+/* One pass of light across the button as the pointer arrives, then it stays off.
+   The band is drawn by the accent rather than by white or black, because the
+   button is white on a dark page and near-black on a light one: a highlight
+   picked to suit one of them would be invisible or a smudge on the other. */
+.btn--primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 36%,
+    color-mix(in srgb, var(--accent) 55%, transparent) 50%,
+    transparent 64%
+  );
+  transform: translateX(-140%);
+  transition: transform 0.6s cubic-bezier(0.33, 0, 0.2, 1);
+}
+
+.btn--primary:hover::after {
+  transform: translateX(140%);
 }
 
 .btn--primary:hover {
-  transform: translateY(-1px);
+  --lift: -1px;
   box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.5);
 }
 
 .btn--primary:active {
-  transform: translateY(0);
+  --lift: 0px;
 }
 
 .btn--ghost {
@@ -527,6 +566,12 @@ a.link:hover {
 
 .try__doc {
   height: 100%;
+  /* The paper of the document, carried by the document itself rather than by the
+     scene behind it. The result card is a clone of this node, and a clone that
+     has to sit inside a frame cannot inherit a colour from a parent it no longer
+     has: without this line the paper would take the frame's colour and the frame
+     would vanish into the picture it is supposed to surround. */
+  background: #f4f4f7;
   color: #17171d;
 }
 
@@ -755,6 +800,15 @@ a.link:hover {
   }
 }
 
+/* No pointer, no light under it. The script already declines to write the
+   position on such a device; hiding the layer keeps a stale value from a window
+   that was resized down to a phone from lighting up a corner. */
+@media (hover: none), (pointer: coarse) {
+  .hero__glow {
+    display: none;
+  }
+}
+
 /* ------------------------------------------------------------- the result */
 
 .try__out {
@@ -762,23 +816,7 @@ a.link:hover {
   flex-direction: column;
   gap: 16px;
   padding: 20px;
-  /* A desk for the finished card, not a transparent layer over the page. The
-     card is white in both themes, so it needs a surface of its own: over a
-     near-white page a white frame has no edge at all, and the demo would look
-     like it had produced an empty rectangle. */
-  background: var(--desk);
-}
-
-/* Text in this panel sits on --desk, which is a step darker than the page, and
-   the dim ramp loses about 0.2 of a ratio point doing it — enough to drop 4.34:1
-   under the 4.5 that 11 px copy needs. The muted step carries it back over the
-   line in both themes; measured with scripts/test-try-demo.cjs, not assumed. */
-.try__out .try__idle-text,
-.try__out .try__idle-hint,
-.try__out .try__meta,
-.try__out .try__status,
-.try__out .try__msg-text {
-  color: var(--fg-muted);
+  background: linear-gradient(var(--tint), transparent 60%);
 }
 
 .try__slot {
@@ -786,31 +824,28 @@ a.link:hover {
   justify-content: center;
 }
 
-/* The frame the program puts around a shot. It stays white on purpose: the
-   default settings produce a white card, and a dark one would misrepresent what
-   the download looks like.
+/* The frame the program puts around a shot: one colour, no ring, no hairline
+   inside. A mid grey sits far enough from both things it touches — the near-white
+   paper of the document inside it and the panel outside it, in either theme —
+   that both edges of the frame are visible. That is the whole fix: the frame was
+   white, the paper was white, so there was nothing to see.
 
-   White on white is the whole difficulty. The card is made to read as a frame by
-   three things that cost nothing: the hairline the crop carries (below), the
-   ring on the card so it separates from a light desk as well, and a shadow deep
-   enough to lift it in both themes. */
+   It is fixed rather than themed, because it is not part of the page: it is the
+   colour the program paints, and the program paints it the same way whatever is
+   behind the window. */
 .try__shot {
   max-width: 100%;
   padding: 14px;
-  background: #ffffff;
+  background: #c2c9d8;
   border-radius: 10px;
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--desk-edge);
+  box-shadow: var(--shadow-shot);
   animation: shot-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* The shot's own edge. A white frame around a light document has no boundary
-   without it: the frame reads as margin that happens to be there instead of as
-   the frame the program drew. Inset, so it costs no pixels of the picture. */
 .try__crop {
   position: relative;
   overflow: hidden;
   border-radius: 3px;
-  box-shadow: inset 0 0 0 1px rgba(23, 23, 29, 0.18);
 }
 
 .try__crop > .try__doc {
@@ -827,9 +862,6 @@ a.link:hover {
   position: relative;
   overflow: hidden;
   border-radius: 3px;
-  /* Repeated here because the crop inside is scaled: its own hairline would be
-     scaled with it and end up thinner than a pixel. */
-  box-shadow: inset 0 0 0 1px rgba(23, 23, 29, 0.18);
 }
 
 .try__crop-box > .try__crop {
@@ -981,7 +1013,7 @@ a.link:hover {
 .try__msg-shot .try__shot {
   padding: 6px;
   border-radius: 6px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--desk-edge);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
 }
 
 .try__msg-text {
@@ -1070,11 +1102,51 @@ code {
   animation: grid-in 1.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* A light under the pointer. The grid is printed, this is what happens when
+   something moves across it: the lines catch a little more contrast and a soft
+   accent bloom sits under the cursor, both inside one circular mask that travels
+   with the pointer.
+
+   Two things are deliberate. It is drawn in the same place as the grid so the
+   lit lines land exactly on the printed ones — a highlight on its own grid would
+   read as a second, misaligned texture. And it is driven by a custom property
+   written from app.js rather than by a filter or a canvas, so the browser has one
+   layer to move and nothing to re-render.
+
+   --glow-x/--glow-y are set on the hero by app.js; --glow-a fades the whole layer
+   in and out, so a pointer that leaves the hero does not switch the light off. */
+.hero__glow {
+  position: absolute;
+  inset: -80px 0;
+  pointer-events: none;
+  background-image:
+    var(--grid-tile-lit),
+    radial-gradient(
+      260px circle at var(--glow-x, 50%) var(--glow-y, 30%),
+      var(--glow-tint),
+      transparent 72%
+    );
+  background-size: 48px 48px, auto;
+  mask-image: radial-gradient(
+    300px circle at var(--glow-x, 50%) var(--glow-y, 30%),
+    #000 0%,
+    rgba(0, 0, 0, 0.55) 46%,
+    transparent 76%
+  );
+  -webkit-mask-image: radial-gradient(
+    300px circle at var(--glow-x, 50%) var(--glow-y, 30%),
+    #000 0%,
+    rgba(0, 0, 0, 0.55) 46%,
+    transparent 76%
+  );
+  opacity: var(--glow-a, 0);
+  transition: opacity 0.45s ease;
+}
+
 .hero__inner {
   position: relative;
   text-align: center;
 }
-
 .hero__title {
   max-width: 20ch;
   margin: 20px auto 22px;
@@ -2444,10 +2516,22 @@ code {
     transition: none;
   }
 
+  /* The light under the pointer is pure decoration and pure motion: it exists
+     only while something moves. Gone rather than slowed, for the same reason the
+     halo does not breathe here. */
+  .hero__glow {
+    display: none;
+  }
+
   .btn--primary:hover,
   .dl-card:hover,
   .feature:hover .feature__mark {
     transform: none;
+  }
+
+  /* A band of light crossing the button is motion with no other purpose. */
+  .btn--primary::after {
+    display: none;
   }
 }
 
