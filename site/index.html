@@ -29,7 +29,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=980e5cca">
 <link rel="manifest" href="site.webmanifest?v=06f0995b">
 <link rel="stylesheet" href="fonts.css?v=0b21389f">
-<link rel="stylesheet" href="styles.css?v=f7127da3">
+<link rel="stylesheet" href="styles.css?v=f69c0c44">
 <link rel="preload" as="image" href="assets/hero.webp?v=8e6805fc" type="image/webp">
 
 <script>
@@ -70,6 +70,7 @@
 
     <div class="nav-right" id="nav">
       <nav class="nav-links" aria-label="Основная навигация">
+        <a class="nav-link" href="#try">Попробовать</a>
         <a class="nav-link" href="#features">Возможности</a>
         <a class="nav-link" href="#how">Как работает</a>
         <a class="nav-link" href="#hotkeys">Клавиши</a>
@@ -88,6 +89,7 @@
       <a class="btn btn--primary nav-cta" href="#download">Скачать</a>
     </div>
   </div>
+  <span class="header__progress" data-progress aria-hidden="true"></span>
 </header>
 
 <main id="main">
@@ -128,6 +130,91 @@
           </picture>
         </div>
       </figure>
+    </div>
+  </section>
+
+  <section class="section section--try" id="try" aria-labelledby="try-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Попробуйте</p>
+        <h2 class="section-title" id="try-title">Выделите кусок этой страницы</h2>
+        <p class="section-lead">
+          Проведите мышью по окну — на отпускании получится карточка в рамке, ровно так же,
+          как это делает программа. Ничего не скачивая и ничего не отправляя.
+        </p>
+      </div>
+
+      <div class="try" data-try>
+        <div class="try__stage">
+          <div class="try__scene" data-try-scene tabindex="0" role="application"
+               aria-label="Окно с отчётом. Проведите мышью, чтобы выделить область, или нажмите Enter, чтобы выделить пример.">
+            <div class="try__doc" data-try-doc aria-hidden="true">
+              <div class="try__bar">
+                <span class="try__dot"></span><span class="try__dot"></span><span class="try__dot"></span>
+                <span class="try__bar-title">Отчёт за квартал</span>
+              </div>
+              <div class="try__paper">
+                <p class="try__kicker">Третий квартал</p>
+                <h3 class="try__heading">Выручка выше плана на 14 %</h3>
+                <p class="try__text">
+                  Рост дала подписка: 2 481 новый клиент за три месяца. Средний чек вырос
+                  до 1 240 ₽, отток держится на уровне 3,1 %.
+                </p>
+                <div class="try__chart" aria-hidden="true">
+                  <span></span><span></span><span></span><span></span><span></span><span></span>
+                </div>
+                <p class="try__text try__text--small">
+                  Цифры за сентябрь ещё уточняются: часть возвратов придёт в октябре.
+                </p>
+              </div>
+            </div>
+
+            <div class="try__veil" data-try-veil hidden></div>
+            <div class="try__marquee" data-try-marquee hidden>
+              <span class="try__size" data-try-size>0 × 0 px</span>
+            </div>
+            <p class="try__hint" data-try-hint>
+              <span class="try__hint-fine">Проведите мышью</span>
+              <span class="try__hint-coarse">Проведите пальцем</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="try__out" data-try-out>
+          <div class="try__slot" data-try-slot></div>
+
+          <div class="try__idle" data-try-idle>
+            <p class="try__idle-title">Здесь появится снимок</p>
+            <p class="try__idle-text">
+              С рамкой, скруглёнными углами и тенью — та же карточка, которую вы получите
+              в программе.
+            </p>
+            <p class="try__idle-hint try__hint-fine"><kbd>Enter</kbd> на окне выделит пример целиком</p>
+          </div>
+
+          <div class="try__done" data-try-done hidden>
+            <p class="try__meta"><span data-try-dims>0 × 0 px</span><span>PNG</span><span>в буфере обмена</span></p>
+            <div class="try__actions">
+              <button class="btn btn--primary btn--sm" type="button" data-try-paste>
+                <kbd>Ctrl</kbd><span class="try__plus">+</span><kbd>V</kbd>
+                Вставить
+              </button>
+              <button class="btn btn--ghost btn--sm" type="button" data-try-reset>Ещё раз</button>
+            </div>
+          </div>
+
+          <p class="try__status" data-try-status role="status" aria-live="polite"></p>
+
+          <div class="try__msg" data-try-msg hidden>
+            <span class="try__avatar" aria-hidden="true">Я</span>
+            <div class="try__bubble">
+              <span class="try__msg-name">Вы · только что</span>
+              <div class="try__msg-shot" data-try-msg-shot></div>
+              <span class="try__msg-text">Смотрите, как выросла выручка</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -717,6 +804,6 @@
 }
 </script>
 
-<script src="app.js?v=d6b675fe" defer></script>
+<script src="app.js?v=001a27d6" defer></script>
 </body>
 </html>

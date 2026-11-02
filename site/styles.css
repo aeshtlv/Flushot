@@ -120,6 +120,13 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+/* The hidden attribute has to win over any display a component sets on itself.
+   Without this a `hidden` panel that is also `display: flex` stays on screen,
+   and the attribute silently stops meaning anything. */
+[hidden] {
+  display: none !important;
+}
+
 body {
   min-height: 100vh;
   background: var(--bg);
@@ -312,6 +319,27 @@ a.link:hover {
   border-bottom-color: var(--border);
 }
 
+/* How far down the page you are, drawn as a hairline on the header's edge. It
+   is the only progress cue on a page this long, and it costs one element:
+   --progress is written by app.js on scroll and never animates on its own. */
+.header__progress {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 100%;
+  height: 1.5px;
+  background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 40%, transparent));
+  transform: scaleX(var(--progress, 0));
+  transform-origin: 0 50%;
+  opacity: 0.9;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.header:not(.is-stuck) .header__progress {
+  opacity: 0;
+}
+
 .nav-inner {
   display: flex;
   align-items: center;
@@ -428,6 +456,436 @@ a.link:hover {
 
 .nav-right .nav-cta:hover {
   color: var(--bg);
+}
+
+/* ------------------------------------------------------------------- try */
+/*
+ * The live demo. Everything here has to do one job: let a visitor drag a
+ * rectangle and get the same card the program would give them, so that the
+ * promise on the first screen is something they have already done once before
+ * they read the feature list.
+ *
+ * The "screenshot" is a real crop of a real element, not a picture: the scene is
+ * a small document built in HTML, and the result is a clone of it inside an
+ * overflow:hidden box offset by the drag. That keeps the demo honest — what you
+ * see in the card is what you selected — and it costs no extra bytes.
+ */
+
+.section--try {
+  padding-top: 34px;
+}
+
+.try {
+  display: grid;
+  grid-template-columns: minmax(0, 1.42fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.try__stage,
+.try__out {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.try__stage {
+  overflow: hidden;
+  background: var(--bg-elev);
+}
+
+/* The scene is a desktop window, so it keeps its own colours in both themes:
+   a screenshot does not repaint itself when the page switches to dark. */
+.try__scene {
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  min-height: 360px;
+  background: #f4f4f7;
+  cursor: crosshair;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.try__scene:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -3px;
+}
+
+.try__doc {
+  height: 100%;
+  color: #17171d;
+}
+
+.try__bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 12px;
+  background: #e9e9ef;
+  border-bottom: 1px solid #dcdce4;
+}
+
+.try__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #c3c3cd;
+}
+
+.try__dot:first-child {
+  background: #e5a3a3;
+}
+
+.try__bar-title {
+  margin-left: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #55555f;
+}
+
+.try__paper {
+  padding: 22px 26px 26px;
+}
+
+.try__kicker {
+  margin-bottom: 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6d6d78;
+}
+
+.try__heading {
+  margin-bottom: 10px;
+  font-size: clamp(17px, 1.7vw, 22px);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  color: #17171d;
+}
+
+.try__text {
+  max-width: 46ch;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #55555f;
+}
+
+.try__text--small {
+  margin-top: 12px;
+  font-size: 12px;
+  color: #6d6d78;
+}
+
+.try__chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 88px;
+  margin: 18px 0 4px;
+  padding: 0 2px;
+}
+
+.try__chart span {
+  flex: 1;
+  border-radius: 3px 3px 1px 1px;
+  background: linear-gradient(#7fa8d8, #4b7ab8);
+}
+
+/* Six bars, no data behind them: this is the decoration that makes the scene
+   look like a report rather than a paragraph. Heights are written here rather
+   than inline so the colour tokens still come from one place. */
+.try__chart span:nth-child(1) {
+  height: 38%;
+}
+
+.try__chart span:nth-child(2) {
+  height: 54%;
+}
+
+.try__chart span:nth-child(3) {
+  height: 47%;
+}
+
+.try__chart span:nth-child(4) {
+  height: 72%;
+}
+
+.try__chart span:nth-child(5) {
+  height: 88%;
+}
+
+.try__chart span:nth-child(6) {
+  height: 96%;
+}
+
+/* The dim that the real overlay draws over everything outside the selection.
+   One element carries it: a spread shadow cannot paint outside the scene, which
+   is exactly the clipping the overlay does at the edge of the screen. */
+.try__veil {
+  position: absolute;
+  border: 1.5px dashed #ffffff;
+  box-shadow: 0 0 0 9999px rgba(9, 9, 11, 0.58), inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+
+.try__marquee {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.try__size {
+  position: absolute;
+  padding: 3px 7px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.3;
+  /* Opaque, not translucent: the label sits over a light document in both
+     themes, and a solid pill is the only thing that keeps white text at the
+     same contrast wherever the rectangle happens to land. */
+  color: #ffffff;
+  white-space: nowrap;
+  background: #17171d;
+  border-radius: 4px;
+}
+
+.try__hint {
+  position: absolute;
+  inset: auto 0 14px;
+  font-size: 12px;
+  color: #55555f;
+  text-align: center;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.try--started .try__hint {
+  opacity: 0;
+}
+
+/* A finger is not a mouse: the hint and the keyboard shortcut change with the
+   input device, because «проведите мышью» on a phone is simply wrong. */
+.try__hint-coarse {
+  display: none;
+}
+
+@media (hover: none) {
+  .try__hint-fine {
+    display: none;
+  }
+
+  .try__hint-coarse {
+    display: inline;
+  }
+}
+
+/* ------------------------------------------------------------- the result */
+
+.try__out {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background: linear-gradient(var(--tint), transparent 60%);
+}
+
+.try__slot {
+  display: flex;
+  justify-content: center;
+}
+
+/* The frame the program puts around a shot. It stays white on purpose: the
+   default settings produce a white card, and a dark one would misrepresent what
+   the download looks like. */
+.try__shot {
+  max-width: 100%;
+  padding: 12px;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.45);
+  animation: shot-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.try__crop {
+  position: relative;
+  overflow: hidden;
+  border-radius: 3px;
+}
+
+.try__crop > .try__doc {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* The smaller copy used in the message. The crop keeps its pixel size and is
+   scaled with a transform: shrinking the box instead would re-wrap the text
+   inside the copy, and the result would no longer be a photograph of the
+   selection. */
+.try__crop-box {
+  position: relative;
+  overflow: hidden;
+  border-radius: 3px;
+}
+
+.try__crop-box > .try__crop {
+  transform-origin: 0 0;
+}
+
+@keyframes shot-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+}
+
+.try__idle {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+}
+
+.try__idle-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+
+.try__idle-text {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--fg-dim);
+}
+
+.try__idle-hint {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--fg-dim);
+}
+
+.try__done {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.try__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-dim);
+}
+
+.try__meta span:first-child {
+  color: var(--fg);
+}
+
+.try__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.try__actions .btn {
+  gap: 4px;
+}
+
+.try__plus {
+  margin: 0 1px;
+  opacity: 0.6;
+}
+
+.try__actions kbd {
+  font-size: 11px;
+}
+
+/* A keycap inside the primary button sits on the button's own colour, not on
+   the page: the default kbd uses the page foreground and would come out white
+   on white there. */
+.btn--primary kbd {
+  color: inherit;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+  border-color: color-mix(in srgb, currentColor 28%, transparent);
+  border-bottom-color: color-mix(in srgb, currentColor 40%, transparent);
+}
+
+.try__status {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--fg-dim);
+}
+
+.try__status:empty {
+  display: none;
+}
+
+/* The paste step. The card was already in the clipboard in the real program, so
+   this is the only part of the demo that is a re-enactment rather than a
+   measurement — which is why it takes a click instead of happening by itself. */
+.try__msg {
+  display: flex;
+  gap: 10px;
+  padding: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  animation: msg-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes msg-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.try__avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bg);
+  background: var(--fg);
+  border-radius: 50%;
+}
+
+.try__bubble {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.try__msg-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+
+.try__msg-shot {
+  max-width: 100%;
+}
+
+.try__msg-shot .try__shot {
+  padding: 6px;
+  border-radius: 6px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.try__msg-text {
+  font-size: 12px;
+  color: var(--fg-dim);
 }
 
 /* --------------------------------------------------------------- compare */
@@ -575,15 +1033,44 @@ code {
   text-decoration-color: var(--fg);
 }
 
+/* The card leans towards the pointer. Two degrees is the whole effect: enough
+   that the frame feels like a physical object on the page, not enough to bend
+   the screenshot inside it. --tilt-x / --tilt-y are written by app.js only for
+   a fine pointer, so a touch screen keeps the flat rest state. */
 .hero__preview {
   max-width: 1120px;
   margin: 0 auto;
-  transform: perspective(2000px) rotateX(2deg);
-  transition: transform 0.6s;
+  transform: perspective(2000px) rotateX(calc(2deg + var(--tilt-x, 0deg))) rotateY(var(--tilt-y, 0deg));
+  transform-style: preserve-3d;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .hero__preview:hover {
-  transform: perspective(2000px) rotateX(0);
+  transform: perspective(2000px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+}
+
+.hero__preview:hover .hero__frame {
+  box-shadow: var(--shadow-hero), 0 0 0 1px var(--border-strong);
+}
+
+/* A light source that follows the pointer across the frame. It is drawn inside
+   the frame, above the image, and never touches the pointer itself. */
+.hero__frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    340px circle at var(--sheen-x, 50%) var(--sheen-y, 0%),
+    rgba(255, 255, 255, 0.09),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.hero__preview:hover .hero__frame::after {
+  opacity: 1;
 }
 
 .hero__frame {
@@ -1520,6 +2007,16 @@ code {
     --pad: 24px;
   }
 
+  /* The demo stacks: the window on top, the result under it. Side by side at
+     this width leaves both halves too narrow to drag in comfortably. */
+  .try {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .try__scene {
+    min-height: 320px;
+  }
+
   .feature-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1689,6 +2186,23 @@ code {
     --pad: 18px;
   }
 
+  .try__paper {
+    padding: 16px 16px 20px;
+  }
+
+  .try__scene {
+    min-height: 300px;
+  }
+
+  .try__out {
+    padding: 16px;
+  }
+
+  .try__actions .btn {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
   .feature-grid {
     grid-template-columns: 1fr;
   }
@@ -1782,7 +2296,9 @@ code {
   [data-rise],
   .term__caret,
   .hero::before,
-  .hero__grid {
+  .hero__grid,
+  .try__shot,
+  .try__msg {
     animation: none;
   }
 

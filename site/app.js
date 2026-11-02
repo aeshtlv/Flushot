@@ -132,6 +132,7 @@
         '.compare__card',
         '.save-grid > *',
         '.hotkeys',
+        '.try',
         '.gallery',
         '.dl-card',
         '.limit',
@@ -169,6 +170,290 @@
       element.classList.add('reveal');
       observer.observe(element);
     });
+  }
+
+  // ----------------------------------------------------------- page progress
+  //
+  // A hairline on the header's lower edge. On a page this long it is the only
+  // cue for how much is left, and it costs one element and one number.
+  var progressBar = document.querySelector('[data-progress]');
+  if (progressBar) {
+    var paintProgress = function () {
+      var room = document.documentElement.scrollHeight - window.innerHeight;
+      var ratio = room > 0 ? Math.min(1, window.scrollY / room) : 0;
+      progressBar.style.setProperty('--progress', ratio.toFixed(4));
+    };
+    paintProgress();
+    window.addEventListener('scroll', paintProgress, { passive: true });
+    window.addEventListener('resize', paintProgress);
+  }
+
+  // --------------------------------------------------------------- hero tilt
+  //
+  // The framed screenshot leans towards the pointer and passes a light under it.
+  // Only for a fine pointer: on a touch screen there is no hover, and a card
+  // that tilts when tapped looks broken rather than alive.
+  var preview = document.querySelector('.hero__preview');
+  if (preview && !still && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    var frame = preview.querySelector('.hero__frame');
+    preview.addEventListener('pointermove', function (event) {
+      var box = preview.getBoundingClientRect();
+      if (!box.width || !box.height) return;
+      var px = (event.clientX - box.left) / box.width;
+      var py = (event.clientY - box.top) / box.height;
+      // Half a degree of axis per 8 % of travel: the card ends up within 2° of
+      // flat, which reads as depth without distorting the picture inside.
+      preview.style.setProperty('--tilt-y', ((px - 0.5) * 3).toFixed(2) + 'deg');
+      preview.style.setProperty('--tilt-x', ((0.5 - py) * 2).toFixed(2) + 'deg');
+      if (frame) {
+        frame.style.setProperty('--sheen-x', (px * 100).toFixed(1) + '%');
+        frame.style.setProperty('--sheen-y', (py * 100).toFixed(1) + '%');
+      }
+    });
+    preview.addEventListener('pointerleave', function () {
+      preview.style.removeProperty('--tilt-x');
+      preview.style.removeProperty('--tilt-y');
+    });
+  }
+
+  // ------------------------------------------------------------- live demo
+  //
+  // The one place on the page where a visitor does the thing instead of reading
+  // about it. Dragging in the scene builds a card out of a real crop of that
+  // scene: the copy is offset by the drag inside an overflow:hidden box, so the
+  // card shows exactly what was selected and nothing else. No image is fetched,
+  // and the size printed under the card is the size of the drag, not a number
+  // typed into the markup.
+  var demo = document.querySelector('[data-try]');
+  if (demo) {
+    var scene = demo.querySelector('[data-try-scene]');
+    var sheet = demo.querySelector('[data-try-doc]');
+    var veil = demo.querySelector('[data-try-veil]');
+    var marquee = demo.querySelector('[data-try-marquee]');
+    var sizeTag = demo.querySelector('[data-try-size]');
+    var slot = demo.querySelector('[data-try-slot]');
+    var idle = demo.querySelector('[data-try-idle]');
+    var done = demo.querySelector('[data-try-done]');
+    var dimsOut = demo.querySelector('[data-try-dims]');
+    var statusOut = demo.querySelector('[data-try-status]');
+    var message = demo.querySelector('[data-try-msg]');
+    var messageShot = demo.querySelector('[data-try-msg-shot]');
+    var pasteButton = demo.querySelector('[data-try-paste]');
+    var resetButton = demo.querySelector('[data-try-reset]');
+
+    // The program refuses regions under 24 × 24 px — releasing the mouse there
+    // leaves the clipboard alone. The demo repeats that rule instead of taking
+    // every drag, because the rule is the whole reason the threshold exists.
+    var MIN = 24;
+    var drag = null;
+    var lastRect = null;
+
+    var sceneSize = function () {
+      return { w: scene.clientWidth, h: scene.clientHeight };
+    };
+
+    var pointInScene = function (event) {
+      var box = scene.getBoundingClientRect();
+      return {
+        x: Math.max(0, Math.min(scene.clientWidth, event.clientX - box.left)),
+        y: Math.max(0, Math.min(scene.clientHeight, event.clientY - box.top))
+      };
+    };
+
+    var rectBetween = function (a, b) {
+      return {
+        x: Math.round(Math.min(a.x, b.x)),
+        y: Math.round(Math.min(a.y, b.y)),
+        w: Math.round(Math.abs(a.x - b.x)),
+        h: Math.round(Math.abs(a.y - b.y))
+      };
+    };
+
+    var paintSelection = function (rect) {
+      veil.hidden = false;
+      veil.style.left = rect.x + 'px';
+      veil.style.top = rect.y + 'px';
+      veil.style.width = rect.w + 'px';
+      veil.style.height = rect.h + 'px';
+
+      marquee.hidden = false;
+      sizeTag.textContent = rect.w + ' × ' + rect.h + ' px';
+      // Above the rectangle when there is room, inside it when the drag has
+      // reached the top edge of the window — the same rearrangement the real
+      // overlay does with its size label.
+      var above = rect.y > 26;
+      sizeTag.style.left = Math.max(0, Math.min(rect.x, sceneSize().w - 96)) + 'px';
+      sizeTag.style.top = (above ? rect.y - 24 : rect.y + 6) + 'px';
+    };
+
+    var clearSelection = function () {
+      veil.hidden = true;
+      marquee.hidden = true;
+      demo.classList.remove('try--started');
+    };
+
+    // `scale` is used by the paste step, which shows the same card smaller, and
+    // by a selection wider than the column. The crop is transformed instead of
+    // rebuilt at a smaller size: a narrower box would re-wrap the text inside
+    // the copy, and the result would stop being a photograph of the selection.
+    var makeCard = function (rect, scale) {
+      scale = scale || 1;
+      var frame = document.createElement('div');
+      frame.className = 'try__shot';
+
+      var crop = document.createElement('div');
+      crop.className = 'try__crop';
+      crop.style.width = rect.w + 'px';
+      crop.style.height = rect.h + 'px';
+
+      var size = sceneSize();
+      var copy = sheet.cloneNode(true);
+      copy.removeAttribute('data-try-doc');
+      copy.style.width = size.w + 'px';
+      copy.style.height = size.h + 'px';
+      copy.style.left = -rect.x + 'px';
+      copy.style.top = -rect.y + 'px';
+      crop.appendChild(copy);
+
+      if (scale === 1) {
+        frame.appendChild(crop);
+        return frame;
+      }
+
+      var box = document.createElement('div');
+      box.className = 'try__crop-box';
+      box.style.width = Math.round(rect.w * scale) + 'px';
+      box.style.height = Math.round(rect.h * scale) + 'px';
+      box.style.position = 'relative';
+      crop.style.position = 'absolute';
+      crop.style.transform = 'scale(' + scale + ')';
+      box.appendChild(crop);
+      frame.appendChild(box);
+      return frame;
+    };
+
+    // A selection can be as wide as the whole window, and the column it lands
+    // in is fixed. Shrinking the card keeps it inside the panel instead of
+    // pushing the page sideways; the size printed under it stays the size of
+    // the selection, not of the card.
+    var fitScale = function (rect, roomFor, roomHigh) {
+      var byWidth = roomFor > 0 ? Math.min(1, roomFor / rect.w) : 1;
+      var byHeight = roomHigh > 0 ? Math.min(1, roomHigh / rect.h) : 1;
+      return Math.max(0.2, Math.min(byWidth, byHeight));
+    };
+
+    var showResult = function (rect) {
+      lastRect = rect;
+      // 24 px is the frame's own padding; 380 keeps a full-window selection from
+      // stretching the column far past the scene beside it.
+      var scale = fitScale(rect, slot.clientWidth - 24, 380);
+      slot.replaceChildren(makeCard(rect, scale));
+      idle.hidden = true;
+      done.hidden = false;
+      message.hidden = true;
+      messageShot.replaceChildren();
+      dimsOut.textContent = rect.w + ' × ' + rect.h + ' px';
+      statusOut.textContent =
+        'Готово: рамка, скругление и тень — те же, что ставит программа. В ней этот снимок уже лежал бы в буфере обмена.';
+    };
+
+    var resetDemo = function (note) {
+      lastRect = null;
+      drag = null;
+      slot.replaceChildren();
+      idle.hidden = false;
+      done.hidden = true;
+      message.hidden = true;
+      messageShot.replaceChildren();
+      statusOut.textContent = note || '';
+      clearSelection();
+    };
+
+    scene.addEventListener('pointerdown', function (event) {
+      if (event.pointerType === 'mouse' && event.button !== 0) return;
+      event.preventDefault();
+      // Capture, so a drag that leaves the window still finishes here — the
+      // same reason the real overlay keeps its selection while the pointer
+      // crosses to another monitor.
+      if (scene.setPointerCapture) scene.setPointerCapture(event.pointerId);
+      drag = { from: pointInScene(event), rect: null };
+      demo.classList.add('try--started');
+      paintSelection(rectBetween(drag.from, drag.from));
+    });
+
+    scene.addEventListener('pointermove', function (event) {
+      if (!drag) return;
+      drag.rect = rectBetween(drag.from, pointInScene(event));
+      paintSelection(drag.rect);
+    });
+
+    var finishDrag = function (event) {
+      if (!drag) return;
+      var rect = drag.rect || rectBetween(drag.from, pointInScene(event));
+      drag = null;
+      clearSelection();
+      if (rect.w < MIN || rect.h < MIN) {
+        resetDemo(
+          'Область ' + rect.w + ' × ' + rect.h + ' px меньше ' + MIN + ' × ' + MIN +
+            ' — программа такую не копирует, и буфер обмена остаётся прежним. Потяните шире.'
+        );
+        return;
+      }
+      showResult(rect);
+    };
+
+    scene.addEventListener('pointerup', finishDrag);
+    scene.addEventListener('pointercancel', function () {
+      drag = null;
+      clearSelection();
+    });
+
+    scene.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') {
+        resetDemo('');
+        return;
+      }
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      // A keyboard has no drag, so this picks the part of the page worth
+      // sending: the heading, the paragraph and the chart under them.
+      var size = sceneSize();
+      var heading = demo.querySelector('.try__heading');
+      var chart = demo.querySelector('.try__chart');
+      var rect = { x: 16, y: 44, w: Math.min(420, size.w - 32), h: Math.min(240, size.h - 60) };
+      if (heading && chart) {
+        var box = scene.getBoundingClientRect();
+        var top = heading.getBoundingClientRect().top - box.top;
+        var bottom = chart.getBoundingClientRect().bottom - box.top;
+        var left = heading.getBoundingClientRect().left - box.left;
+        rect = {
+          x: Math.max(0, Math.round(left - 10)),
+          y: Math.max(0, Math.round(top - 10)),
+          w: Math.min(size.w, Math.round(300)),
+          h: Math.min(size.h, Math.round(bottom - top + 20))
+        };
+      }
+      showResult(rect);
+    });
+
+    if (pasteButton) {
+      pasteButton.addEventListener('click', function () {
+        if (!lastRect) return;
+        // The copy in the message is smaller than the card above it, so the
+        // conversation does not grow to the height of the whole page.
+        var scale = Math.min(0.55, fitScale(lastRect, messageShot.clientWidth - 12, 200));
+        messageShot.replaceChildren(makeCard(lastRect, scale));
+        message.hidden = false;
+        statusOut.textContent =
+          'Вставили. В программе снимок лежит в буфере сразу после отпускания мыши — остаётся нажать Ctrl+V там, куда вставляете.';
+      });
+    }
+
+    if (resetButton) {
+      resetButton.addEventListener('click', function () {
+        resetDemo('');
+      });
+    }
   }
 
   // ------------------------------------------------------------- tabs
