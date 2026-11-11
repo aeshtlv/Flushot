@@ -50,9 +50,9 @@ Windows 10 и 11, x64.
 
 | Файл | Описание |
 |---|---|
-| **[Flushot-2.3.0-win64.zip](../../releases/latest/download/Flushot-2.3.0-win64.zip)** | 161 МБ. Распаковать в любую папку и запустить `Flushot.exe`. Временная папка Windows не требуется — рекомендуемый вариант |
-| [Flushot-2.3.0-installer.zip](../../releases/latest/download/Flushot-2.3.0-installer.zip) | 113 МБ. Установщик NSIS: ярлыки в меню «Пуск», выбор папки, деинсталлятор |
-| [Flushot-2.3.0-portable.zip](../../releases/latest/download/Flushot-2.3.0-portable.zip) | 113 МБ. Portable-версия одним файлом, без установки |
+| **[Flushot-2.3.0-win64.zip](../../releases/latest/download/Flushot-2.3.0-win64.zip)** | 143 МБ. Распаковать в любую папку и запустить `Flushot.exe`. Временная папка Windows не требуется — рекомендуемый вариант |
+| [Flushot-2.3.0-installer.zip](../../releases/latest/download/Flushot-2.3.0-installer.zip) | 94 МБ. Установщик NSIS: ярлыки в меню «Пуск», выбор папки, деинсталлятор |
+| [Flushot-2.3.0-portable.zip](../../releases/latest/download/Flushot-2.3.0-portable.zip) | 94 МБ. Portable-версия одним файлом, без установки |
 
 Сборки не подписаны сертификатом разработчика, поэтому при первом запуске SmartScreen показывает
 предупреждение: **«Подробнее» → «Выполнить всё равно»**. Это стандартное поведение для неподписанного

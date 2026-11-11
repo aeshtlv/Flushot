@@ -45,9 +45,9 @@ all three; only the installation method differs.
 
 | File | Description |
 |---|---|
-| **[Flushot-2.3.0-win64.zip](../../releases/latest/download/Flushot-2.3.0-win64.zip)** | 161 MB. Unpack anywhere and run `Flushot.exe`. Does not need a writable `%TEMP%` — recommended |
-| [Flushot-2.3.0-installer.zip](../../releases/latest/download/Flushot-2.3.0-installer.zip) | 113 MB. NSIS installer: Start menu shortcuts, install location, uninstaller |
-| [Flushot-2.3.0-portable.zip](../../releases/latest/download/Flushot-2.3.0-portable.zip) | 113 MB. Portable single file, no installation |
+| **[Flushot-2.3.0-win64.zip](../../releases/latest/download/Flushot-2.3.0-win64.zip)** | 143 MB. Unpack anywhere and run `Flushot.exe`. Does not need a writable `%TEMP%` — recommended |
+| [Flushot-2.3.0-installer.zip](../../releases/latest/download/Flushot-2.3.0-installer.zip) | 94 MB. NSIS installer: Start menu shortcuts, install location, uninstaller |
+| [Flushot-2.3.0-portable.zip](../../releases/latest/download/Flushot-2.3.0-portable.zip) | 94 MB. Portable single file, no installation |
 
 The binaries are not code-signed, so SmartScreen warns on first launch: **More info → Run anyway**.
 That is standard behaviour for an unsigned executable.
