@@ -84,7 +84,7 @@ npm run dev
 
 ```bash
 npm run typecheck    # tsc for main and renderer
-npm test             # 389 tests in 26 files
+npm test             # 394 tests in 27 files
 npm run build        # production build in out/
 npm run dist         # installer and portable build in release/
 npm run self-test    # end-to-end check on a live system
@@ -142,6 +142,27 @@ replace itself.
 - Text recognition reads only the languages installed in Windows, and it makes mistakes on small type
   and on coloured text over images. Mean character error rate on the measured set: 3.22 %.
 - `Win+Shift+S` cannot be assigned while the Snipping Tool is installed: the OS keeps that combination.
+
+## Project layout
+
+```
+src/main/        the Electron process: capture, card composition, export, recognition, settings, tray, updates
+src/renderer/    the interface: selection overlay, annotation panel, settings window
+src/shared/      shared types, DPI geometry, default settings, logo drawing, the string dictionary
+tests/           394 unit tests
+scripts/         icon and screenshot pipelines, the checks
+logo/            logo.svg — the source every icon is generated from
+build/           icon.png, icon.ico and the tray icons
+deploy/          nginx configuration and the site deploy scripts
+docs/            documentation and interface screenshots
+```
+
+No program archives live in the repository: they are attached to [Releases](../../releases).
+`node_modules/`, `out/`, `release/` and `share/*.zip` are excluded through `.gitignore`.
+
+The site is not here either: the landing page, its social images and its scripts live on the
+`site` branch of the same repository. The documents under `docs/` are written in Russian;
+this file and the landing page are the English versions.
 
 ## Documentation
 
