@@ -519,7 +519,7 @@ module.exports = [
     '>Скачать EXE<',
     '>Download EXE<'
   ],
-  ['<span>105 МБ</span><span>EXE</span><span>автообновление</span>', '<span>110 MB</span><span>EXE</span><span>auto-updates</span>'],
+  ['<span>105 МБ</span><span>EXE</span><span>автообновление</span>', '<span>105 MB</span><span>EXE</span><span>auto-updates</span>'],
   [
     ' скачиваний с GitHub · считаются скачивания, а не установки',
     ' downloads from GitHub · downloads, not installs'

@@ -780,6 +780,74 @@ async function checkReleaseLinks() {
 }
 
 /**
+
+ * The size promised on a download button must be the same number in both languages.
+ *
+ * The cards are generated one language at a time, so nothing used to notice that the
+ * installer was "105 МБ" in Russian and "110 MB" in English. A visitor comparing the
+ * two pages would have been promised two different files.
+ *
+ * Sizes are matched per card position rather than per file name, because the file
+ * name is the one thing the build rewrites for a new version; the order of the cards
+ * is fixed by the markup and is what a reader compares. The closing call to action
+ * repeats the installer's size, so it is compared with the first card as well.
+ */
+function checkDownloadSizes() {
+  const numberIn = (value) => (value.match(/[\d.,]+/) ?? [''])[0].replace(',', '.')
+
+  function cardSizes(file) {
+    const html = read(file)
+    return [...html.matchAll(/<p class="dl-card__meta">([\s\S]*?)<\/p>/g)].map((match) => {
+      const spans = [...match[1].matchAll(/<span>([^<]*)<\/span>/g)].map((span) => span[1].trim())
+      return spans[0] ?? ''
+    })
+  }
+
+  function closingSize(file) {
+    const meta = /<p class="cta__meta">([\s\S]*?)<\/p>/.exec(read(file))
+    return meta ? numberIn(meta[1].replace(/<[^>]+>/g, ' ')) : ''
+  }
+
+  const ru = cardSizes('index.html')
+  const en = cardSizes('en/index.html')
+
+  if (ru.length === 0) {
+    fail('no download cards with a size on index.html')
+    return
+  }
+  if (ru.length !== en.length) {
+    fail(`the Russian page has ${ru.length} download cards, the English one has ${en.length}`)
+    return
+  }
+
+  for (let index = 0; index < ru.length; index++) {
+    const russian = ru[index]
+    const english = en[index]
+    if (!russian || !english) {
+      fail(`download card ${index + 1}: one language is missing its size ("${russian}", "${english}")`)
+      continue
+    }
+    // "105 МБ" and "105 MB" promise the same file; only the digits have to agree.
+    if (numberIn(russian) !== numberIn(english)) {
+      fail(`download card ${index + 1}: Russian says "${russian}", English says "${english}"`)
+    }
+  }
+
+  // The closing line and the installer card describe the same file.
+  const ctaRu = closingSize('index.html')
+  const ctaEn = closingSize('en/index.html')
+  if (!ctaRu || !ctaEn) {
+    fail('the closing call to action no longer states the size in both languages')
+  } else if (ctaRu !== ctaEn) {
+    fail(`the closing line says ${ctaRu} MB in Russian and ${ctaEn} MB in English`)
+  } else if (ctaRu !== numberIn(ru[0])) {
+    fail(`the closing line says ${ctaRu} MB but the installer card says ${numberIn(ru[0])} MB`)
+  }
+
+  notes.push(`${ru.length} download cards and the closing line agree on size, in both languages`)
+}
+
+/**
  * Every asset the page loads must carry the hash of the file it points at.
  *
  * The server caches these URLs for a year, which is only safe while the URL
@@ -865,6 +933,7 @@ async function main() {
   await checkSocialPreview()
   await checkBrandMark()
   await checkReleaseLinks()
+  checkDownloadSizes()
   await checkAssetStamps()
   await reportSize()
 
