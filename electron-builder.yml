@@ -18,10 +18,11 @@ files:
   - '!node_modules/**/*.d.cts'
   - '!node_modules/**/*.d.mts'
 
-# The interface is Russian only, so the other 53 language packs Chromium ships
-# are 48 MB of strings this app never shows. Chromium falls back to en-US for
-# anything the app does not translate, so two packs are enough. The self-test
-# confirms it: every string it reads out of both windows comes back in Russian.
+# The interface speaks Russian and English, so the 52 other language packs
+# Chromium ships are 48 MB of strings this app never shows. Chromium also uses
+# them for its own dialogs — a file picker, a context menu — which is why both
+# are here and not just one. The self-test reads a string out of both windows in
+# the language the settings ask for.
 electronLanguages:
   - ru
   - en-US

@@ -2233,7 +2233,7 @@ export async function runSelfTest(session?: CaptureSession, settingsStore?: Sett
       overlayPage.facts.toolbar === 'visible' &&
       overlayPage.labels.includes(tr('overlay.create'))
     const settingsOk =
-      settingsPage.facts.panels === '5' &&
+      settingsPage.facts.panels === '6' &&
       settingsPage.facts.overflowX === 'false' &&
       settingsPage.facts.versionCentered === 'true' &&
       settingsPage.facts.resetLast === 'true' &&
@@ -2256,6 +2256,10 @@ export async function runSelfTest(session?: CaptureSession, settingsStore?: Sett
       languagePage.facts.langEnglish !== languagePage.facts.langBefore &&
       languagePage.facts.langRestored === languagePage.facts.langBefore
     report.facts.language = { ...languagePage.facts, ok: String(languageOk) }
+    for (const key of Object.keys(report.facts.language)) {
+      if (key.startsWith('lang') && key !== 'langBefore') delete report.facts.settings[key]
+    }
+    delete report.facts.settings.langBefore
     // Choosing WebP must reach the caption, the quality row and back again.
     const webpOk =
       webpPage.facts.webpLabel.startsWith('WebP ·') &&
