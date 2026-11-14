@@ -66,7 +66,7 @@ The binaries are not code-signed, so SmartScreen warns on first launch: **More i
 That is standard behaviour for an unsigned executable.
 
 <!-- downloads:begin -->
-Downloads from GitHub: _no data yet_.
+**v2.4.2** was published just now, so it has no downloads yet — 44 in total. These are downloads, not installs.
 <!-- downloads:end -->
 
 Landing page: **https://flushot.ink**

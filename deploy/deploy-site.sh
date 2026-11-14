@@ -31,15 +31,29 @@ STAMP=$(date -u +%Y%m%dT%H%M%SZ)
 TARGET="$RELEASES/flushot.ink-$STAMP"
 KEEP=3
 
-echo "==> fetching $REPO@$BRANCH"
+echo "==> resolving $REPO@$BRANCH"
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
+
+# The branch head, resolved to a SHA first. Fetching the branch *archive* directly
+# is served from a cache that lags several minutes behind a push, so a deploy run
+# right after one silently installs the previous commit.
+SHA=$(curl -fsSL --max-time 60 \
+    "https://api.github.com/repos/$REPO/commits/$BRANCH" \
+    | sed -n 's/^[[:space:]]*"sha": "\([0-9a-f]\{40\}\)",$/\1/p' \
+    | head -1)
+[ -n "$SHA" ] || { echo "could not resolve $BRANCH to a commit"; exit 1; }
+
+echo "==> fetching $REPO@$BRANCH ($(echo "$SHA" | cut -c1-7))"
 curl -fsSL --max-time 120 \
-    "https://codeload.github.com/$REPO/tar.gz/refs/heads/$BRANCH" \
+    "https://codeload.github.com/$REPO/tar.gz/$SHA" \
     -o "$TMP/repo.tar.gz"
 tar -xzf "$TMP/repo.tar.gz" -C "$TMP"
-SRC=$(find "$TMP" -maxdepth 1 -type d -name 'Flushot-*' | head -1)
-[ -d "$SRC/site" ] || { echo "no site/ in the archive"; exit 1; }
+
+# The archive unpacks into Flushot-<commit>, so this is proof that what is about to
+# be published is the commit that was just resolved.
+SRC="$TMP/Flushot-$SHA"
+[ -d "$SRC/site" ] || { echo "the archive is not commit $SHA"; exit 1; }
 
 echo "==> staging $TARGET"
 mkdir -p "$RELEASES"
@@ -67,7 +81,7 @@ ls -1dt "$RELEASES"/flushot.ink-* | tail -n +$((KEEP + 1)) | xargs -r rm -rf
 
 COUNT=$(find "$TARGET" -type f | wc -l)
 SIZE=$(du -sh "$TARGET" | cut -f1)
-echo "==> live: $COUNT files, $SIZE, from $BRANCH"
+echo "==> live: $COUNT files, $SIZE, from $BRANCH at $(echo "$SHA" | cut -c1-7)"
 
 curl -s -o /dev/null -w "==> local check: HTTP %{http_code}\n" \
     -H 'Host: flushot.ink' http://127.0.0.1/ || true

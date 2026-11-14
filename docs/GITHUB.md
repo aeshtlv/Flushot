@@ -81,7 +81,7 @@ gh release create "v$V" --title "Flushot $V" --notes-file CHANGELOG.md \
 ## Сайт
 
 Боевой сайт живёт на своём сервере: **https://flushot.ink**, nginx, выкладка командой
-`bash /root/deploy-site.sh`. Она забирает ветку `site`. Как это устроено — в
+`bash /root/deploy-site.sh`. Она забирает ветку `site` по закреплённому SHA коммита. Как это устроено — в
 [HOSTING.md](HOSTING.md).
 
 GitHub Pages остаётся как резервная копия. Workflow `.github/workflows/pages.yml` в ветке

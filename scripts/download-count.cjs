@@ -104,18 +104,28 @@ async function main() {
       ? `Скачано с GitHub для **${latest.tag_name}**: ${human(latestTotal, 'ru')} — из них ${parts}. За всё время — ${human(total, 'ru')}. Считаются скачивания, не установки.`
       : `**${latest.tag_name}** выпущена только что, скачиваний пока нет — за всё время ${human(total, 'ru')}. Считаются скачивания, не установки.`
 
+  const partsEn = counts
+    .map((asset) => `${human(asset.download_count, 'en')} ${asset.name.replace(/^Flushot-[\d.]+-/, '')}`)
+    .join(', ')
+  const lineEn =
+    latestTotal > 0
+      ? `Downloaded from GitHub for **${latest.tag_name}**: ${human(latestTotal, 'en')} — ${partsEn}. ${human(total, 'en')} in total. These are downloads, not installs.`
+      : `**${latest.tag_name}** was published just now, so it has no downloads yet — ${human(total, 'en')} in total. These are downloads, not installs.`
+
   console.log(`\n${line}`)
 
   if (process.argv.includes('--write')) {
-    const file = path.join(ROOT, 'README.md')
-    const source = fs.readFileSync(file, 'utf8')
-    if (!source.includes(BEGIN) || !source.includes(END)) throw new Error('the markers are missing from README.md')
-    const next = source.replace(
-      new RegExp(`${BEGIN}[\\s\\S]*?${END}`),
-      `${BEGIN}\n${line}\n${END}`
-    )
-    fs.writeFileSync(file, next, 'utf8')
-    console.log('README.md updated')
+    for (const [name, text] of [
+      ['README.md', line],
+      ['README.en.md', lineEn]
+    ]) {
+      const file = path.join(ROOT, name)
+      const source = fs.readFileSync(file, 'utf8')
+      if (!source.includes(BEGIN) || !source.includes(END)) throw new Error(`the markers are missing from ${name}`)
+      const next = source.replace(new RegExp(`${BEGIN}[\\s\\S]*?${END}`), `${BEGIN}\n${text}\n${END}`)
+      fs.writeFileSync(file, next, 'utf8')
+      console.log(`${name} updated`)
+    }
   }
 
   const siteIndex = process.argv.indexOf('--site')
