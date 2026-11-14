@@ -30,20 +30,46 @@ function describe(state: UpdateState): Record<string, unknown> {
   return { ...state } as Record<string, unknown>
 }
 
+export interface SettleOptions {
+  /** Read the current state. Called every tick. */
+  read: () => UpdateState
+  /** How long the state may stay identical before it is treated as hung. */
+  stallMs: number
+  /** Injectable so a test can run a simulated half-hour in a millisecond. */
+  now?: () => number
+  sleep?: (ms: number) => Promise<void>
+  intervalMs?: number
+}
+
 /**
- * Wait for the state to settle.
+ * Wait for the state to settle, judging by movement rather than by the clock.
  *
- * A download of ninety megabytes takes as long as it takes, so this polls instead of
- * sleeping a fixed amount: a fixed wait would either be slow on a fast line or wrong
- * on a slow one.
+ * A download of a hundred megabytes takes as long as the line takes, and a fixed
+ * cap turned a working update into `ok: false` at 88 % on a slow connection — the
+ * first real update this project ever performed was reported as broken while it was
+ * downloading correctly. Every change of percentages buys another `stallMs`; only a
+ * state that stops moving for that long is treated as hung.
  */
-async function waitForTerminal(timeoutMs: number): Promise<UpdateState> {
-  const started = Date.now()
-  let last: UpdateState = updateState()
-  while (Date.now() - started < timeoutMs) {
-    last = updateState()
+export async function waitForTerminal(options: SettleOptions): Promise<UpdateState> {
+  const now = options.now ?? Date.now
+  const sleep = options.sleep ?? ((ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)))
+  const intervalMs = options.intervalMs ?? 250
+
+  // The first answer can take a while on a cold DNS cache; nothing has moved yet,
+  // so the clock starts with a grace period of its own.
+  let movedAt = now()
+  let previous: string | null = null
+  let last = options.read()
+
+  while (now() < movedAt + options.stallMs) {
+    last = options.read()
     if (TERMINAL.includes(last.kind)) return last
-    await new Promise((resolve) => setTimeout(resolve, 250))
+    const snapshot = JSON.stringify(last)
+    if (snapshot !== previous) {
+      previous = snapshot
+      movedAt = now()
+    }
+    await sleep(intervalMs)
   }
   return last
 }
@@ -74,7 +100,9 @@ export async function runUpdateCheck(argv: string[]): Promise<number> {
   }
 
   void checkUpdates(true)
-  const final = await waitForTerminal(feed ? 240_000 : 120_000)
+  // Long enough for an unreachable host to time out, short enough that a propped
+  // open terminal is not left waiting: this is a *stall*, not a total budget.
+  const final = await waitForTerminal({ read: updateState, stallMs: feed ? 90_000 : 60_000 })
   const ok = final.kind === 'current' || final.kind === 'ready'
 
   console.log(
