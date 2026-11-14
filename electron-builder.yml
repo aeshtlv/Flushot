@@ -27,6 +27,18 @@ electronLanguages:
   - ru
   - en-US
 
+# Where a packaged copy looks for a newer release.
+#
+# The updater reads this at startup and asks GitHub for the newest published
+# release. It is written into the installed copy as `app-update.yml`, which is why
+# the address lives here and not in the code: the app must not have to guess where
+# it came from.
+publish:
+  provider: github
+  owner: aeshtlv
+  repo: Flushot
+  releaseType: release
+
 # sharp ships prebuilt native binaries that must live outside app.asar
 asarUnpack:
   - node_modules/sharp/**
@@ -55,13 +67,19 @@ nsis:
   installerIcon: build/icon.ico
   uninstallerIcon: build/icon.ico
   installerHeaderIcon: build/icon.ico
-  # The installer ships a block map for electron-updater's differential
-  # downloads. This app has no update server — it is downloaded from GitHub
-  # Releases by hand — so the map is never used, and building it splits the
-  # payload into 60 independent blocks instead of one solid archive. Measured
-  # both ways on the same files: 104.5 MB with the block map, 94.2 MB without.
-  # The portable target is NSIS underneath, so this line is worth 10 MB twice.
-  differentialPackage: false
+  # Splitting the payload is what makes an update a few megabytes instead of ninety:
+  # it is stored as blocks of about 20 KB and electron-updater asks only for the
+  # blocks whose hash changed.
+  #
+  # The blocks cannot be compressed as one stream any more, and that costs size.
+  # Measured on this exact app: 109,816,371 bytes with the map, 98,940,283 without
+  # — 10.4 MB, or 11 %. It is paid once, on the download that installs the program,
+  # and every update after it downloads the difference instead of the whole file.
+  #
+  # The portable target shares this section, but a portable copy can never update
+  # itself, so `npm run dist` builds it with the map off from the command line: ten
+  # megabytes back for exactly the people who gain nothing by them.
+  differentialPackage: true
 
 portable:
   artifactName: ${productName}-${version}-portable.${ext}

@@ -17,7 +17,19 @@ export interface TrayActions {
   hotkey?: string
   /** Effective full-screen accelerator, or '' when it could not be bound. */
   hotkeyFullscreen?: string
+  /**
+   * The single update row, already worded for the current state — the tray does
+   * not know what an update is, only what to show and what to run.
+   */
+  update?: TrayUpdate
   quit: () => void
+}
+
+export interface TrayUpdate {
+  label: string
+  /** False while a check or a download is already running. */
+  enabled: boolean
+  action: () => void
 }
 
 export async function createTray(actions: TrayActions): Promise<Tray | null> {
@@ -88,6 +100,9 @@ export function rebuildMenu(actions: TrayActions): void {
     { label: tr('tray.openFolder'), click: actions.openFolder },
     { type: 'separator' },
     { label: `Flushot ${app.getVersion()}`, enabled: false },
+    ...(actions.update
+      ? [{ label: actions.update.label, enabled: actions.update.enabled, click: actions.update.action }]
+      : []),
     { label: tr('tray.quit'), click: actions.quit }
   ])
   tray.setContextMenu(menu)

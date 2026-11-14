@@ -68,7 +68,15 @@ const RU = {
   'tray.fullscreen': 'Снимок всего экрана',
   'tray.settings': 'Настройки…',
   'tray.openFolder': 'Открыть папку сохранения',
+  'tray.checkUpdates': 'Проверить обновления',
+  'tray.checkingUpdates': 'Проверка обновлений…',
+  'tray.updateReady': 'Установить обновление {version}',
   'tray.quit': 'Выход',
+
+  // -------------------------------------------------------------------- update
+  'update.readyNotify': 'Версия {version} скачана. Установится при выходе из Flushot.',
+  'update.currentNotify': 'Установлена последняя версия — {version}',
+  'update.failedNotify': 'Не удалось проверить обновления: {message}',
 
   // --------------------------------------------------------------------- capture
   'capture.noDisplay': 'Не найдено ни одного экрана',
@@ -240,6 +248,22 @@ const RU = {
   'settings.languageHint': '«Как в системе» — по языку Windows',
   'settings.languageAuto': 'Как в системе',
 
+  'settings.sectionUpdates': 'Обновления',
+  'settings.checkUpdates': 'Проверять обновления',
+  'settings.checkUpdatesHint': 'Раз в день, один запрос к GitHub',
+  'settings.checkNow': 'Проверить сейчас',
+  'settings.version': 'Версия',
+  'settings.updateIdle': 'Обновления проверяются сами раз в день',
+  'settings.updateOff': 'Проверка выключена — программа не обращается к сети',
+  'settings.updateManual': 'Эта сборка обновляется вручную: скачайте новую версию с сайта',
+  'settings.updateChecking': 'Проверяем…',
+  'settings.updateCurrent': 'Версия {version} — последняя',
+  'settings.updateDownloading': 'Скачиваем {version}: {percent}%',
+  'settings.updateReady': 'Версия {version} скачана и установится при выходе',
+  'settings.updateInstall': 'Установить и перезапустить',
+  'settings.updateFailed': 'Не удалось проверить: {message}',
+  'settings.updateCheckedAt': 'проверено {when}',
+
   'settings.resetTitle': 'Сбросить все настройки',
   'settings.resetHint':
     'Вернуть оформление, тень, сохранение и горячую клавишу к значениям по умолчанию',
@@ -372,7 +396,15 @@ const EN: Record<MessageKey, string> = {
   'tray.fullscreen': 'Capture the whole screen',
   'tray.settings': 'Settings…',
   'tray.openFolder': 'Open the save folder',
+  'tray.checkUpdates': 'Check for updates',
+  'tray.checkingUpdates': 'Checking for updates…',
+  'tray.updateReady': 'Install update {version}',
   'tray.quit': 'Quit',
+  // -------------------------------------------------------------------- update
+  'update.readyNotify': 'Version {version} downloaded. It installs when Flushot quits.',
+  'update.currentNotify': 'The latest version is already installed — {version}',
+  'update.failedNotify': 'Could not check for updates: {message}',
+
 
   'capture.noDisplay': 'No display found',
   'capture.overlayFailed': 'Could not open the selection overlay',
@@ -536,6 +568,22 @@ const EN: Record<MessageKey, string> = {
   'settings.language': 'Interface language',
   'settings.languageHint': 'The Windows language',
   'settings.languageAuto': 'Same as the system',
+
+  'settings.sectionUpdates': 'Updates',
+  'settings.checkUpdates': 'Check for updates',
+  'settings.checkUpdatesHint': 'Once a day, one request to GitHub',
+  'settings.checkNow': 'Check now',
+  'settings.version': 'Version',
+  'settings.updateIdle': 'Updates are checked once a day',
+  'settings.updateOff': 'Checks are off — the program makes no network requests',
+  'settings.updateManual': 'This build is updated by hand: download a new version from the site',
+  'settings.updateChecking': 'Checking…',
+  'settings.updateCurrent': 'Version {version} is the latest',
+  'settings.updateDownloading': 'Downloading {version}: {percent}%',
+  'settings.updateReady': 'Version {version} is downloaded and will install on quit',
+  'settings.updateInstall': 'Install and restart',
+  'settings.updateFailed': 'Could not check: {message}',
+  'settings.updateCheckedAt': 'checked {when}',
 
   'settings.resetTitle': 'Reset every setting',
   'settings.resetHint':

@@ -26,7 +26,8 @@ import type {
   ImageFormat,
   SaveMode,
   ScreenshotSettings,
-  ThemeMode
+  ThemeMode,
+  UpdateState
 } from '../../shared/types'
 import { BrandMark } from '../BrandMark'
 
@@ -44,6 +45,7 @@ export function SettingsApp(): JSX.Element {
   const [settings, setSettings] = useState<ScreenshotSettings | null>(null)
   const [info, setInfo] = useState<{ version: string; hotkey: string; settingsPath: string } | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
+  const [update, setUpdate] = useState<UpdateState>({ kind: 'idle' })
   /** Only problems are reported; successful changes are visible in the UI itself. */
   const [status, setStatus] = useState<string | null>(null)
   const previewTimer = useRef<number | null>(null)
@@ -62,6 +64,7 @@ export function SettingsApp(): JSX.Element {
   useEffect(() => {
     void window.flushot.getSettings().then(setSettings)
     void window.flushot.getAppInfo().then(setInfo)
+    void window.flushot.getUpdateState().then(setUpdate)
   }, [])
 
   useEffect(() => {
@@ -537,6 +540,43 @@ export function SettingsApp(): JSX.Element {
             </Row>
           </section>
 
+          {/* After the language, before the reset: version and updates are what
+              someone looks for once, not a setting they tune. */}
+          <section className="panel panel--updates">
+            <h2>{tr('settings.sectionUpdates')}</h2>
+
+            {update.kind !== 'manual' && (
+              <Row label={tr('settings.checkUpdates')} hint={tr('settings.checkUpdatesHint')}>
+                <Toggle
+                  checked={settings.checkUpdates}
+                  onChange={(checkUpdates) => void patch({ checkUpdates })}
+                />
+              </Row>
+            )}
+
+            <div className="update-line">
+              <span className="update-line__text">{describeUpdate(update, tr, info?.version)}</span>
+              {update.kind === 'ready' ? (
+                <button className="button button--primary" onClick={() => void window.flushot.installUpdate()}>
+                  {tr('settings.updateInstall')}
+                </button>
+              ) : (
+                update.kind !== 'manual' && (
+                  <button
+                    className="button"
+                    disabled={!settings.checkUpdates || !canCheck(update)}
+                    onClick={() => {
+                      setUpdate({ kind: 'checking' })
+                      void window.flushot.checkForUpdates().then(setUpdate)
+                    }}
+                  >
+                    {tr('settings.checkNow')}
+                  </button>
+                )
+              )}
+            </div>
+          </section>
+
           {/* Deliberately at the very end: reaching it requires scrolling past
               every setting, so it cannot be hit while changing colours. */}
           <section className="panel panel--reset">
@@ -656,6 +696,48 @@ function formatSummary(format: ImageFormat, quality: number): string {
   if (format === 'png') return 'PNG'
   if (format === 'webp') return `WebP · ${quality}%`
   return `JPEG · ${quality}%`
+}
+
+/** Whether the button can do anything in the current state. */
+function canCheck(state: UpdateState): boolean {
+  return state.kind !== 'checking' && state.kind !== 'downloading' && state.kind !== 'ready' && state.kind !== 'off'
+}
+
+/**
+ * One sentence for the whole state.
+ *
+ * The state is a tagged union, so a kind nobody handled is a compile error rather
+ * than a blank line — which is how this would otherwise fail: silently, and only in
+ * the one state nobody had seen yet.
+ */
+function describeUpdate(
+  state: UpdateState,
+  tr: (key: MessageKey, vars?: Record<string, string | number>) => string,
+  version: string | undefined
+): string {
+  switch (state.kind) {
+    case 'idle':
+      return tr('settings.updateIdle')
+    case 'off':
+      return tr('settings.updateOff')
+    case 'manual':
+      return tr('settings.updateManual')
+    case 'checking':
+      return tr('settings.updateChecking')
+    case 'current':
+      return tr('settings.updateCurrent', { version: state.version })
+    case 'downloading':
+      // A download that starts before the version is known (the manifest is read
+      // first) still has to say something, so it falls back to the running one.
+      return tr('settings.updateDownloading', {
+        version: state.version || version || '—',
+        percent: state.percent
+      })
+    case 'ready':
+      return tr('settings.updateReady', { version: state.version })
+    case 'failed':
+      return tr('settings.updateFailed', { message: state.message })
+  }
 }
 
 function Row({ label, hint, children }: { label: string; hint?: string; children: JSX.Element }): JSX.Element {

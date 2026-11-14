@@ -16,6 +16,7 @@ import { renderPreview } from '../settings/preview'
 import { isAutostartEnabled, setAutostart } from '../system/autostart'
 import { closeSettingsWindow, getSettingsWindow } from '../windows/settingsWindow'
 import { tr } from '../i18n'
+import type { UpdateState } from '../update/updater'
 
 export interface IpcContext {
   session: CaptureSession
@@ -41,6 +42,17 @@ export interface IpcContext {
    * notification are built from.
    */
   onSettingsChanged?: () => void
+  /**
+   * The update preference changed, so the checker has to start or stop now rather
+   * than on the next launch of the app.
+   */
+  onUpdatesChanged?: (enabled: boolean) => void
+  /** Current update state, for the settings panel to render. */
+  updateState?: () => UpdateState
+  /** Ask GitHub for a newer release, on the user's explicit request. */
+  checkUpdates?: () => Promise<UpdateState>
+  /** Quit and apply a downloaded update. */
+  installUpdate?: () => void
   openSettings: () => void
 }
 
@@ -146,6 +158,13 @@ export function registerIpc(context: IpcContext): void {
     context.openSettings()
   })
 
+  ipcMain.handle('update:state', () => context.updateState?.() ?? { kind: 'idle' })
+  ipcMain.handle('update:check', () => context.checkUpdates?.() ?? { kind: 'idle' })
+  ipcMain.handle('update:install', () => {
+    context.installUpdate?.()
+    return { ok: true }
+  })
+
   ipcMain.handle('settings:get', async () => {
     const current = await settings.load()
     // The Run key lives outside the app and can be changed by other tools, so
@@ -172,6 +191,12 @@ export function registerIpc(context: IpcContext): void {
     // the tray menu and every notification are built from it. The settings
     // window re-renders itself from the payload it gets back.
     if (before.language !== next.language) context.onSettingsChanged?.()
+
+    // Turning checks off must stop the timer now, not after a restart: "off" that
+    // still makes a request an hour later is a lie.
+    if (typeof patch.checkUpdates === 'boolean' && next.checkUpdates !== before.checkUpdates) {
+      context.onUpdatesChanged?.(next.checkUpdates)
+    }
 
     if (before.hotkey !== next.hotkey || before.hotkeyFullscreen !== next.hotkeyFullscreen) {
       // Re-bind both keys, then report the combinations that are really active:

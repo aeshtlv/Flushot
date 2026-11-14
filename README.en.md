@@ -5,7 +5,7 @@ paste, in a neat frame with a soft shadow and rounded corners, at full resolutio
 
 [![CI](https://github.com/aeshtlv/Flushot/actions/workflows/ci.yml/badge.svg)](https://github.com/aeshtlv/Flushot/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-4c8bf5)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.3.0-4c8bf5)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.4.0-4c8bf5)](CHANGELOG.md)
 
 <p align="center">
   <img src="logo/logo.png" alt="Flushot" width="112">
@@ -44,20 +44,30 @@ paste, in a neat frame with a soft shadow and rounded corners, at full resolutio
 - **English and Russian.** The whole interface — settings, overlay, annotation bar, tray menu, messages —
   is available in both. "Same as the system" follows the Windows language, and a language the program
   does not know falls back to English.
+- **Updates.** An installed copy asks GitHub once a day whether a newer version exists, downloads it in
+  the background and installs it on quit. One switch in the settings turns that off.
 
 ## Download
 
 Prebuilt archives are attached to **[Releases](../../releases/latest)**. The program is the same in
-all three; only the installation method differs.
+all three; what differs is how it is installed and whether it updates itself.
 
 | File | Description |
 |---|---|
-| **[Flushot-2.3.0-win64.zip](../../releases/latest/download/Flushot-2.3.0-win64.zip)** | 143 MB. Unpack anywhere and run `Flushot.exe`. Does not need a writable `%TEMP%` — recommended |
-| [Flushot-2.3.0-installer.zip](../../releases/latest/download/Flushot-2.3.0-installer.zip) | 94 MB. NSIS installer: Start menu shortcuts, install location, uninstaller |
-| [Flushot-2.3.0-portable.zip](../../releases/latest/download/Flushot-2.3.0-portable.zip) | 94 MB. Portable single file, no installation |
+| **[Flushot-2.4.0-x64.exe](../../releases/latest/download/Flushot-2.4.0-x64.exe)** | 105 MB. Installer: Start menu shortcuts, install location, uninstaller. **Updates itself** — recommended |
+| [Flushot-2.4.0-portable.zip](../../releases/latest/download/Flushot-2.4.0-portable.zip) | 94 MB. Portable single file, no installation. Updated by hand |
+| [Flushot-2.4.0-win64.zip](../../releases/latest/download/Flushot-2.4.0-win64.zip) | 143 MB. Unpack anywhere and run `Flushot.exe`. Updated by hand |
+
+Only the installer can update itself: the portable build unpacks into a temporary folder on every
+launch, and the archive has no uninstaller for the updater to run. Those two are told about a new
+version but have to download it from the site.
 
 The binaries are not code-signed, so SmartScreen warns on first launch: **More info → Run anyway**.
 That is standard behaviour for an unsigned executable.
+
+<!-- downloads:begin -->
+Downloads from GitHub: _no data yet_.
+<!-- downloads:end -->
 
 Landing page: **https://flushot.ink**
 
@@ -74,7 +84,7 @@ npm run dev
 
 ```bash
 npm run typecheck    # tsc for main and renderer
-npm test             # 380 tests in 25 files
+npm test             # 389 tests in 26 files
 npm run build        # production build in out/
 npm run dist         # installer and portable build in release/
 npm run self-test    # end-to-end check on a live system
@@ -99,6 +109,29 @@ Both capture hotkeys are configurable, including a single key without modifiers.
 
 Copying on release can be turned off: settings → "Снимок" → "После выделения" → "Открывать".
 Releasing the mouse then shows the annotation bar and `Ctrl+C` copies, as it did before.
+
+## Updates
+
+An installed copy asks GitHub once a day whether a newer version exists and, if one does, downloads it
+in the background. It installs on quit, so nothing closes in the middle of your work. The same question
+can be asked by hand: settings → "Updates" → "Check now", or the row in the tray menu.
+
+**What goes over the network.** One request to `api.github.com` for the release list and, when an update
+exists, a download from `github.com`. Nothing else is sent: no identifier, no statistics, no addresses.
+GitHub sees your IP address, as it does on any request to it.
+
+**Turning it off.** Settings → "Updates" → switch "Check for updates" off. Then there are no requests at
+all and the current version stays for good; a newer one has to be downloaded from the site.
+
+To see what a particular copy thinks, from a terminal:
+
+```bash
+"%LOCALAPPDATA%\Programs\Flushot\Flushot.exe" --update-check
+```
+
+It prints the state as JSON and exits: `ok` plus the reason in `state`. That is also how a machine that
+never gets updates is diagnosed — usually a proxy, a blocked `github.com`, or a build that cannot
+replace itself.
 
 ## Limitations
 

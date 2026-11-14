@@ -26,6 +26,11 @@ export function language(): Language {
 }
 
 /** Translate a message for the main process. */
+/** Same string in both languages, for checks that run after the language changed. */
+export function bothLanguages(key: MessageKey, vars?: Record<string, string | number>): string[] {
+  return [t('ru', key, vars), t('en', key, vars)]
+}
+
 export function tr(key: MessageKey, vars?: Record<string, string | number>): string {
   return t(current, key, vars)
 }

@@ -8,7 +8,8 @@ import type {
   OcrOutcome,
   OcrRegion,
   OverlayShot,
-  ScreenshotSettings
+  ScreenshotSettings,
+  UpdateState
 } from '../shared/types'
 
 const api = {
@@ -88,6 +89,12 @@ const api = {
   openSaveFolder: (): Promise<void> => ipcRenderer.invoke('shell:open-folder'),
   getAppInfo: (): Promise<{ version: string; hotkey: string; settingsPath: string }> =>
     ipcRenderer.invoke('app:info'),
+  /** What the updater is doing right now. */
+  getUpdateState: (): Promise<UpdateState> => ipcRenderer.invoke('update:state'),
+  /** Ask GitHub for a newer release; resolves with the state it ended in. */
+  checkForUpdates: (): Promise<UpdateState> => ipcRenderer.invoke('update:check'),
+  /** Quit and apply an update that has already been downloaded. */
+  installUpdate: (): Promise<{ ok: boolean }> => ipcRenderer.invoke('update:install'),
   closeWindow: (): Promise<void> => ipcRenderer.invoke('window:close')
 }
 

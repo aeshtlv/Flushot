@@ -138,7 +138,8 @@ const DEMO_INIT: OverlayInit = {
     hotkeyFullscreen: 'CommandOrControl+Shift+3',
     launchAtLogin: false,
     afterRegion: 'copy',
-    language: 'auto'
+    language: 'auto',
+    checkUpdates: true
   },
   hotkey: 'CommandOrControl+Shift+S'
 }

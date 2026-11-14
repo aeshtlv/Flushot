@@ -605,6 +605,50 @@ body {
   color: var(--text-muted);
 }
 
+.button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.button:disabled:hover {
+  background: var(--control);
+}
+
+.button--primary {
+  background: var(--accent);
+  border-color: transparent;
+  color: #fff;
+}
+
+.button--primary:hover {
+  background: color-mix(in srgb, var(--accent) 88%, #000);
+}
+
+/*
+ * The update line is a sentence and a button on one row.
+ *
+ * The sentence is longer than anything else in a row — a version number, a
+ * percentage and an error message all arrive in the same place — so it wraps on
+ * its own instead of pushing the button out of the panel.
+ */
+.update-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 2px;
+}
+
+.update-line__text {
+  flex: 1 1 180px;
+  min-width: 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
 .footer {
   display: grid;
   grid-template-columns: 1fr auto 1fr;

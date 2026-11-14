@@ -11,9 +11,14 @@ release/
 .cache/
 .npm-cache/
 
-# Release archives are 100+ MB each, so they belong in GitHub Releases, not in the
+# Release files are 94-143 MB each, so they belong in GitHub Releases, not in the
 # repository. `npm run dist` builds them; `share/` holds the handoff copies.
+# The installer and the two updater files are excluded as well: they are not an
+# archive ending in .zip, and one of them was committed before this line existed.
 share/*.zip
+share/*.exe
+share/*.blockmap
+share/latest.yml
 
 # Anything generated next to the sources
 *.log

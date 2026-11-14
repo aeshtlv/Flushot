@@ -1,6 +1,6 @@
 {
   "name": "flushot",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "description": "Screenshot tool for Windows: select a region and get a finished picture with a frame, annotations and text recognition",
   "main": "./out/main/index.js",
   "author": "Flushot",
@@ -26,17 +26,21 @@
     "dev": "electron-vite dev",
     "start": "electron-vite preview",
     "build": "electron-vite build",
+    "dist": "npm run build && npm run dist:nsis && npm run dist:portable",
+    "dist:nsis": "electron-builder --win nsis",
+    "dist:portable": "electron-builder --win portable --config.nsis.differentialPackage=false",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
     "test": "vitest run",
     "test:watch": "vitest",
     "icons": "node scripts/generate-icons.mjs",
     "verify:docs": "node scripts/verify-docs.cjs",
     "shots": "node scripts/make-hero-image.cjs && node scripts/make-ui-shots.cjs && node scripts/make-tray-sheet.cjs",
-    "dist": "npm run build && electron-builder --win nsis portable",
     "dist:dir": "npm run build && electron-builder --dir --win",
-    "self-test": "npm run build && electron . --self-test"
+    "self-test": "npm run build && electron . --self-test",
+    "stats": "node scripts/download-count.cjs --write"
   },
   "dependencies": {
+    "electron-updater": "^6.8.11",
     "sharp": "^0.35.5"
   },
   "devDependencies": {

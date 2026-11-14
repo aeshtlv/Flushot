@@ -18,7 +18,9 @@ import { ocrSampleSvg } from '../ocr/sample'
 import type { SettingsStore } from '../settings/SettingsStore'
 import { preloadPath, rendererUrl } from '../windows/paths'
 import { virtualBounds, virtualScale } from '../../shared/virtualScreen'
-import { tr } from '../i18n'
+import { bothLanguages, tr } from '../i18n'
+import { installKind, updateState } from '../update/updater'
+import { canSelfUpdate } from '../update/installKind'
 
 interface SelfTestReport {
   ok: boolean
@@ -242,13 +244,36 @@ async function inspectWindow(
           })()
         ),
         folderClickable: String(document.querySelectorAll('button.folder__path').length),
+        // The updates panel: its heading, the switch, and the sentence beside it.
+        // What the values should be depends on the kind of build, so the check
+        // compares them with what the updater reports instead of hard-coding one.
+        updatePanel: ((document.querySelector('.panel--updates h2') || {}).textContent || '').trim(),
+        updateSwitch: String(
+          (() => {
+            const panel = document.querySelector('.panel--updates');
+            if (!panel) return 'no-panel';
+            const toggle = panel.querySelector('[role="switch"]');
+            if (!toggle) return 'no-switch';
+            return toggle.getAttribute('aria-checked') === 'true' ? 'on' : 'off';
+          })()
+        ),
+        updateText: ((document.querySelector('.update-line__text') || {}).textContent || '').trim(),
+        updateButton: String(
+          (() => {
+            const panel = document.querySelector('.panel--updates');
+            if (!panel) return 'no-panel';
+            const button = panel.querySelector('button.button');
+            if (!button) return 'no-button';
+            return button.disabled ? 'disabled' : 'enabled';
+          })()
+        ),
         // The autostart switch must exist and must be off in a fresh profile.
         autostartRow: String(
           (() => {
             const rows = Array.from(document.querySelectorAll('.row'));
             const row = rows.find((el) => {
               const label = el.querySelector('.row__label');
-              return label && label.textContent.trim() === 'Запускать с Windows';
+              return label && label.textContent.trim() === ${JSON.stringify(tr('settings.launchAtLogin'))};
             });
             if (!row) return 'missing';
             const toggle = row.querySelector('[role="switch"]');
@@ -1175,17 +1200,24 @@ async function runSeamCheck(
       const tools = document.querySelectorAll('.toolbar--annotate .tb--tool');
       let captionAt = 'none';
       let expectedAt = 'none';
+      // Every step is recorded, because "the caption did not land" has six
+      // possible causes and the raster cannot tell them apart.
+      const trail = [];
       if (tools.length > 4) {
         tools[4].click();
         await pause(150);
+        trail.push('tool=' + (document.querySelector('.toolbar--annotate .tb--tool.is-active') || { dataset: {} }).dataset.tool);
         const surface = document.querySelector('.annotate-surface');
-        const rect = surface.getBoundingClientRect();
+        if (!surface) trail.push('no-surface');
+        const rect = surface ? surface.getBoundingClientRect() : { left: 0, top: 0, width: 0, height: 0 };
+        trail.push('surface=' + Math.round(rect.left) + ',' + Math.round(rect.top) + ' ' + Math.round(rect.width) + 'x' + Math.round(rect.height));
         const x = rect.left + rect.width * 0.25;
         const y = rect.top + rect.height * 0.4;
         const hit = { bubbles: true, cancelable: true, pointerId: 11, pointerType: 'mouse', button: 0, clientX: x, clientY: y };
-        surface.dispatchEvent(new PointerEvent('pointerdown', { ...hit, buttons: 1 }));
+        if (surface) surface.dispatchEvent(new PointerEvent('pointerdown', { ...hit, buttons: 1 }));
         await pause(300);
         const field = document.querySelector('textarea.annotate-text');
+        trail.push('field=' + Boolean(field));
         if (field) {
           const setText = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
           setText.call(field, 'Точка на 100 %');
@@ -1194,8 +1226,10 @@ async function runSeamCheck(
           field.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
           await pause(300);
         }
+        trail.push('box=' + Boolean(document.querySelector('.annotate-box')));
         captionAt = (document.querySelector('.annotate-box') || { dataset: {} }).dataset.textAt || '';
         expectedAt = '0.250,0.400';
+        trail.push('at=' + captionAt);
       }
 
       return JSON.stringify({
@@ -1209,7 +1243,8 @@ async function runSeamCheck(
         afterSlider,
         sliderValue: slider.value,
         captionAt,
-        expectedAt
+        expectedAt,
+        trail: trail.join(' | ')
       });
     })()`)
     const zoomCheck = JSON.parse(zoomRaw) as {
@@ -1224,6 +1259,7 @@ async function runSeamCheck(
       sliderValue?: string
       captionAt?: string
       expectedAt?: string
+      trail?: string
       note?: string
     }
 
@@ -1260,7 +1296,8 @@ async function runSeamCheck(
       const sx = window.innerWidth / unionW;
       const sy = window.innerHeight / unionH;
 
-      const box = layer.getBoundingClientRect();
+      const card = document.querySelector('.result-card') || layer;
+      const box = card.getBoundingClientRect();
       let bestArea = 0;
       let bestMonitor = null;
       for (const m of monitors) {
@@ -1284,7 +1321,10 @@ async function runSeamCheck(
         onPrimary: Boolean(bestMonitor && bestMonitor.primary),
         primary: primary ? Math.round(primary.left * sx) + ',' + Math.round(primary.top * sy) : '',
         spill: (1 - bestArea / area).toFixed(3),
-        box: Math.round(box.left) + ',' + Math.round(box.top) + ' ' + Math.round(box.width) + 'x' + Math.round(box.height)
+        box: Math.round(box.left) + ',' + Math.round(box.top) + ' ' + Math.round(box.width) + 'x' + Math.round(box.height),
+        layer: layer === card ? 'same' : Math.round(layer.getBoundingClientRect().width) + 'x' + Math.round(layer.getBoundingClientRect().height),
+        style: (layer.getAttribute('style') || '').replace(/\s+/g, ' ').slice(0, 90),
+        monitors: monitors.length
       });
     })()`)
     const hostCheck = JSON.parse(hostRaw) as {
@@ -1294,6 +1334,9 @@ async function runSeamCheck(
       primary?: string
       spill?: string
       box?: string
+      layer?: string
+      style?: string
+      monitors?: number
       note?: string
     }
 
@@ -1307,10 +1350,10 @@ async function runSeamCheck(
         ? `ожидалось ${expected}, получено ${got} · ${debug}`
         : !hostCheck.ok
           ? hostCheck.onPrimary
-            ? `результат вышел за один монитор: ${hostCheck.spill} площади на другом экране · ${hostCheck.box}`
+            ? `результат вышел за один монитор: ${hostCheck.spill} площади на другом экране · ${hostCheck.box} · слой ${hostCheck.layer} · экранов ${hostCheck.monitors} · стиль "${hostCheck.style}"`
             : `результат оказался не на основном мониторе · ${hostCheck.box} · основной ${hostCheck.primary}`
           : !zoomCheck.ok
-            ? `масштаб: вписано=${zoomCheck.fitted} 100%=${zoomCheck.zoomed} прокрутка=${zoomCheck.panned} подпись=${zoomCheck.captionAt} ожидалось ${zoomCheck.expectedAt} (вписано ${zoomCheck.fit}, + дало ${zoomCheck.afterPlus}, ползунок дал ${zoomCheck.afterSlider} при значении ${zoomCheck.sliderValue})`
+            ? `масштаб: вписано=${zoomCheck.fitted} 100%=${zoomCheck.zoomed} прокрутка=${zoomCheck.panned} подпись=${zoomCheck.captionAt} ожидалось ${zoomCheck.expectedAt} (вписано ${zoomCheck.fit}, + дало ${zoomCheck.afterPlus}, ползунок дал ${zoomCheck.afterSlider} при значении ${zoomCheck.sliderValue}) · шаги: ${zoomCheck.trail ?? 'нет'}`
             : !hintCheck.ok
               ? `подсказка не по центру основного монитора: внутри ${hintCheck.inside}, смещение ${hintCheck.dx}×${hintCheck.dy} px · подсказка ${hintCheck.box} · монитор ${hintCheck.primary}`
               : !fullBar.ok
@@ -2285,8 +2328,30 @@ export async function runSelfTest(session?: CaptureSession, settingsStore?: Sett
       overlayPage.facts.badge.replace(/\s/g, '').startsWith('600×400') &&
       overlayPage.facts.toolbar === 'visible' &&
       overlayPage.labels.includes(tr('overlay.create'))
+    // A build that cannot replace itself must not offer the switch or the button:
+    // a portable copy showing "check for updates" would be a promise it cannot keep.
+    // The self-test runs the unpacked build, so it exercises the "manual" branch,
+    // and an installed copy running `--self-test` exercises the other one.
+    //
+    // Every word is checked in both languages, not in the one active right now:
+    // this page was captured before the language test switched the interface back
+    // and forth, so comparing it with `tr` made a correct window look wrong.
+    const either = bothLanguages
+    const kind = installKind()
+    const state = updateState()
+    const updatesOk = canSelfUpdate(kind)
+      ? state.kind !== 'manual' &&
+        either('settings.sectionUpdates').includes(settingsPage.facts.updatePanel) &&
+        (settingsPage.facts.updateSwitch === 'on' || settingsPage.facts.updateSwitch === 'off') &&
+        settingsPage.facts.updateText.length > 0
+      : state.kind === 'manual' &&
+        either('settings.sectionUpdates').includes(settingsPage.facts.updatePanel) &&
+        settingsPage.facts.updateSwitch === 'no-switch' &&
+        settingsPage.facts.updateButton === 'no-button' &&
+        either('settings.updateManual').includes(settingsPage.facts.updateText)
+
     const settingsOk =
-      settingsPage.facts.panels === '6' &&
+      settingsPage.facts.panels === '7' &&
       settingsPage.facts.overflowX === 'false' &&
       settingsPage.facts.versionCentered === 'true' &&
       settingsPage.facts.resetLast === 'true' &&
@@ -2404,6 +2469,7 @@ export async function runSelfTest(session?: CaptureSession, settingsStore?: Sett
       report.warmImaging.ok &&
       prewarmOk &&
       colorOk &&
+      updatesOk &&
       settingsOk &&
       compactOk &&
       hotkeyOk
@@ -2412,7 +2478,8 @@ export async function runSelfTest(session?: CaptureSession, settingsStore?: Sett
       report.errors.push(
         `ui check failed: overlay=${overlayOk} overlayCopy=${overlayCopyOk} globalCopy=${globalCopyOk} annotate=${annotateOk}(${annotatePage.facts.annotateTools} tools, ${annotatePage.facts.annotateSwatches} swatches, count ${annotatePage.facts.annotateCount}, painted ${annotatePage.facts.annotatePainted}, size ${annotatePage.facts.annotateSize}) annotateCopy=${annotateCopy.ok}(${annotateCopy.note ?? annotateCopy.magenta + ' px, ' + annotateCopy.size}) shortcut=${globalShortcutOk} realCopy=${realCopy.ok}(${realCopy.note ?? realCopy.clipboard}) fullscreen=${report.fullscreen?.ok ?? 'нет'}(${report.fullscreen?.note || report.fullscreen?.size || ''}) rebind=${report.hotkeyRebind?.ok ?? 'нет'}(${report.hotkeyRebind?.note || report.hotkeyRebind?.saved || ''}) preview=${report.previewResize?.ok ?? 'нет'}(${report.previewResize?.note || report.previewResize?.wide || ''}) accelerators=${report.accelerators?.ok ?? 'нет'}(${report.accelerators?.rejected?.join(' | ') || report.accelerators?.checked}) settings=${settingsOk} compact=${compactOk} hotkey=${hotkeyOk} perf=${report.perf.ok}(${report.perf.note || report.perf.composeMs + ' ms'}) (stored ${stored.hotkey})`,
         // The rest of the verdict, so no condition can fail without being named.
-        `also: canvas=${report.canvas?.width}×${report.canvas?.height} (expected ${report.canvas?.expectedWidth}×${report.canvas?.expectedHeight}) clipboard=${report.clipboard} files=${report.files.length} formats=${report.formats?.ok}(${report.formats?.note ?? ''}) virtual=${report.virtual?.ok}(${report.virtual?.note ?? ''}) seam=${report.seam?.ok}(${report.seam?.note ?? ''}) ocr=${report.ocr?.ok}(${report.ocr?.note ?? ''}) pixels=${rawMatchesPng}(${report.rawCompare?.maxDiff ?? '?'} max diff) color=${colorOk}(${bitmapPixel}) prewarm=${prewarmOk}(${strayOverlays} shown) warm=${warmFast}(${warmVisible} ms, limit 550) imaging=${report.warmImaging.ok}`
+        `settings detail: panels=${settingsPage.facts.panels}/7 overflowX=${settingsPage.facts.overflowX} versionCentered=${settingsPage.facts.versionCentered} resetLast=${settingsPage.facts.resetLast} folder=${settingsPage.facts.folderClickable}/1 autostart=${settingsPage.facts.autostartRow}/off sticky=${settingsPage.facts.previewSticky}/false format="${settingsPage.facts.formatLabel}" first="${settingsPage.facts.firstPanel}" swatches=${settingsPage.facts.swatchAligned} folderChange=${settingsPage.labels.includes(tr('settings.folderChange'))}`,
+        `also: updates=${updatesOk}(kind ${installKind()}, state ${updateState().kind}, panel "${settingsPage.facts.updatePanel}", switch ${settingsPage.facts.updateSwitch}, button ${settingsPage.facts.updateButton}) canvas=${report.canvas?.width}×${report.canvas?.height} (expected ${report.canvas?.expectedWidth}×${report.canvas?.expectedHeight}) clipboard=${report.clipboard} files=${report.files.length} formats=${report.formats?.ok}(${report.formats?.note ?? ''}) virtual=${report.virtual?.ok}(${report.virtual?.note ?? ''}) seam=${report.seam?.ok}(${report.seam?.note ?? ''}) ocr=${report.ocr?.ok}(${report.ocr?.note ?? ''}) pixels=${rawMatchesPng}(${report.rawCompare?.maxDiff ?? '?'} max diff) color=${colorOk}(${bitmapPixel}) prewarm=${prewarmOk}(${strayOverlays} shown) warm=${warmFast}(${warmVisible} ms, limit 550) imaging=${report.warmImaging.ok}`
       )
     }
     await fs.writeFile(path.join(outputDir, 'report.json'), JSON.stringify(report, null, 2))

@@ -12,6 +12,16 @@ import { syncAutostart } from './system/autostart'
 import { createTray, destroyTray, rebuildMenu } from './ui/tray'
 import { getSettingsWindow, openSettingsWindow } from './windows/settingsWindow'
 import { setLanguage, tr } from './i18n'
+import {
+  canUpdate,
+  checkUpdates,
+  initUpdater,
+  installUpdate,
+  setUpdatesEnabled,
+  stopUpdater,
+  updateState,
+  type UpdateState
+} from './update/updater'
 
 app.setAppUserModelId('com.flushot.app')
 
@@ -76,6 +86,13 @@ if (!app.requestSingleInstanceLock()) {
         app.exit(await runSelfTest(session, settingsStore))
         return
       }
+      // One-shot update check from a terminal; see `update/updateCheck.ts`.
+      if (process.argv.includes('--update-check')) {
+        const { runUpdateCheck } = await import('./update/updateCheck')
+        await initCore()
+        app.exit(await runUpdateCheck(process.argv))
+        return
+      }
       await bootstrap()
     })
     .catch((error: unknown) => {
@@ -107,7 +124,28 @@ function trayActions(): Parameters<typeof rebuildMenu>[0] {
     },
     hotkey: activeHotkey,
     hotkeyFullscreen: activeFullscreenHotkey,
+    update: trayUpdate(),
     quit: () => app.quit()
+  }
+}
+
+/**
+ * One row for whatever the updater is doing, or nothing when it cannot do anything.
+ *
+ * A portable build has no row at all: offering "check for updates" in a menu to
+ * someone whose copy can never be replaced would be a promise the app cannot keep.
+ */
+function trayUpdate(): Parameters<typeof rebuildMenu>[0]['update'] {
+  const state = updateState()
+  if (!canUpdate()) return undefined
+  if (state.kind === 'ready') {
+    return { label: tr('tray.updateReady', { version: state.version }), enabled: true, action: () => installUpdate() }
+  }
+  const busy = state.kind === 'checking' || state.kind === 'downloading'
+  return {
+    label: busy ? tr('tray.checkingUpdates') : tr('tray.checkUpdates'),
+    enabled: !busy,
+    action: () => void checkUpdates(true)
   }
 }
 
@@ -141,7 +179,30 @@ async function initCore(): Promise<void> {
       setLanguage(settingsStore.peek()?.language, app.getLocale())
       rebuildMenu(trayActions())
     },
+    onUpdatesChanged: (enabled) => {
+      void setUpdatesEnabled(enabled).then(() => rebuildMenu(trayActions()))
+    },
+    updateState,
+    checkUpdates: async (): Promise<UpdateState> => {
+      const state = await checkUpdates(true)
+      rebuildMenu(trayActions())
+      return state
+    },
+    installUpdate: () => installUpdate(),
     openSettings: () => openSettingsWindow({ closeCapture: () => session.cancel() })
+  })
+
+  // Started here rather than in `bootstrap` so the settings window always has a
+  // state to render, including under `--self-test`. Nothing reaches the network
+  // until the first scheduled check, and a build that cannot update itself only
+  // records that fact.
+  void initUpdater({
+    enabled: () => settingsStore.peek()?.checkUpdates ?? true,
+    onState: () => rebuildMenu(trayActions()),
+    notify,
+    stateFile: path.join(app.getPath('userData'), 'update-state.json'),
+    // The report must not depend on the network or on the clock.
+    autoCheck: !process.argv.includes('--self-test')
   })
 }
 
@@ -326,6 +387,7 @@ app.on('window-all-closed', () => {
 })
 
 app.on('before-quit', () => {
+  stopUpdater()
   globalShortcut.unregisterAll()
   session?.destroyOverlays()
   destroyTray()

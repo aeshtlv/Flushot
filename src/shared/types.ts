@@ -60,7 +60,43 @@ export interface ScreenshotSettings {
    * explicit values pin it.
    */
   language: LanguagePreference
+  /**
+   * Look for a newer release once a day and install it on the next quit.
+   *
+   * On by default: a fixed defect reaching nobody was the largest weakness of the
+   * first release. Off means the program makes no network requests at all.
+   */
+  checkUpdates: boolean
 }
+
+// ---------------------------------------------------------------------------
+// Updates
+// ---------------------------------------------------------------------------
+
+/** Why a build cannot update itself. */
+export type ManualInstall = 'portable' | 'unpacked' | 'development'
+
+/**
+ * What the interface can say about updates at any moment.
+ *
+ * A single flat state rather than a set of flags: the settings window and the tray
+ * both render it, and two booleans would let them disagree — "checking" while a
+ * download runs, or "ready" after a failure.
+ */
+export type UpdateState =
+  /** Nothing has happened yet in this run. */
+  | { kind: 'idle' }
+  /** The user turned checks off. */
+  | { kind: 'off' }
+  /** This build cannot update itself; see `installKind`. */
+  | { kind: 'manual'; install: ManualInstall }
+  | { kind: 'checking' }
+  /** No newer version exists. `version` is the one running. */
+  | { kind: 'current'; version: string; checkedAt: number }
+  | { kind: 'downloading'; version: string; percent: number }
+  /** Downloaded and waiting for a restart. */
+  | { kind: 'ready'; version: string }
+  | { kind: 'failed'; message: string; checkedAt: number }
 
 // ---------------------------------------------------------------------------
 // Annotations

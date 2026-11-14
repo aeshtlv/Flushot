@@ -69,7 +69,8 @@ export function defaultSettings(picturesDirectory: string): ScreenshotSettings {
     hotkeyFullscreen: DEFAULT_FULLSCREEN_HOTKEY,
     launchAtLogin: false,
     afterRegion: DEFAULT_AFTER_REGION,
-    language: 'auto'
+    language: 'auto',
+    checkUpdates: true
   }
 }
 
@@ -170,7 +171,8 @@ export function sanitizeSettings(input: unknown, picturesDirectory: string): Scr
     // file that says nothing about language belongs to someone who has never
     // been offered the choice, and they should get their own language once the
     // app can resolve it.
-    language: oneOf<LanguagePreference>(raw.language, ['auto', 'ru', 'en'] as const, defaults.language)
+    language: oneOf<LanguagePreference>(raw.language, ['auto', 'ru', 'en'] as const, defaults.language),
+    checkUpdates: typeof raw.checkUpdates === 'boolean' ? raw.checkUpdates : defaults.checkUpdates
   }
 }
 
