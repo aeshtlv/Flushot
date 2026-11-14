@@ -148,6 +148,7 @@ function blend(fg, bg, alpha) {
 async function checkFiles() {
   const required = [
     'index.html',
+    'en/index.html',
     'styles.css',
     'fonts.css',
     'app.js',
@@ -207,6 +208,115 @@ async function checkReferences() {
     }
   }
   notes.push(`${pictureSources.length} <picture> blocks have matching WebP and PNG sizes`)
+}
+
+/**
+ * The English page is generated from the Russian one, and generated files rot in
+ * a particular way: someone edits the Russian page, forgets to rebuild, and the
+ * two languages quietly stop saying the same thing. This check regenerates into
+ * memory and compares, so a forgotten rebuild is a red test.
+ *
+ * It also holds the one rule the build cannot express on its own: apart from the
+ * link back to the Russian version, which is labelled in Russian on purpose,
+ * nothing on the English page may contain a Cyrillic character.
+ */
+async function checkEnglishPage() {
+  const ENGLISH = path.join(SITE, 'en', 'index.html')
+  if (!existsSync(ENGLISH)) {
+    fail('missing file: en/index.html (run "node scripts/build-en-page.cjs")')
+    return
+  }
+  const html = read('en/index.html')
+  const russian = read('index.html')
+
+  if (!/<html lang="en"/.test(html)) fail('en/index.html does not declare lang="en"')
+  if (!/<link rel="canonical" href="https:\/\/flushot.ink\/en\/">/.test(html)) {
+    fail('en/index.html does not point its canonical link at /en/, so the two languages compete in search')
+  }
+  for (const tag of ['ru', 'en', 'x-default']) {
+    if (!html.includes(`hreflang="${tag}"`)) fail(`en/index.html has no hreflang="${tag}" alternate`)
+    if (!russian.includes(`hreflang="${tag}"`)) fail(`index.html has no hreflang="${tag}" alternate`)
+  }
+
+  checkTagBalance(html, 'en/index.html')
+  const englishH1 = [...html.matchAll(/<h1[\s>]/g)].length
+  if (englishH1 !== 1) fail(`en/index.html has ${englishH1} <h1> elements, expected exactly 1`)
+  const everyEnglishId = [...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1])
+  if (new Set(everyEnglishId).size !== everyEnglishId.length) fail('en/index.html has duplicate ids')
+
+  // The same sections, in the same order: that is what makes the generated page
+  // a translation rather than a shorter page with the same name.
+  const ids = (page) => [...page.matchAll(/<(?:section|div)[^>]*\sid="([^"]+)"/g)].map((m) => m[1])
+  const englishIds = ids(html)
+  const russianIds = ids(russian)
+  if (englishIds.join(',') !== russianIds.join(',')) {
+    fail(`en/index.html has different section ids than index.html (\n    ${englishIds.join(',')}\n    ${russianIds.join(',')})`)
+  }
+
+  // Every picture comes from the English set, and that set exists.
+  const description = /<meta name="description" content="([^"]+)"/.exec(html)
+  if (!description) fail('en/index.html has no meta description')
+  else if (/[\u0400-\u04FF]/.test(description[1])) fail('en/index.html has a Russian meta description')
+
+  const sources = [...html.matchAll(/<source srcset="([^"]+)\.webp"/g)].map((m) => m[1])
+  for (const source of sources) {
+    if (!source.startsWith('../assets/en/')) {
+      fail(`en/index.html shows a picture from "${source}", not from the English set`)
+      continue
+    }
+    for (const extension of ['webp', 'png']) {
+      const file = path.join(SITE, source.replace('../', '') + '.' + extension)
+      if (!existsSync(file)) fail(`en/index.html references ${source}.${extension}, which does not exist`)
+    }
+  }
+  if (sources.length === 0) fail('en/index.html has no <picture> blocks at all')
+  notes.push(`en/index.html: ${sources.length} pictures from the English set`)
+
+  // The one Russian string allowed on the page, and exactly once.
+  const switchLabel = 'aria-label="Русская версия"'
+  const occurrences = html.split(switchLabel).length - 1
+  if (occurrences !== 1) fail(`en/index.html should label its link to the Russian page once, found ${occurrences}`)
+  const withoutSwitch = html.replace(switchLabel, '')
+  const left = []
+  for (const [index, line] of withoutSwitch.split('\n').entries()) {
+    if (/[\u0400-\u04FF]/.test(line)) left.push(`${index + 1}: ${line.trim().slice(0, 80)}`)
+  }
+  if (left.length > 0) {
+    fail(`en/index.html still has ${left.length} line(s) of Russian:\n    ${left.slice(0, 5).join('\n    ')}`)
+  } else {
+    notes.push('en/index.html has no Russian left, apart from the link back to it')
+  }
+
+  // And the generated file matches what the builder would produce right now.
+  const { execFileSync } = require('node:child_process')
+  try {
+    execFileSync(process.execPath, [path.join(__dirname, 'build-en-page.cjs')], {
+      cwd: path.join(__dirname, '..'),
+      stdio: 'pipe'
+    })
+    if (read('en/index.html') !== html) {
+      fail('en/index.html was out of date and has just been rebuilt — commit the regenerated file')
+    } else {
+      notes.push('en/index.html matches what scripts/build-en-page.cjs produces from index.html')
+    }
+  } catch (error) {
+    const output = error.stdout ? error.stdout.toString() : ''
+    fail(`scripts/build-en-page.cjs failed: ${output.trim().split('\n')[0] || error.message}`)
+  }
+
+  // The pages carry the same number of headings, links and pictures: a paragraph
+  // that fell out of the table would show up here as a missing piece.
+  const count = (page, pattern) => (page.match(pattern) || []).length
+  for (const [name, pattern] of [
+    ['<section>', /<section\b/g],
+    ['<picture>', /<picture\b/g],
+    ['<kbd>', /<kbd>/g],
+    ['<li>', /<li\b/g]
+  ]) {
+    const a = count(html, pattern)
+    const b = count(russian, pattern)
+    if (a !== b) fail(`en/index.html has ${a} ${name} elements, index.html has ${b}`)
+  }
 }
 
 async function checkImageAttributes() {
@@ -596,14 +706,20 @@ async function checkBrandMark() {
 }
 
 async function checkSocialPreview() {
-  const file = path.join(SITE, 'og-image.png')
-  if (!existsSync(file)) return
-  const meta = await sharp(file).metadata()
-  if (meta.width !== 1200 || meta.height !== 630) {
-    fail(`og-image.png is ${meta.width}×${meta.height}, social previews expect 1200×630`)
+  for (const [name, page] of [['og-image.png', 'index.html'], ['og-image-en.png', 'en/index.html']]) {
+    const file = path.join(SITE, name)
+    if (!existsSync(file)) {
+      fail(`missing file: ${name}, which ${page} offers as its link preview`)
+      continue
+    }
+    const meta = await sharp(file).metadata()
+    if (meta.width !== 1200 || meta.height !== 630) {
+      fail(`${name} is ${meta.width}×${meta.height}, social previews expect 1200×630`)
+    }
+    const stat = await fs.stat(file)
+    if (stat.size > 5 * 1024 * 1024) fail(`${name} is ${(stat.size / 1024 / 1024).toFixed(1)} MB, some platforms cap at 5 MB`)
+    if (!read(page).includes(name)) fail(`${page} does not point at ${name}`)
   }
-  const stat = await fs.stat(file)
-  if (stat.size > 5 * 1024 * 1024) fail(`og-image.png is ${(stat.size / 1024 / 1024).toFixed(1)} MB, some platforms cap at 5 MB`)
 }
 
 /**
@@ -675,7 +791,7 @@ async function checkAssetStamps() {
   const ASSET = /\.(css|js|mjs|png|webp|jpg|jpeg|avif|svg|ico|woff2|webmanifest)$/
   const UNSTAMPED = new Set(['robots.txt', 'sitemap.xml', 'index.html', '404.html'])
 
-  for (const page of ['index.html', '404.html']) {
+  for (const page of ['index.html', 'en/index.html', '404.html']) {
     const html = read(page)
     const pattern = /(?:href|src|content)="([^"]+)"/g
     let match
@@ -691,7 +807,10 @@ async function checkAssetStamps() {
       const [pathPart, query] = withoutOrigin.split('?')
       if (!pathPart || UNSTAMPED.has(pathPart) || !ASSET.test(pathPart)) continue
 
-      const file = path.join(SITE, pathPart)
+      // Absolute URLs resolve from the root; `../styles.css` on the English page
+      // resolves from that page's own directory, which is where the browser looks.
+      const base = url.startsWith('https://flushot.ink/') ? '' : path.dirname(page) === '.' ? '' : path.dirname(page)
+      const file = path.resolve(SITE, base, pathPart)
       if (!existsSync(file)) continue // checkReferences already reports this
       // Same rule as scripts/stamp-assets.cjs: text is hashed with line endings
       // normalised so a CRLF checkout agrees with an LF one, and everything else
@@ -718,10 +837,12 @@ async function checkAssetStamps() {
 }
 
 async function reportSize() {
-  const assets = await fs.readdir(path.join(SITE, 'assets')).catch(() => [])
   let total = 0
-  for (const file of assets) {
-    total += (await fs.stat(path.join(SITE, 'assets', file))).size
+  for (const dir of [path.join('assets'), path.join('assets', 'en')]) {
+    const entries = await fs.readdir(path.join(SITE, dir)).catch(() => [])
+    for (const file of entries) {
+      total += (await fs.stat(path.join(SITE, dir, file))).size
+    }
   }
   const html = await fs.stat(path.join(SITE, 'index.html'))
   const css = await fs.stat(path.join(SITE, 'styles.css'))
@@ -734,6 +855,7 @@ async function reportSize() {
 async function main() {
   await checkFiles()
   await checkReferences()
+  await checkEnglishPage()
   await checkImageAttributes()
   await checkContrast()
   await checkMarkup()

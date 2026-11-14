@@ -9,7 +9,11 @@
  * Edge is used rather than Electron because it is already on the machine and
  * needs no extra dependency; the protocol is the same Chromium one.
  *
- * Usage: node scripts/shot-site.cjs [--out <dir>]
+ * Both languages are rendered: English runs longer than Russian, and a heading
+ * that fits on one line in one language can wrap into the next section in the
+ * other. A page is only fine when both are.
+ *
+ * Usage: node scripts/shot-site.cjs [--page=ru|en|both]
  */
 
 const path = require('node:path')
@@ -20,7 +24,8 @@ const { pathToFileURL } = require('node:url')
 
 const ROOT = path.join(__dirname, '..')
 const SITE = path.join(ROOT, 'site')
-const OUT = path.join(ROOT, '.tmp', 'site-shots')
+const PAGE = /--page=(ru|en|both)/.exec(process.argv.join(' '))?.[1] ?? 'both'
+const OUT_ROOT = path.join(ROOT, '.tmp', 'site-shots')
 const PORT = 9333
 
 const EDGE_CANDIDATES = [
@@ -157,6 +162,41 @@ const MEASURE = `(() => {
   // The sticky header must not cover a heading when an anchor is followed.
   out.headerHeight = Math.round(document.querySelector('.header').getBoundingClientRect().height);
 
+  // The language switch. It sits beside the theme button in a header that is
+  // already tight on a phone, so "present in the markup" is not enough: it has to
+  // be visible, inside the header, and not on top of the button next to it.
+  const sw = document.querySelector('[data-lang-switch]');
+  const themeButton = document.querySelector('[data-theme-toggle]');
+  const cta = document.querySelector('.nav-cta');
+  const rectOf = (el) => {
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return { x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height) };
+  };
+  const shown = (el) => {
+    if (!el) return false;
+    const r = el.getBoundingClientRect();
+    const style = getComputedStyle(el);
+    return r.width > 0 && r.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
+  };
+  const hits = (a, b) => !!a && !!b && a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  const swBox = rectOf(sw);
+  const themeBox = rectOf(themeButton);
+  const ctaBox = rectOf(cta);
+  out.switch = {
+    lang: document.documentElement.lang,
+    text: sw ? sw.textContent.trim() : '',
+    href: sw ? sw.getAttribute('href') : '',
+    hreflang: sw ? sw.getAttribute('hreflang') : '',
+    aria: sw ? sw.getAttribute('aria-label') : '',
+    visible: shown(sw),
+    inHeader: sw ? !!sw.closest('.header') : false,
+    overlapsTheme: hits(swBox, themeBox),
+    overlapsCta: hits(swBox, ctaBox),
+    box: swBox,
+    themeBox
+  };
+
   return out;
 })()`
 
@@ -209,8 +249,24 @@ async function connect() {
 }
 
 async function main() {
+  const pages = PAGE === 'both' ? ['ru', 'en'] : [PAGE]
+  let problems = 0
+  for (const language of pages) {
+    problems += await shoot(language)
+  }
+
+  if (problems > 0) {
+    console.error(`\n${problems} layout problem(s) found`)
+    process.exit(1)
+  }
+  console.log('\nNo horizontal overflow, no clipped text, no gaps in the grid lines.')
+}
+
+/** Renders one language and returns the number of layout problems it found. */
+async function shoot(language) {
+  const OUT = path.join(OUT_ROOT, language)
   await fs.mkdir(OUT, { recursive: true })
-  const url = pathToFileURL(path.join(SITE, 'index.html')).href
+  const url = pathToFileURL(path.join(SITE, language === 'en' ? 'en/index.html' : 'index.html')).href
   const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'flushot-site-'))
 
   const edge = spawn(
@@ -370,18 +426,52 @@ async function main() {
     report.push({ tab: label, panels })
   }
 
+  // The script writes its own words into the page — the theme button's label,
+  // the hotkey demo's status line. They follow the document's `lang`, and a
+  // missed entry would put Russian into the English page at the one moment a
+  // visitor is looking at it.
+  await evaluate("document.querySelector('.hotkey-change[data-field=\"area\"]').click(); true;")
+  await sleep(400)
+  const written = await evaluate(`(() => {
+    const status = document.querySelector('.hotkeys__status');
+    return JSON.stringify({
+      themeLabel: document.querySelector('[data-theme-toggle]').getAttribute('aria-label'),
+      changeLabel: document.querySelector('.hotkey-change[data-field="area"]').textContent.trim(),
+      prompt: status ? status.textContent.trim() : '',
+      langVar: typeof FLUSHOT_LANG === 'string' ? FLUSHOT_LANG : 'missing'
+    });
+  })()`)
+  const words = JSON.parse(written)
+  report.push({ runtime: { language, words } })
+  await evaluate("document.querySelector('.hotkey-change[data-field=\"area\"]').click(); true;")
+  await sleep(200)
+
   await fs.writeFile(path.join(OUT, 'report.json'), JSON.stringify(report, null, 2), 'utf8')
 
   let problems = 0
 
   for (const entry of report) {
     if (entry.tab) {
-      console.log(`\n${entry.tab}: visible panels ${entry.panels.join(', ')}`)
+      console.log(`\n[${language}] ${entry.tab}: visible panels ${entry.panels.join(', ')}`)
+      continue
+    }
+    if (entry.runtime) {
+      const { words } = entry.runtime
+      console.log(`\n[${language}] words written by the script:`)
+      for (const [key, value] of Object.entries(words)) console.log(`  ${key}: ${value}`)
+      const russian = /[\u0400-\u04FF]/
+      const wrong = Object.entries(words).filter(([key, value]) =>
+        key === 'langVar' ? value !== language : russian.test(value) !== (language === 'ru')
+      )
+      for (const [key, value] of wrong) {
+        console.log(`  WORDS: "${key}" is "${value}" on the ${language} page`)
+        problems += 1
+      }
       continue
     }
     const { viewport, metrics } = entry
     console.log(
-      `\n${viewport.name}  ${viewport.width}×${viewport.height}  doc ${metrics.docWidth}×${metrics.docHeight}  overflowX=${metrics.overflowX}`
+      `\n[${language}] ${viewport.name}  ${viewport.width}×${viewport.height}  doc ${metrics.docWidth}×${metrics.docHeight}  overflowX=${metrics.overflowX}`
     )
     if (metrics.wide.length) {
       console.log(`  WIDE: ${JSON.stringify(metrics.wide)}`)
@@ -392,6 +482,32 @@ async function main() {
       problems += 1
     }
     if (metrics.clipped.length) console.log(`  CLIPPED: ${JSON.stringify(metrics.clipped)}`)
+    const sw = metrics.switch
+    console.log(`  switch: "${sw.text}" -> ${sw.href} (hreflang ${sw.hreflang}) visible=${sw.visible} inHeader=${sw.inHeader}`)
+    if (!sw.visible) {
+      console.log('  SWITCH: not visible')
+      problems += 1
+    }
+    if (!sw.inHeader) {
+      console.log('  SWITCH: outside the header')
+      problems += 1
+    }
+    if (sw.overlapsTheme || sw.overlapsCta) {
+      console.log(`  SWITCH: overlaps (theme=${sw.overlapsTheme}, download=${sw.overlapsCta}) ${JSON.stringify(sw.box)} vs ${JSON.stringify(sw.themeBox)}`)
+      problems += 1
+    }
+    // Each page must point at the other one. A switch that links to the page you
+    // are already on is worse than no switch.
+    const expectedHref = language === 'en' ? '../' : 'en/'
+    const expectedLang = language === 'en' ? 'ru' : 'en'
+    if (sw.href !== expectedHref || sw.hreflang !== expectedLang) {
+      console.log(`  SWITCH: points at "${sw.href}" (${sw.hreflang}), expected "${expectedHref}" (${expectedLang})`)
+      problems += 1
+    }
+    if (sw.lang !== language) {
+      console.log(`  LANG: document declares "${sw.lang}" on the ${language} page`)
+      problems += 1
+    }
     if (metrics.brokenImages.length) console.log(`  BROKEN IMAGES: ${JSON.stringify(metrics.brokenImages)}`)
     if (metrics.contrastFailures.length) console.log(`  CONTRAST: ${JSON.stringify(metrics.contrastFailures)}`)
     console.log(`  panels: ${metrics.visiblePanels.join(', ')}  nav visible: ${metrics.navVisible}  header: ${metrics.headerHeight}px`)
@@ -409,11 +525,7 @@ async function main() {
   edge.kill()
   await fs.rm(profile, { recursive: true, force: true }).catch(() => {})
 
-  if (problems > 0) {
-    console.error(`\n${problems} layout problem(s) found`)
-    process.exit(1)
-  }
-  console.log('\nNo horizontal overflow, no clipped text, no gaps in the grid lines.')
+  return problems
 }
 
 main().catch((error) => {

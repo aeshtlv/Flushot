@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flushot — screenshots, ready to paste</title>
+<meta name="description" content="Flushot is a free screenshot program for Windows 10 and 11. Select a region, release the mouse — the screenshot is already in the clipboard. Annotations, text recognition, and it works without an internet connection.">
+<meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="dark light">
+<link rel="canonical" href="https://flushot.ink/en/">
+<link rel="alternate" hreflang="ru" href="https://flushot.ink/">
+<link rel="alternate" hreflang="en" href="https://flushot.ink/en/">
+<link rel="alternate" hreflang="x-default" href="https://flushot.ink/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Flushot">
+<meta property="og:url" content="https://flushot.ink/en/">
+<meta property="og:title" content="Flushot — screenshots for Windows">
+<meta property="og:description" content="Release the mouse button — the finished screenshot is already in the clipboard: frame, shadow and rounded corners applied. Annotations, text recognition, lossless PNG. Windows 10 and 11, free.">
+<meta property="og:image" content="https://flushot.ink/og-image-en.png?v=979a4501">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="en_GB">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Flushot — screenshots for Windows">
+<meta name="twitter:description" content="A finished screenshot in the clipboard the moment you release the mouse. Annotations, text recognition, lossless PNG. Windows 10 and 11, free.">
+<meta name="twitter:image" content="https://flushot.ink/og-image-en.png?v=979a4501">
+
+<link rel="icon" href="../favicon.svg?v=a7643679" type="image/svg+xml">
+<link rel="icon" href="../favicon-32.png?v=67a7ece7" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png?v=980e5cca">
+<link rel="manifest" href="../site.webmanifest?v=06f0995b">
+<link rel="stylesheet" href="../fonts.css?v=0b21389f">
+<link rel="stylesheet" href="../styles.css?v=91ea0db6">
+<link rel="preload" as="image" href="../assets/en/hero.webp?v=bfd76a00" type="image/webp">
+
+<script>
+  // Set the theme before the first paint, otherwise the page flashes light on a
+  // dark desktop and then jumps. Dark is the default: the page is designed for
+  // it, and a screenshot utility is used on a dark desktop more often than not.
+  (function () {
+    try {
+      var saved = localStorage.getItem('flushot-theme');
+      document.documentElement.dataset.theme =
+        saved === 'dark' || saved === 'light' ? saved : 'dark';
+    } catch (error) {
+      document.documentElement.dataset.theme = 'dark';
+    }
+  })();
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="header">
+  <div class="nav-inner">
+    <a class="brand" href="#top" aria-label="Flushot — home">
+      <!-- The favicon file itself, not a second copy of the drawing: the header and
+           the browser tab cannot show different logos if there is only one file.
+           The width/height are the file's own 200-unit grid; the CSS shrinks it to
+           22 px, and declaring the intrinsic size keeps the aspect ratio honest. -->
+      <img class="brand__mark" src="../favicon.svg?v=a7643679" width="200" height="200" alt="" aria-hidden="true">
+      <span class="brand__name">Flushot</span>
+      <span class="brand__ver">2.3.0</span>
+    </a>
+
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav" aria-label="Menu">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M4 7h16M4 12h16M4 17h16"/>
+      </svg>
+    </button>
+
+    <div class="nav-right" id="nav">
+      <nav class="nav-links" aria-label="Main navigation">
+        <a class="nav-link" href="#try">Try it</a>
+        <a class="nav-link" href="#features">Features</a>
+        <a class="nav-link" href="#how">How it works</a>
+        <a class="nav-link" href="#hotkeys">Hotkeys</a>
+        <a class="nav-link" href="#screens">Screenshots</a>
+        <a class="nav-link" href="#faq">Questions</a>
+      </nav>
+      <!-- Two letters, not a flag: a flag names a country, and the page is
+           published in the two languages it actually speaks. The English page is
+           generated from this one (scripts/build-en-page.cjs), and the build
+           flips this link so each page points at the other. -->
+      <a class="lang-switch" href="../" hreflang="ru" lang="ru" data-lang-switch
+         aria-label="Русская версия">RU</a>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to light theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+        </svg>
+      </button>
+      <a class="btn btn--primary nav-cta" href="#download">Download</a>
+    </div>
+  </div>
+  <span class="header__progress" data-progress aria-hidden="true"></span>
+</header>
+
+<main id="main">
+  <section class="hero" id="top">
+    <div class="hero__grid" aria-hidden="true"></div>
+    <div class="hero__glow" aria-hidden="true"></div>
+    <div class="wrap hero__inner">
+      <p class="eyebrow" data-rise style="--d: 0.05s">Windows 10 and 11 · version 2.3.0 · free</p>
+      <h1 class="hero__title" data-rise style="--d: 0.1s">
+        <span>A screenshot</span>
+        <span>ready to paste</span>
+      </h1>
+      <p class="hero__sub" data-rise style="--d: 0.16s">
+        Select a region and release the mouse button — the screenshot is already in the clipboard, with a frame, a shadow and rounded corners. There is no need to press <kbd>Ctrl</kbd>+<kbd>C</kbd>. Annotations, text recognition and saving to a file are in the same program.
+      </p>
+      <div class="hero__actions" data-rise style="--d: 0.22s">
+        <a class="btn btn--primary btn--lg" href="#download">
+          <svg class="btn__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>
+          </svg>
+          Download for Windows
+        </a>
+        <a class="btn btn--ghost btn--lg" href="#features">What’s inside</a>
+      </div>
+      <p class="hero__note" data-rise style="--d: 0.26s">
+        <span>No ads, no internet ·</span>
+        <a href="#download">a portable build and a no-install archive are available</a>
+      </p>
+
+      <figure class="hero__preview" data-rise style="--d: 0.3s">
+        <div class="hero__frame">
+          <picture>
+            <source srcset="../assets/en/hero.webp" type="image/webp">
+            <img src="../assets/en/hero.png?v=6baed87a" width="1640" height="957"
+                 alt="A screenshot of the program window styled by Flushot: white frame, rounded corners and a soft shadow."
+                 fetchpriority="high" decoding="async">
+          </picture>
+        </div>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section section--try" id="try" aria-labelledby="try-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Try it</p>
+        <h2 class="section-title" id="try-title">Select a piece of this page</h2>
+        <p class="section-lead">
+          Drag across the window — on release you get a card in a frame, exactly the way the program does it. Nothing to download, nothing sent anywhere.
+        </p>
+      </div>
+
+      <div class="try" data-try>
+        <div class="try__stage">
+          <div class="try__scene" data-try-scene>
+            <div class="try__doc" data-try-doc aria-hidden="true">
+              <div class="winbar winbar--doc">
+                <span class="winbar__icon"></span>
+                <span class="winbar__title">Quarterly report</span>
+                <span class="winbar__buttons">
+                  <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1"><path d="M0 5h10"/></svg>
+                  <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1"><rect x="0.5" y="0.5" width="9" height="9"/></svg>
+                  <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1"><path d="M0 0l10 10M10 0L0 10"/></svg>
+                </span>
+              </div>
+              <div class="try__paper">
+                <p class="try__kicker">Third quarter</p>
+                <h3 class="try__heading">Revenue 14 % above plan</h3>
+                <p class="try__text">
+                  Subscription drove the growth: 2,481 new customers in three months. The average order value rose to ₽1,240, and churn held at 3.1 %.
+                </p>
+                <div class="try__chart" aria-hidden="true">
+                  <span></span><span></span><span></span><span></span><span></span><span></span>
+                </div>
+                <p class="try__text try__text--small">
+                  The September figures are still being confirmed: some refunds will land in October.
+                </p>
+              </div>
+            </div>
+
+            <div class="try__veil" data-try-veil hidden></div>
+            <div class="try__marquee" data-try-marquee hidden>
+              <span class="try__size" data-try-size>0 × 0 px</span>
+            </div>
+            <p class="try__hint" data-try-hint>
+              <span class="try__hint-fine">Drag across it</span>
+              <span class="try__hint-coarse">Drag with your finger</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="try__out" data-try-out>
+          <div class="try__slot" data-try-slot></div>
+
+          <div class="try__idle" data-try-idle>
+            <p class="try__idle-title">Your screenshot appears here</p>
+            <p class="try__idle-text">
+              With a frame, rounded corners and a shadow — the same card you get in the program.
+            </p>
+          </div>
+
+          <div class="try__done" data-try-done hidden>
+            <p class="try__meta"><span data-try-dims>0 × 0 px</span><span>PNG</span><span>in the clipboard</span></p>
+            <div class="try__actions">
+              <button class="btn btn--primary btn--sm" type="button" data-try-paste>
+                <kbd>Ctrl</kbd><span class="try__plus">+</span><kbd>V</kbd>
+                Paste
+              </button>
+              <button class="btn btn--ghost btn--sm" type="button" data-try-reset>Once more</button>
+            </div>
+          </div>
+
+          <p class="try__status" data-try-status role="status" aria-live="polite"></p>
+
+          <div class="try__msg" data-try-msg hidden>
+            <span class="try__avatar" aria-hidden="true">Me</span>
+            <div class="try__bubble">
+              <span class="try__msg-name">You · just now</span>
+              <div class="try__msg-shot" data-try-msg-shot></div>
+              <span class="try__msg-text">Look how much revenue has grown</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="features" aria-labelledby="features-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Features</p>
+        <h2 class="section-title" id="features-title">Everything you need from a screenshot</h2>
+        <p class="section-lead">Nine things that make people install Flushot instead of the Windows Snipping Tool.</p>
+      </div>
+
+      <div class="feature-grid">
+        <article class="feature">
+          <div class="feature__mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3" stroke-dasharray="3 3"/><path d="M8 12h8"/><path d="M13 9l3 3-3 3"/></svg>
+          </div>
+          <h3 class="feature__name">Straight to the clipboard</h3>
+          <p class="feature__text">Release the mouse button and the screenshot is ready to paste. No <kbd>Ctrl</kbd>+<kbd>C</kbd>, no extra window.</p>
+          <p class="feature__tag">select → paste</p>
+        </article>
+
+        <article class="feature">
+          <div class="feature__mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 17h16"/><circle cx="4" cy="17" r="1.6"/><circle cx="20" cy="17" r="1.6"/></svg>
+          </div>
+          <h3 class="feature__name">Straight line</h3>
+          <p class="feature__text">A separate tool for underlining. With Shift held, the line snaps to 0°, 45° or 90°.</p>
+          <p class="feature__tag">⇧ Shift</p>
+        </article>
+
+        <article class="feature">
+          <div class="feature__mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="6" width="20" height="12" rx="3"/><path d="M7 10h3M14 10h3M7 14h10"/></svg>
+          </div>
+          <h3 class="feature__name">Your own hotkeys</h3>
+          <p class="feature__text">Both keys are assigned in the settings — whatever suits you. Print Screen or F1, either works.</p>
+          <p class="feature__tag">Print Screen · F1 · anything</p>
+        </article>
+
+        <article class="feature">
+          <div class="feature__mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="3"/><rect x="7" y="8" width="10" height="8" rx="1.5"/></svg>
+          </div>
+          <h3 class="feature__name">Frame, shadow, corners</h3>
+          <p class="feature__text">Background colour, frame thickness, corner radius and shadow strength are all adjustable.</p>
+          <p class="feature__tag">64 px · r12</p>
+        </article>
+
+        <article class="feature">
+          <div class="feature__mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l5-1 10-10a2.1 2.1 0 0 0-3-3L6 16z"/><path d="M14 6l3 3"/></svg>
+          </div>
+          <h3 class="feature__name">Annotations</h3>
+          <p class="feature__text">Arrow, line, rectangle, pencil, text, numbered steps and blur.</p>
+          <p class="feature__tag">7 tools</p>
+        </article>
+
+        <article class="feature">
+          <div class="feature__mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="5" width="13" height="10" rx="2"/><rect x="9" y="9" width="13" height="10" rx="2"/></svg>
+          </div>
+          <h3 class="feature__name">Two monitors</h3>
+          <p class="feature__text">The selection crosses the boundary between screens. 125 % and 150 % scaling breaks neither the frame nor the screenshot.</p>
+          <p class="feature__tag">100–150 %</p>
+        </article>
+
+        <article class="feature">
+          <div class="feature__mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 8V4h4M21 8V4h-4M3 16v4h4M21 16v4h-4"/><path d="M9 12h6"/></svg>
+          </div>
+          <h3 class="feature__name">Live size</h3>
+          <p class="feature__text">The size in pixels updates as you drag the frame. You can move the whole frame, resize it from any edge, and the panel never slides off the screen.</p>
+          <p class="feature__tag">1280 × 720 px</p>
+        </article>
+
+        <article class="feature">
+          <div class="feature__mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7z"/><path d="M9 12l2 2 4-4"/></svg>
+          </div>
+          <h3 class="feature__name">No internet</h3>
+          <p class="feature__text">No update checks, no telemetry, no account sign-in. It works offline for as long as you like.</p>
+          <p class="feature__tag">0 requests</p>
+        </article>
+
+        <article class="feature">
+          <div class="feature__mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V5h16v3"/><path d="M12 5v14"/><path d="M9 19h6"/><path d="M17 15h4"/><path d="M17 12h4"/></svg>
+          </div>
+          <h3 class="feature__name">Text from a screenshot</h3>
+          <p class="feature__text">Outline a fragment on the screenshot and “Text” reads it with the built-in Windows engines: no language downloads, no internet, and the screenshot is not sent anywhere.</p>
+          <p class="feature__tag">Windows OCR · offline, no downloads</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="how" aria-labelledby="how-title">
+    <div class="wrap">
+      <div class="save-grid">
+        <div class="term" role="img" aria-label="Terminal: the Pictures\Flushot folder holds screenshots with the date in the file name.">
+          <div class="winbar winbar--term" aria-hidden="true">
+            <span class="winbar__icon"></span>
+            <span class="winbar__title">Pictures\Flushot</span>
+            <span class="winbar__buttons">
+              <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1"><path d="M0 5h10"/></svg>
+              <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1"><rect x="0.5" y="0.5" width="9" height="9"/></svg>
+              <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1"><path d="M0 0l10 10M10 0L0 10"/></svg>
+            </span>
+          </div>
+          <div class="term__body" aria-hidden="true">
+            <div class="term__line"><span class="term__prompt">$</span>ls</div>
+            <div class="term__line term__file">screenshot_2026-10-17_14-30-25.png</div>
+            <div class="term__line term__file">screenshot_2026-10-17_14-31-02.png</div>
+            <div class="term__line term__file">screenshot_2026-10-17_14-32-48.jpg</div>
+            <div class="term__line"><span class="term__prompt">$</span><span class="term__caret"></span></div>
+          </div>
+        </div>
+
+        <div class="pitch">
+          <div class="section-head" style="margin-bottom: 0">
+            <p class="eyebrow">How it works</p>
+            <h2 class="section-title" id="how-title">Two steps, one paste</h2>
+          </div>
+
+          <ol class="pitch__list">
+            <li class="pitch__item">
+              <span class="pitch__num" aria-hidden="true">1</span>
+              <span><strong>Press your key.</strong> By default it is <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd>, but you can change it to any key. The screen dims.</span>
+            </li>
+            <li class="pitch__item">
+              <span class="pitch__num" aria-hidden="true">2</span>
+              <span><strong>Release the mouse.</strong> The size is shown next to the frame and updates as you drag. By the moment you let go, the screenshot is already in the clipboard — all that is left is <kbd>Ctrl</kbd>+<kbd>V</kbd> wherever you are pasting it.</span>
+            </li>
+          </ol>
+
+          <p class="pitch__meta">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+            Lossless PNG · saved to a file · annotations with <kbd>Shift</kbd>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="compare" aria-labelledby="compare-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">The difference</p>
+        <h2 class="section-title" id="compare-title">A minute in an editor — or none at all</h2>
+        <p class="section-lead">What happens to a screenshot before and after Flushot.</p>
+      </div>
+
+      <div class="compare">
+        <article class="compare__card">
+          <h3 class="compare__title">The usual way</h3>
+          <ul class="notes notes--warn">
+            <li>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              <span>The screenshot is cropped at the window edge, with a white strip along the bottom</span>
+            </li>
+            <li>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              <span>The shadow and corners do not match the design, so you fix them by hand</span>
+            </li>
+            <li>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              <span>The underline is “almost horizontal” — and it shows</span>
+            </li>
+            <li>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              <span>The file <code>screenshot.png</code> overwrote the previous one</span>
+            </li>
+          </ul>
+        </article>
+
+        <article class="compare__card compare__card--after">
+          <h3 class="compare__title">With Flushot</h3>
+          <ul class="notes">
+            <li>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+              <span>The screenshot arrives already framed, with a shadow and rounded corners</span>
+            </li>
+            <li>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+              <span>With Shift, the line locks to exactly 0°, 45° or 90°</span>
+            </li>
+            <li>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+              <span>The name carries the date: <code>screenshot_2026-10-21_10-34-11.png</code></span>
+            </li>
+            <li>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+              <span>Hotkeys to suit you — <kbd>Print Screen</kbd>, <kbd>F1</kbd>, whatever is convenient</span>
+            </li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="hotkeys" aria-labelledby="hotkeys-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Hotkeys</p>
+        <h2 class="section-title" id="hotkeys-title">The keys are yours, not ours</h2>
+        <p class="section-lead">
+          The text above shows the default values. They really are defaults: both keys can be changed in the settings to whatever suits you. Below is a working demonstration: press “Change” and type a shortcut.
+        </p>
+      </div>
+
+      <div class="hotkeys">
+        <div class="hotkey-panel">
+          <div class="hotkey-row">
+            <div class="hotkey-text">
+              <span class="hotkey-label">Region screenshot</span>
+              <span class="hotkey-hint">Drag a rectangle with the mouse</span>
+            </div>
+            <div class="hotkey-keys" data-field="area" aria-live="polite" aria-label="Default: Ctrl Shift S">
+              <kbd>Ctrl</kbd><span class="hotkey-plus">+</span><kbd>Shift</kbd><span class="hotkey-plus">+</span><kbd>S</kbd>
+            </div>
+            <button class="hotkey-change" type="button" data-field="area" aria-label="Change the region screenshot key">Change</button>
+          </div>
+
+          <div class="hotkey-row">
+            <div class="hotkey-text">
+              <span class="hotkey-label">Full-screen screenshot</span>
+              <span class="hotkey-hint">No frame, straight to the clipboard or to a file</span>
+            </div>
+            <div class="hotkey-keys" data-field="full" aria-live="polite" aria-label="Default: Ctrl Shift 3">
+              <kbd>Ctrl</kbd><span class="hotkey-plus">+</span><kbd>Shift</kbd><span class="hotkey-plus">+</span><kbd>3</kbd>
+            </div>
+            <button class="hotkey-change" type="button" data-field="full" aria-label="Change the full-screen screenshot key">Change</button>
+          </div>
+        </div>
+
+        <p class="hotkeys__status" role="status" aria-live="polite"></p>
+
+        <div class="hotkey-notes">
+          <h3>How it works</h3>
+          <ul class="notes">
+            <li>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+              <span>Press “Change” and simply type the shortcut — it records itself as you go, with no dropdown lists.</span>
+            </li>
+            <li>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+              <span>If another program already owns that shortcut, Flushot says so and offers another.</span>
+            </li>
+            <li>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+              <span>You cannot assign the same key twice: Windows gives a shortcut to one action only.</span>
+            </li>
+            <li>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+              <span>Each key has a “Reset” that restores the default.</span>
+            </li>
+            <li>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+              <span>Punctuation marks work too: <kbd>Ctrl</kbd>+<kbd>=</kbd>, <kbd>Ctrl</kbd>+<kbd>-</kbd>.</span>
+            </li>
+            <li>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+              <span><kbd>Esc</kbd> cannot be assigned — Windows does not give it to programs.</span>
+            </li>
+            <li>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+              <span><kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> belongs to the Windows Snipping Tool — no application can take that shortcut while the Snipping Tool is installed. The settings say so and offer either to uninstall the Snipping Tool or to type another shortcut.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="screens" aria-labelledby="screens-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Screenshots</p>
+        <h2 class="section-title" id="screens-title">Real program windows</h2>
+        <p class="section-lead">Captured on Windows at 100 % display scaling.</p>
+      </div>
+
+      <div data-gallery>
+        <div class="gallery" role="tablist" aria-label="Program screens">
+          <button role="tab" type="button" id="tab-select" aria-controls="panel-select" aria-selected="true" class="gallery__tab">Region selection</button>
+          <button role="tab" type="button" id="tab-annotate" aria-controls="panel-annotate" aria-selected="false" class="gallery__tab" tabindex="-1">Annotations</button>
+          <button role="tab" type="button" id="tab-ocr" aria-controls="panel-ocr" aria-selected="false" class="gallery__tab" tabindex="-1">Text from a screenshot</button>
+          <button role="tab" type="button" id="tab-settings" aria-controls="panel-settings" aria-selected="false" class="gallery__tab" tabindex="-1">Settings</button>
+        </div>
+
+        <div class="gallery__panel" role="tabpanel" id="panel-select" aria-labelledby="tab-select">
+          <div class="shot">
+            <picture>
+              <source srcset="../assets/en/overlay.webp" type="image/webp">
+              <img src="../assets/en/overlay.png?v=197f6349" width="1280" height="720" loading="lazy" decoding="async"
+                   alt="A dimmed screen with a region selected, a size label and a button panel at the bottom.">
+            </picture>
+          </div>
+          <p class="shot-caption">The dimming, the crosshair and the region size. The button panel at the bottom stays visible even when you select the whole screen.</p>
+        </div>
+
+        <div class="gallery__panel" role="tabpanel" id="panel-annotate" aria-labelledby="tab-annotate" hidden>
+          <div class="shot">
+            <picture>
+              <source srcset="../assets/en/annotate.webp" type="image/webp">
+              <img src="../assets/en/annotate.png?v=07075f7d" width="1280" height="720" loading="lazy" decoding="async"
+                   alt="A finished screenshot with the tool panel and an arrow drawn on it.">
+            </picture>
+          </div>
+          <p class="shot-caption">Annotations: arrow, line, rectangle, pencil, text, numbered steps and blur.</p>
+        </div>
+
+        <div class="gallery__panel" role="tabpanel" id="panel-ocr" aria-labelledby="tab-ocr" hidden>
+          <div class="shot">
+            <picture>
+              <source srcset="../assets/en/ocr.webp" type="image/webp">
+              <img src="../assets/en/ocr.png?v=33270422" width="1280" height="720" loading="lazy" decoding="async"
+                   alt="A screenshot with a fragment selected and the recognised text panel.">
+            </picture>
+          </div>
+          <p class="shot-caption">The “Text” button turns on fragment selection: outline the part you need and the recognised text appears alongside, ready to correct and copy. Pressing the button without outlining anything reads the whole screenshot.</p>
+        </div>
+
+        <div class="gallery__panel gallery__panel--split" role="tabpanel" id="panel-settings" aria-labelledby="tab-settings" hidden>
+          <div class="shot shot--native">
+            <picture>
+              <source srcset="../assets/en/settings.webp" type="image/webp">
+              <img src="../assets/en/settings.png?v=6188e963" width="520" height="820" loading="lazy" decoding="async"
+                   alt="The settings window: theme, frame colour, shadow, save folder, format and hotkeys.">
+            </picture>
+          </div>
+          <div class="gallery__side">
+            <h3>What you can adjust</h3>
+            <ul class="notes">
+              <li>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+                <span>Theme: light or dark</span>
+              </li>
+              <li>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+                <span>Frame background: white, black or a custom colour</span>
+              </li>
+              <li>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+                <span>Frame thickness, corner radius, shadow strength</span>
+              </li>
+              <li>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+                <span>Save folder and mode: straight to the folder, ask, or clipboard only</span>
+              </li>
+              <li>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+                <span>Format: lossless PNG, JPEG or WebP</span>
+              </li>
+              <li>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+                <span>Both hotkeys and autostart</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="monitors">
+        <div class="monitors__body">
+          <p class="eyebrow">Multiple screens</p>
+          <h3 class="monitors__title">Two monitors, one above the other</h3>
+          <p class="monitors__lead">The selection crosses the boundary between screens, even when they are different sizes and placed however you like.</p>
+          <ul class="notes monitors__notes">
+            <li>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+              <span>The screenshot is assembled from both at their native resolution, with no stretching.</span>
+            </li>
+            <li>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+              <span><strong>“Full screen”</strong> captures the primary monitor, not both at once.</span>
+            </li>
+            <li>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+              <span>The button panel and the messages stay on the primary monitor instead of jumping to the neighbouring one.</span>
+            </li>
+            <li>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+              <span>Different display scalings do not throw the size off: it is counted in the pixels of the file.</span>
+            </li>
+          </ul>
+        </div>
+        <div class="shot">
+          <picture>
+            <source srcset="../assets/en/monitors.webp" type="image/webp">
+            <img src="../assets/en/monitors.png?v=0d8eecb8" width="840" height="945" loading="lazy" decoding="async"
+                 alt="Two dimmed monitors stacked one above the other, with a region selected across both.">
+          </picture>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="download" aria-labelledby="download-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Download</p>
+        <h2 class="section-title" id="download-title">Version 2.3.0 for Windows</h2>
+        <p class="section-lead">Three variants of the same build. The program inside is identical — pick one by how you want to install it.</p>
+      </div>
+
+      <div class="dl-grid">
+        <article class="dl-card dl-card--main">
+          <div class="dl-card__top">
+            <h3 class="dl-card__name">Folder with the program</h3>
+            <span class="dl-card__badge">Recommended</span>
+          </div>
+          <p class="dl-card__text">Unpack into any folder and run <code>Flushot.exe</code>. Nothing gets installed and Windows temp space is not needed.</p>
+          <p class="dl-card__meta"><span>143 MB</span><span>ZIP</span><span>no installation</span></p>
+          <a class="btn btn--primary" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.3.0-win64.zip">Download ZIP</a>
+        </article>
+
+        <article class="dl-card">
+          <div class="dl-card__top">
+            <h3 class="dl-card__name">Installer</h3>
+          </div>
+          <p class="dl-card__text">It contains <code>Flushot-2.3.0-x64.exe</code>. Double-click, “Install” — shortcuts appear in the Start menu along with an uninstall entry.</p>
+          <p class="dl-card__meta"><span>94 MB</span><span>ZIP</span><span>NSIS</span></p>
+          <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.3.0-installer.zip">Download ZIP</a>
+        </article>
+
+        <article class="dl-card">
+          <div class="dl-card__top">
+            <h3 class="dl-card__name">Portable</h3>
+          </div>
+          <p class="dl-card__text">A single file with no installation. On first launch it unpacks into a temporary folder, so a working <code>%TEMP%</code> is needed.</p>
+          <p class="dl-card__meta"><span>94 MB</span><span>ZIP</span><span>single file</span></p>
+          <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.3.0-portable.zip">Download ZIP</a>
+        </article>
+      </div>
+
+      <div class="dl-note">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 9v5"/><path d="M12 17h.01"/><path d="M10.3 3.9L2.4 18a1.9 1.9 0 0 0 1.7 2.9h15.8a1.9 1.9 0 0 0 1.7-2.9L13.7 3.9a1.9 1.9 0 0 0-3.4 0z"/></svg>
+        <p><strong>About the blue Windows window.</strong> On first launch SmartScreen shows “Windows protected your PC”. This happens with any file that has no paid developer certificate. Press “More info” → “Run anyway”.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="faq" aria-labelledby="faq-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Questions</p>
+        <h2 class="section-title" id="faq-title">Common questions</h2>
+      </div>
+
+      <div class="faq">
+        <details open>
+          <summary>The screenshot went to the clipboard by itself. Is that how it should be?</summary>
+          <p>Yes, that is the main mode. Releasing the mouse button copies the finished card to the clipboard and closes the selection overlay, so you can paste right away: <kbd>Ctrl</kbd>+<kbd>V</kbd> in a chat, an email or a document. There is no need to press <kbd>Ctrl</kbd>+<kbd>C</kbd>.</p>
+          <p>Annotations and saving are still there: holding <kbd>Shift</kbd> while you release the button opens the screenshot in the editor, and the “After selection → Open” switch in the settings does the same. An accidental click, or a region smaller than 24 × 24 px, is not copied — the clipboard stays as it was.</p>
+        </details>
+
+        <details>
+          <summary>Windows says the program is unsafe. Is that dangerous?</summary>
+          <p>No. The warning appears because there is no digital signature, not because of the content. A signature is a paid certificate, and one is not bought for a free program. Press “More info” → “Run anyway”.</p>
+        </details>
+
+        <details>
+          <summary>Where are screenshots saved?</summary>
+          <p>By default into <code>Pictures\Flushot</code>. The folder can be changed in the settings, which also has a button that opens it in File Explorer. The file name is the date and time, so nothing is overwritten.</p>
+          <p>The file is written even when the screenshot has gone to the clipboard: writing happens after the copy and does not hold the paste up.</p>
+        </details>
+
+        <details>
+          <summary>Can the hotkeys be changed?</summary>
+          <p>Yes, both. If another program already owns that shortcut, Flushot says so. You cannot assign the same key twice: Windows gives a shortcut to one action only.</p>
+          <p>And <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> cannot be assigned by us or by anyone else: while the Windows Snipping Tool is installed, that shortcut belongs to it. The settings name the owner and offer two ways out: uninstall the Snipping Tool, or type another shortcut.</p>
+          <p>There are no ready-made buttons with suggested shortcuts in the settings: you assign the shortcut yourself, by typing it. Someone else’s suggestions only got in the way there.</p>
+        </details>
+
+        <details>
+          <summary>How do I get the text out of a screenshot?</summary>
+          <p>The “Text” button turns on fragment selection: outline the part you need on the screenshot and the recognised text appears alongside, ready to copy with one button. Pressing the button without outlining anything reads the whole screenshot. This uses the built-in Windows engine, the same one as the Snipping Tool: nothing is downloaded, no internet is needed, and the screenshot never leaves the computer. A card of 880 × 1200 with twenty lines takes about 1.1 s to read after the first launch — three reads instead of one cost about 0.6 s and pay for themselves in fewer mistakes.</p>
+          <p>The text in the panel can be <strong>edited</strong>: click a word, correct it, “Copy corrected” — the clipboard receives the corrected text, with no round trip through Notepad. The “edited” marker and the “Revert” button show how the text differs from what the engine read.</p>
+          <p>A Windows engine handles one language only, so every installed engine reads at once and the results are merged <strong>line by line</strong>: each engine is right about exactly its own alphabet, and there is no best engine for a mixed screenshot. On top of that, each screenshot is read <strong>three times</strong> — at the chosen scaling, at two thirds of it, and once more in black and white — and a disputed word is settled by a vote. On a set of 20 lines of real text at four font sizes this gave <strong>3.22 %</strong> wrong characters against 3.50 % for a single read.</p>
+          <p>This is not OCR for scans: with small type and coloured text over a picture the engine makes mistakes. Where every read agrees on something wrong (at 11 px both engines read the same word the same wrong way), there is nothing to merge — and that is exactly the case manual editing is for.</p>
+        </details>
+
+        <details>
+          <summary>Does it work with two monitors?</summary>
+          <p>Yes. The selection spans the combined area of all monitors, even when they are different sizes and stacked one above the other. The screenshot is assembled from both at their native resolution. The separate “full screen” key captures the primary monitor.</p>
+        </details>
+
+        <details>
+          <summary>Is an internet connection needed?</summary>
+          <p>No. The program makes no network requests at all: no update checks, no telemetry, no account sign-in. Download it once and it works offline for as long as you like.</p>
+        </details>
+
+        <details>
+          <summary>What about picture quality?</summary>
+          <p>The screenshot is taken in the monitor’s physical pixels, so at 125 % or 150 % scaling it is not blurry. PNG is saved losslessly. If you need a lighter file, JPEG with adjustable quality and WebP are available.</p>
+        </details>
+
+        <details>
+          <summary>Is there an English version?</summary>
+          <p>No, the interface is Russian only. That is one of the honest limits: the translation has not been made yet.</p>
+        </details>
+
+        <details>
+          <summary>Can I delete one annotation out of several?</summary>
+          <p><kbd>Ctrl</kbd>+<kbd>Z</kbd> undoes the last action. A single numbered step cannot be removed from the middle — the numbering is recalculated automatically, and removing one selectively would break it.</p>
+        </details>
+
+        <details>
+          <summary>Is it really free?</summary>
+          <p>Yes. No ads, no subscriptions, no cut-down versions and no sign-up.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="limits" aria-labelledby="limits-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Limitations</p>
+        <h2 class="section-title" id="limits-title">What is still missing</h2>
+        <p class="section-lead">Better to find out here than after the download.</p>
+      </div>
+
+      <ul class="limits">
+        <li class="limit">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
+          <span><strong>Russian only.</strong> There is no English translation of the interface.</span>
+        </li>
+        <li class="limit">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
+          <span><strong>The files are not signed.</strong> SmartScreen warns on first launch. The source code is open on <a href="https://github.com/aeshtlv/Flushot">GitHub</a>, so you can read it before running anything.</span>
+        </li>
+        <li class="limit">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
+          <span><strong>Annotations are baked in when you save.</strong> Before that you can move them; afterwards you cannot.</span>
+        </li>
+        <li class="limit">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
+          <span><strong>Blur in the preview is coarser</strong> than in the finished file.</span>
+        </li>
+        <li class="limit">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
+          <span><strong>A single annotation cannot be deleted</strong> — only the last action.</span>
+        </li>
+        <li class="limit">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
+          <span><strong>“Full screen” means the primary monitor</strong>, not all monitors in one picture.</span>
+        </li>
+        <li class="limit">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
+          <span><strong><kbd>Esc</kbd> cannot be assigned</strong>: Windows does not give it to programs.</span>
+        </li>
+        <li class="limit">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
+          <span><strong>Windows 10 and 11 only.</strong> There are no macOS or Linux versions.</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="cta" aria-labelledby="cta-title">
+    <div class="wrap cta__inner">
+      <h2 class="cta__title" id="cta-title">Try it on one screenshot</h2>
+      <p class="cta__sub">If you do not like it, deleting it takes as little effort as unpacking did.</p>
+      <div class="cta__actions">
+        <a class="btn btn--primary btn--lg" href="#download">
+          <svg class="btn__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>
+          </svg>
+          Download Flushot 2.3.0
+        </a>
+        <a class="btn btn--ghost btn--lg" href="#faq">Questions first</a>
+      </div>
+      <p class="cta__meta">143 MB · no sign-up · no internet</p>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer__inner">
+    <div class="footer__brand">
+      <img class="brand__mark" src="../favicon.svg?v=a7643679" width="200" height="200" alt="" aria-hidden="true">
+      <span>Version 2.3.0 · © 2026 Flushot</span>
+    </div>
+    <nav class="footer__links" aria-label="Footer navigation">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#hotkeys">Hotkeys</a>
+      <a href="#screens">Screenshots</a>
+      <a href="#faq">Questions</a>
+      <a href="#download">Download</a>
+    </nav>
+  </div>
+</footer>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Flushot",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Windows 10, Windows 11",
+  "softwareVersion": "2.3.0",
+  "description": "A free screenshot program for Windows: region selection, a frame with a shadow, a straight line for underlining, and a full-screen screenshot with one key.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "RUB" },
+  "inLanguage": "en"
+}
+</script>
+
+<script src="../app.js?v=6f88b656" defer></script>
+</body>
+</html>

@@ -541,6 +541,34 @@ a.link:hover {
   display: block;
 }
 
+/* The language switch stands where a second icon button would: the same height,
+   the same border, but a two-letter word instead of a glyph. Deliberately not a
+   flag — a flag names a country, and this page is published in two languages,
+   not for two countries. */
+.lang-switch {
+  display: inline-grid;
+  place-items: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 9px;
+  margin-left: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--fg-muted);
+  text-decoration: none;
+  background: var(--control-bg);
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-sm);
+  transition: color 0.18s, border-color 0.18s, background 0.18s;
+}
+
+.lang-switch:hover {
+  color: var(--fg);
+  border-color: var(--fg-dim);
+  background: var(--control-bg-hover);
+}
+
 .nav-toggle {
   display: none;
   place-items: center;

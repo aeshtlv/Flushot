@@ -9,27 +9,30 @@
 <meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)">
 <meta name="color-scheme" content="dark light">
 <link rel="canonical" href="https://flushot.ink/">
+<link rel="alternate" hreflang="ru" href="https://flushot.ink/">
+<link rel="alternate" hreflang="en" href="https://flushot.ink/en/">
+<link rel="alternate" hreflang="x-default" href="https://flushot.ink/">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Flushot">
 <meta property="og:url" content="https://flushot.ink/">
 <meta property="og:title" content="Flushot — снимки экрана для Windows">
 <meta property="og:description" content="Отпустили кнопку мыши — готовый снимок уже в буфере обмена: рамка, тень и скруглённые углы применены. Пометки, распознавание текста, PNG без потерь. Windows 10 и 11, бесплатно.">
-<meta property="og:image" content="https://flushot.ink/og-image.png?v=a1ee1923">
+<meta property="og:image" content="https://flushot.ink/og-image.png?v=806e6f2c">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ru_RU">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Flushot — снимки экрана для Windows">
 <meta name="twitter:description" content="Готовый снимок в буфере обмена в момент отпускания мыши. Пометки, распознавание текста, PNG без потерь. Windows 10 и 11, бесплатно.">
-<meta name="twitter:image" content="https://flushot.ink/og-image.png?v=a1ee1923">
+<meta name="twitter:image" content="https://flushot.ink/og-image.png?v=806e6f2c">
 
 <link rel="icon" href="favicon.svg?v=a7643679" type="image/svg+xml">
 <link rel="icon" href="favicon-32.png?v=67a7ece7" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=980e5cca">
 <link rel="manifest" href="site.webmanifest?v=06f0995b">
 <link rel="stylesheet" href="fonts.css?v=0b21389f">
-<link rel="stylesheet" href="styles.css?v=d4beb6ab">
+<link rel="stylesheet" href="styles.css?v=91ea0db6">
 <link rel="preload" as="image" href="assets/hero.webp?v=127812f4" type="image/webp">
 
 <script>
@@ -77,6 +80,12 @@
         <a class="nav-link" href="#screens">Скриншоты</a>
         <a class="nav-link" href="#faq">Вопросы</a>
       </nav>
+      <!-- Two letters, not a flag: a flag names a country, and the page is
+           published in the two languages it actually speaks. The English page is
+           generated from this one (scripts/build-en-page.cjs), and the build
+           flips this link so each page points at the other. -->
+      <a class="lang-switch" href="en/" hreflang="en" lang="en" data-lang-switch
+         aria-label="English version">EN</a>
       <button class="theme-toggle" type="button" data-theme-toggle aria-label="Переключить на светлую тему">
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
           <circle cx="12" cy="12" r="4"/>
@@ -610,7 +619,7 @@
         <div class="shot">
           <picture>
             <source srcset="assets/monitors.webp" type="image/webp">
-            <img src="assets/monitors.png?v=62e0df64" width="840" height="945" loading="lazy" decoding="async"
+            <img src="assets/monitors.png?v=5f338f4b" width="840" height="945" loading="lazy" decoding="async"
                  alt="Затемнённые два монитора, расположенные один над другим, с выделенной областью на обоих.">
           </picture>
         </div>
@@ -830,6 +839,6 @@
 }
 </script>
 
-<script src="app.js?v=b9678f36" defer></script>
+<script src="app.js?v=6f88b656" defer></script>
 </body>
 </html>

@@ -25,8 +25,10 @@ jobs:
           node-version: '22'
           cache: npm
 
+      # From the lock file: the checks compare rendered geometry, and a different
+      # sharp build is a different set of pixels.
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
       # Contrast in both themes, tokens defined everywhere, local links resolve,
       # every asset carries the current content hash, heading levels, page weight.
@@ -38,3 +40,9 @@ jobs:
       # "already up to date" or the list of references it had to move.
       - name: Asset stamps
         run: npm run stamp
+
+      # The English page is generated from the Russian one, and `stamp` above has
+      # just rewritten it from the current `index.html`. A difference means the
+      # commit changed one language and forgot the other.
+      - name: English page is committed
+        run: git diff --exit-code -- site/en/index.html

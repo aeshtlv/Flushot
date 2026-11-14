@@ -48,14 +48,25 @@ function isLocal(url) {
   return true
 }
 
-/** The on-disk file a reference points at, or null when it is not a local asset. */
-function targetOf(url) {
+/**
+ * The on-disk file a reference points at, or null when it is not a local asset.
+ *
+ * `base` is the directory of the document doing the linking, relative to site/.
+ * The English page lives in `en/` and links to `../styles.css`, so a path can
+ * climb out of the site root if it is resolved from the root alone — the URL has
+ * to be resolved where the browser would resolve it.
+ */
+function targetOf(url, base = '') {
   if (!isLocal(url)) return null
   const withoutOrigin = url.startsWith(ORIGIN) ? url.slice(ORIGIN.length) : url
   const [pathPart] = withoutOrigin.split(/[?#]/)
   if (!pathPart || UNSTAMPED.has(pathPart)) return null
   if (!ASSET.test(pathPart)) return null
-  return { pathPart, file: path.join(SITE, pathPart) }
+  // A URL that names the origin is absolute by definition: it is resolved from the
+  // root, whatever document it happens to sit in. Only a path relative to the
+  // document — `../styles.css` on the English page — hangs off `base`.
+  const from = url.startsWith(ORIGIN) ? '' : base
+  return { pathPart, base: from, file: path.resolve(SITE, from, pathPart) }
 }
 
 /**
@@ -85,8 +96,8 @@ function hashOf(file) {
 }
 
 /** The same URL carrying the current stamp, or null if it is not a local asset. */
-function stamped(url) {
-  const target = targetOf(url)
+function stamped(url, base) {
+  const target = targetOf(url, base)
   if (!target) return null
   if (!existsSync(target.file)) return { missing: target.pathPart }
   const absolute = url.startsWith(ORIGIN)
@@ -96,12 +107,13 @@ function stamped(url) {
 
 function rewrite(source, pattern) {
   const file = path.join(SITE, source)
+  const base = path.dirname(source) === '.' ? '' : path.dirname(source)
   const original = readFileSync(file, 'utf8')
   const changed = []
   const missing = []
 
   const updated = original.replace(pattern, (match, prefix, url, suffix) => {
-    const result = stamped(url)
+    const result = stamped(url, base)
     if (!result) return match
     if (result.missing) {
       missing.push(result.missing)
@@ -122,6 +134,9 @@ const results = [
   rewrite('site.webmanifest', /("src"\s*:\s*")([^"]+)(")/g),
   // href, src, and content on the social preview: stylesheets, scripts, images.
   rewrite('index.html', /((?:href|src|content)=")([^"]+)(")/g),
+  // Generated from the Russian page by scripts/build-en-page.cjs, so it is
+  // always stamped after it.
+  rewrite('en/index.html', /((?:href|src|content)=")([^"]+)(")/g),
   rewrite('404.html', /((?:href|src|content)=")([^"]+)(")/g)
 ]
 

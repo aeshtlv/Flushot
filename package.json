@@ -9,8 +9,8 @@
   },
   "homepage": "https://flushot.ink/",
   "scripts": {
-    "assets": "node scripts/build-site.cjs && node scripts/build-fonts.cjs",
-    "stamp": "node scripts/stamp-assets.cjs",
+    "assets": "node scripts/build-site.cjs && node scripts/build-fonts.cjs && node scripts/build-en-page.cjs",
+    "stamp": "node scripts/build-en-page.cjs",
     "verify": "node scripts/verify-site.cjs",
     "check:fold": "node scripts/measure-fold.cjs",
     "check:demo": "node scripts/test-try-demo.cjs",

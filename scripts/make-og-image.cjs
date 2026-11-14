@@ -6,7 +6,11 @@
  * hairline borders as the page — a preview card that does not look like the
  * site is worse than no preview card.
  *
- * Usage: node scripts/make-og-image.cjs
+ * Both languages get a card: a link to the English page that previews a Russian
+ * card is the one piece of the landing page the reader sees before deciding to
+ * open it, so it is the worst place to leave untranslated.
+ *
+ * Usage: node scripts/make-og-image.cjs [--lang=ru|en]
  */
 
 const path = require('node:path')
@@ -19,11 +23,36 @@ const sharp = require('sharp')
 
 const PORT = 9445
 const ROOT = path.join(__dirname, '..')
-const OUT = path.join(ROOT, 'site', 'og-image.png')
-const SMM = path.join(ROOT, 'smm', '02-превью-ссылки-1200x630.png')
+const LANG = process.argv.includes('--lang=en') ? 'en' : 'ru'
+const OUT = path.join(ROOT, 'site', LANG === 'en' ? 'og-image-en.png' : 'og-image.png')
+const SMM = path.join(ROOT, 'smm', LANG === 'en' ? '02-превью-ссылки-en-1200x630.png' : '02-превью-ссылки-1200x630.png')
+// The screenshot in the corner is the program as the reader of that language sees
+// it, so the English card shows the English interface.
+const HERO = LANG === 'en' ? '../site/assets/en/hero.png' : '../site/assets/hero.png'
 const TMP = path.join(ROOT, '.tmp')
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+/**
+ * The words on the card.
+ *
+ * Kept here rather than in the page's translation table: the card is a separate
+ * picture, not a piece of the document, and its lines are broken by hand to fit
+ * a 1200 × 630 frame. The English title is the page's own headline, so the card
+ * and the page a click leads to say the same thing.
+ */
+const COPY = {
+  ru: {
+    title: 'Снимок экрана,<br>готовый<br>к вставке',
+    sub: 'Отпустили кнопку мыши — карточка уже в буфере, с рамкой, тенью и скруглениями. Windows 10 и 11, бесплатно.',
+    foot: ['PNG без потерь', 'пометки', 'распознавание текста']
+  },
+  en: {
+    title: 'A screenshot<br>ready<br>to paste',
+    sub: 'Release the mouse button — the screenshot is already in the clipboard, with a frame, a shadow and rounded corners. Windows 10 and 11, free.',
+    foot: ['lossless PNG', 'annotations', 'text recognition']
+  }
+}[LANG]
 
 /**
  * The logo, inlined into the card.
@@ -174,15 +203,15 @@ const PAGE = `<!DOCTYPE html>
     </div>
   </div>
 
-  <h1 class="title">Снимок экрана,<br>готовый<br>к вставке</h1>
-  <p class="sub">Отпустили кнопку мыши — карточка уже в буфере, с рамкой, тенью и скруглениями. Windows 10 и 11, бесплатно.</p>
+  <h1 class="title">${COPY.title}</h1>
+  <p class="sub">${COPY.sub}</p>
 
   <div class="foot">
-    <span>PNG без потерь</span><span class="dot"></span><span>пометки</span><span class="dot"></span><span>распознавание текста</span>
+    <span>${COPY.foot[0]}</span><span class="dot"></span><span>${COPY.foot[1]}</span><span class="dot"></span><span>${COPY.foot[2]}</span>
   </div>
 </div>
 
-<div class="shot"><img src="../site/assets/hero.png" alt=""></div>
+<div class="shot"><img src="${HERO}" alt=""></div>
 <div class="shot__cap"><span>screenshot_2026-10-17_14-30-25.png</span><span>PNG · 1640×957</span></div>
 </body>
 </html>
@@ -337,9 +366,9 @@ async function main() {
     await fs.writeFile(SMM, png)
 
     const meta = await sharp(png).metadata()
-    console.log(`og-image.png  ${meta.width}×${meta.height}  ${(png.length / 1024).toFixed(0)} KB`)
+    console.log(`${path.basename(OUT)}  ${meta.width}×${meta.height}  ${(png.length / 1024).toFixed(0)} KB`)
     console.log(`  text measured: ${observed.join(' · ')}`)
-    console.log(`copied to smm/02-превью-ссылки-1200x630.png`)
+    console.log(`copied to smm/${path.basename(SMM)}`)
   } finally {
     edge.kill()
     await fs.rm(profile, { recursive: true, force: true }).catch(() => {})

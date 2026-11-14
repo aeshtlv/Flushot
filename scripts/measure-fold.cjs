@@ -34,7 +34,7 @@ const VIEWPORTS = [
 
 // Extra sizes from the command line, for checking a specific window:
 //   node scripts/measure-fold.cjs 1280x700 1440x760
-for (const argument of process.argv.slice(2)) {
+for (const argument of process.argv.slice(2).filter((argument) => !argument.startsWith('--'))) {
   const match = /^(\d+)x(\d+)$/.exec(argument)
   if (!match) {
     console.error(`не понимаю размер «${argument}» — нужен вид 1280x700`)
@@ -120,7 +120,10 @@ async function main() {
 
   await send('Page.enable')
   await send('Runtime.enable')
-  const url = pathToFileURL(path.join(ROOT, 'site', 'index.html')).href
+  // Both languages: English runs longer, and the first screen is the one place
+  // where a longer headline costs a visitor the whole point of the page.
+  const language = process.argv.includes('--lang=en') ? 'en' : 'ru'
+  const url = pathToFileURL(path.join(ROOT, 'site', language === 'en' ? 'en/index.html' : 'index.html')).href
   const problems = []
 
   try {
@@ -191,7 +194,7 @@ async function main() {
     process.exitCode = 1
     return
   }
-  console.log('\nПервый экран помещается: заголовок целиком, кнопки и снимок программы видны.')
+  console.log(`\n[${language}] Первый экран помещается: заголовок целиком, кнопки и снимок программы видны.`)
 }
 
 main().catch((error) => {

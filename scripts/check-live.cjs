@@ -8,7 +8,7 @@
  * reports the numbers that reveal those failures.
  *
  * Usage:
- *   node scripts/check-live.cjs                       # https://flushot.ink/
+ *   node scripts/check-live.cjs                       # both language pages
  *   node scripts/check-live.cjs https://example.com/  # any other address
  *
  * Requires Edge or Chrome on Windows, like `shot-site.cjs`. Exits non-zero on a
@@ -20,7 +20,10 @@ const fs = require('node:fs')
 const os = require('node:os')
 const path = require('node:path')
 
-const URL_TO_CHECK = process.argv[2] || 'https://flushot.ink/'
+// Both languages by default: the English page is generated, and generated pages
+// fail in ways only a server shows — a path that resolved on disk and 404s when
+// served, a font that only the English copy asks for.
+const PAGES = process.argv[2] ? [process.argv[2]] : ['https://flushot.ink/', 'https://flushot.ink/en/']
 
 const BROWSER_CANDIDATES = [
   path.join(process.env['ProgramFiles'] || '', 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
@@ -142,104 +145,113 @@ async function main() {
 
     console.log(`checking ${URL_TO_CHECK}\n`)
 
-    for (const viewport of WIDTHS) {
-      await cdp.send('Emulation.setDeviceMetricsOverride', {
-        width: viewport.width,
-        height: viewport.height,
-        deviceScaleFactor: 1,
-        mobile: viewport.width < 700
-      })
-      await cdp.send('Page.navigate', { url: URL_TO_CHECK })
-      await sleep(2000)
+    for (const url of PAGES) {
+      console.log(`\n${url}`)
+      // Each page gets its own verdict: a 404 on the English page is not the
+      // Russian one's problem, and the reader of a failure report needs to know
+      // which page to look at.
+      const countBefore = failures.length
+      const consoleBefore = consoleErrors.length
+      for (const viewport of WIDTHS) {
+        await cdp.send('Emulation.setDeviceMetricsOverride', {
+          width: viewport.width,
+          height: viewport.height,
+          deviceScaleFactor: 1,
+          mobile: viewport.width < 700
+        })
+        await cdp.send('Page.navigate', { url })
+        await sleep(2000)
 
-      // Some screenshots on the page carry `loading="lazy"`, so they only start
-      // downloading once they come near the viewport. Scroll the whole page first,
-      // otherwise an image that has not been reached yet looks like a broken one.
-      //
-      // The stylesheet asks for `scroll-behavior: smooth`, which is right for a
-      // visitor following an anchor and wrong for a measuring pass: each
-      // `scrollTo` starts an animation that the next one interrupts, so the page
-      // never actually travels the requested distance and the last section is
-      // never visited. A lazy image down there then reads as broken while the
-      // server is serving it perfectly. Switching the behaviour off makes the
-      // pass deterministic; it is a property of the measurement, not of the page.
-      await cdp.send('Runtime.evaluate', {
-        awaitPromise: true,
-        expression: `(async () => {
-          document.documentElement.style.scrollBehavior = 'auto'
-          const step = window.innerHeight * 0.8
-          for (let y = 0; y < document.documentElement.scrollHeight; y += step) {
-            window.scrollTo(0, y)
-            await new Promise((r) => setTimeout(r, 120))
-          }
-          window.scrollTo(0, 0)
-          await new Promise((r) => setTimeout(r, 800))
-        })()`
-      })
-      await sleep(1200)
+        // Some screenshots on the page carry `loading="lazy"`, so they only start
+        // downloading once they come near the viewport. Scroll the whole page first,
+        // otherwise an image that has not been reached yet looks like a broken one.
+        //
+        // The stylesheet asks for `scroll-behavior: smooth`, which is right for a
+        // visitor following an anchor and wrong for a measuring pass: each
+        // `scrollTo` starts an animation that the next one interrupts, so the page
+        // never actually travels the requested distance and the last section is
+        // never visited. A lazy image down there then reads as broken while the
+        // server is serving it perfectly. Switching the behaviour off makes the
+        // pass deterministic; it is a property of the measurement, not of the page.
+        await cdp.send('Runtime.evaluate', {
+          awaitPromise: true,
+          expression: `(async () => {
+            document.documentElement.style.scrollBehavior = 'auto'
+            const step = window.innerHeight * 0.8
+            for (let y = 0; y < document.documentElement.scrollHeight; y += step) {
+              window.scrollTo(0, y)
+              await new Promise((r) => setTimeout(r, 120))
+            }
+            window.scrollTo(0, 0)
+            await new Promise((r) => setTimeout(r, 800))
+          })()`
+        })
+        await sleep(1200)
 
-      const { result } = await cdp.send('Runtime.evaluate', {
-        returnByValue: true,
-        expression: `(() => {
-          const doc = document.documentElement
-          // Which elements stick out of the page. An element parked far off the
-          // left edge on purpose — the skip link waits there until it has focus —
-          // cannot push the page wider, so it is not a suspect; a box that is
-          // half outside the left edge is, because that part of it is unreadable.
-          const wide = [...document.querySelectorAll('body *')]
-            .filter((el) => {
-              const r = el.getBoundingClientRect()
-              if (r.width === 0) return false
-              return r.right > doc.clientWidth + 1 || (r.left < -1 && r.right > 0)
-            })
-            .slice(0, 5)
-            .map((el) => el.tagName + '.' + (el.className || '').toString().slice(0, 30))
-          const interLoaded = [...document.fonts].filter((f) => f.family.includes('Inter') && f.status === 'loaded').length
-          const monoLoaded = [...document.fonts].filter((f) => f.family.includes('JetBrains') && f.status === 'loaded').length
-          const images = [...document.images]
-          // Images inside a hidden tab panel have no box, so the browser never
-          // starts their lazy load. Those are not broken, they are simply not shown
-          // yet — only images that occupy space and still have no pixels count.
-          const broken = images
-            .filter((img) => img.getClientRects().length > 0)
-            .filter((img) => !img.complete || img.naturalWidth === 0)
-            .map((img) => img.currentSrc || img.src)
-          return {
-            title: document.title,
-            scrollWidth: doc.scrollWidth,
-            clientWidth: doc.clientWidth,
-            docHeight: doc.scrollHeight,
-            overflowX: doc.scrollWidth - doc.clientWidth,
-            wide,
-            interLoaded,
-            monoLoaded,
-            imageCount: images.length,
-            brokenImages: broken,
-            h1: (document.querySelector('h1')?.innerText || '').replace(/\\s+/g, ' ').trim()
-          }
-        })()`
-      })
+        const { result } = await cdp.send('Runtime.evaluate', {
+          returnByValue: true,
+          expression: `(() => {
+            const doc = document.documentElement
+            // Which elements stick out of the page. An element parked far off the
+            // left edge on purpose — the skip link waits there until it has focus —
+            // cannot push the page wider, so it is not a suspect; a box that is
+            // half outside the left edge is, because that part of it is unreadable.
+            const wide = [...document.querySelectorAll('body *')]
+              .filter((el) => {
+                const r = el.getBoundingClientRect()
+                if (r.width === 0) return false
+                return r.right > doc.clientWidth + 1 || (r.left < -1 && r.right > 0)
+              })
+              .slice(0, 5)
+              .map((el) => el.tagName + '.' + (el.className || '').toString().slice(0, 30))
+            const interLoaded = [...document.fonts].filter((f) => f.family.includes('Inter') && f.status === 'loaded').length
+            const monoLoaded = [...document.fonts].filter((f) => f.family.includes('JetBrains') && f.status === 'loaded').length
+            const images = [...document.images]
+            // Images inside a hidden tab panel have no box, so the browser never
+            // starts their lazy load. Those are not broken, they are simply not shown
+            // yet — only images that occupy space and still have no pixels count.
+            const broken = images
+              .filter((img) => img.getClientRects().length > 0)
+              .filter((img) => !img.complete || img.naturalWidth === 0)
+              .map((img) => img.currentSrc || img.src)
+            return {
+              title: document.title,
+              scrollWidth: doc.scrollWidth,
+              clientWidth: doc.clientWidth,
+              docHeight: doc.scrollHeight,
+              overflowX: doc.scrollWidth - doc.clientWidth,
+              wide,
+              interLoaded,
+              monoLoaded,
+              imageCount: images.length,
+              brokenImages: broken,
+              h1: (document.querySelector('h1')?.innerText || '').replace(/\\s+/g, ' ').trim()
+            }
+          })()`
+        })
 
-      const measured = result.value
-      const label = `${viewport.name} ${viewport.width}x${viewport.height}`
-      console.log(`${label}  doc ${measured.clientWidth}x${measured.docHeight}  overflowX=${measured.overflowX}`)
-      console.log(`  h1: ${measured.h1}`)
-      console.log(`  fonts loaded: Inter ${measured.interLoaded}, JetBrains ${measured.monoLoaded}`)
-      console.log(`  images: ${measured.imageCount}, broken: ${measured.brokenImages.length}`)
-      if (measured.overflowX > 0) {
-        problems.push(`${label}: horizontal overflow ${measured.overflowX}px (${measured.wide.join(', ')})`)
+        const measured = result.value
+        const label = `${url.replace('https://flushot.ink', '') || '/'} ${viewport.name} ${viewport.width}x${viewport.height}`
+        console.log(`${label}  doc ${measured.clientWidth}x${measured.docHeight}  overflowX=${measured.overflowX}`)
+        console.log(`  h1: ${measured.h1}`)
+        console.log(`  fonts loaded: Inter ${measured.interLoaded}, JetBrains ${measured.monoLoaded}`)
+        console.log(`  images: ${measured.imageCount}, broken: ${measured.brokenImages.length}`)
+        if (measured.overflowX > 0) {
+          problems.push(`${label}: horizontal overflow ${measured.overflowX}px (${measured.wide.join(', ')})`)
+        }
+        if (measured.interLoaded === 0) problems.push(`${label}: Inter did not load`)
+        if (measured.brokenImages.length > 0) {
+          problems.push(`${label}: broken images ${measured.brokenImages.slice(0, 3).join(', ')}`)
+        }
       }
-      if (measured.interLoaded === 0) problems.push(`${label}: Inter did not load`)
-      if (measured.brokenImages.length > 0) {
-        problems.push(`${label}: broken images ${measured.brokenImages.slice(0, 3).join(', ')}`)
-      }
-    }
 
-    if (failures.length > 0) {
-      problems.push(`failed requests: ${[...new Set(failures)].slice(0, 5).join(', ')}`)
-    }
-    if (consoleErrors.length > 0) {
-      problems.push(`console errors: ${[...new Set(consoleErrors)].slice(0, 3).join(' | ')}`)
+
+      if (failures.length > countBefore) {
+        problems.push(`${url}: failed requests ${[...new Set(failures.slice(countBefore))].slice(0, 5).join(', ')}`)
+      }
+      if (consoleErrors.length > consoleBefore) {
+        problems.push(`${url}: console errors ${[...new Set(consoleErrors.slice(consoleBefore))].slice(0, 3).join(' | ')}`)
+      }
     }
 
     console.log(`\nnetwork failures: ${failures.length}`)

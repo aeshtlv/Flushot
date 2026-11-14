@@ -4,6 +4,74 @@
  * all content, all links work, and the FAQ still opens (it is plain <details>).
  * The script only adds the theme switch, the mobile menu and the screenshot tabs.
  */
+/* ------------------------------------------------------------- language
+ *
+ * The page is published in Russian and in English, both generated from one
+ * source (see scripts/build-en-page.cjs), so the documents stay identical in
+ * structure. The words this script writes into the page at run time — the theme
+ * button's label, the demo's status lines — follow the document's own `lang`,
+ * which keeps them in one table instead of a second copy of this file.
+ */
+var FLUSHOT_TEXT = {
+  ru: {
+    themeLight: 'Переключить на светлую тему',
+    themeDark: 'Переключить на тёмную тему',
+    demoDone:
+      'Готово: рамка, скругление и тень — те же, что ставит программа. В ней этот снимок уже лежал бы в буфере обмена.',
+    demoTooSmall: function (w, h, min) {
+      return (
+        'Область ' + w + ' × ' + h + ' px меньше ' + min + ' × ' + min +
+        ' — программа такую не копирует, и буфер обмена остаётся прежним. Потяните шире.'
+      );
+    },
+    demoPasted:
+      'Вставили. В программе снимок лежит в буфере сразу после отпускания мыши — остаётся нажать Ctrl+V там, куда вставляете.',
+    resetDone: 'Вернули значение по умолчанию.',
+    changeLabel: 'Изменить',
+    listeningLabel: 'Нажмите…',
+    listenPrompt: 'Нажмите сочетание. Esc — отмена, Backspace — сброс.',
+    escapeReserved: 'Escape назначить нельзя: Windows не отдаёт её программам.',
+    cancelledKept: 'Отменили — осталось прежнее сочетание.',
+    cancelled: 'Отменили.',
+    saved: 'Готово. В приложении это же сочетание записывается так же.',
+    takenBy: function (field) {
+      var other = field === 'area' ? 'снимком всего экрана' : 'снимком области';
+      return 'Это сочетание уже занято ' + other + '. Выберите другое.';
+    },
+    themeText: 'Тема'
+  },
+  en: {
+    themeLight: 'Switch to the light theme',
+    themeDark: 'Switch to the dark theme',
+    demoDone:
+      'Done: the frame, the rounded corners and the shadow are exactly what the app applies. There, this screenshot would already be on the clipboard.',
+    demoTooSmall: function (w, h, min) {
+      return (
+        'A region of ' + w + ' × ' + h + ' px is smaller than ' + min + ' × ' + min +
+        ', so the app would not copy it and the clipboard would keep what it had. Drag a larger one.'
+      );
+    },
+    demoPasted:
+      'Pasted. In the app the screenshot is on the clipboard the moment you let go of the mouse, so all that is left is Ctrl+V where you need it.',
+    resetDone: 'Back to the default.',
+    changeLabel: 'Change',
+    listeningLabel: 'Press…',
+    listenPrompt: 'Press the combination. Esc cancels, Backspace resets.',
+    escapeReserved: 'Escape cannot be assigned: Windows does not hand it to applications.',
+    cancelledKept: 'Cancelled — the previous shortcut is still in place.',
+    cancelled: 'Cancelled.',
+    saved: 'Done. The app records this combination exactly the same way.',
+    takenBy: function (field) {
+      var other = field === 'area' ? 'the whole-screen screenshot' : 'the region screenshot';
+      return 'That shortcut is already taken by ' + other + '. Choose another one.';
+    },
+    themeText: 'Theme'
+  }
+};
+
+var FLUSHOT_LANG = document.documentElement.lang === 'en' ? 'en' : 'ru';
+var LT = FLUSHOT_TEXT[FLUSHOT_LANG];
+
 (function () {
   'use strict';
 
@@ -17,7 +85,7 @@
     if (themeButton) {
       themeButton.setAttribute(
         'aria-label',
-        theme === 'dark' ? 'Переключить на светлую тему' : 'Переключить на тёмную тему'
+        theme === 'dark' ? LT.themeLight : LT.themeDark
       );
     }
     var meta = document.querySelector('meta[name="theme-color"]:not([media])');
@@ -462,8 +530,7 @@
       message.hidden = true;
       messageShot.replaceChildren();
       dimsOut.textContent = rect.w + ' × ' + rect.h + ' px';
-      statusOut.textContent =
-        'Готово: рамка, скругление и тень — те же, что ставит программа. В ней этот снимок уже лежал бы в буфере обмена.';
+      statusOut.textContent = LT.demoDone;
     };
 
     var resetDemo = function (note) {
@@ -502,10 +569,7 @@
       drag = null;
       clearSelection();
       if (rect.w < MIN || rect.h < MIN) {
-        resetDemo(
-          'Область ' + rect.w + ' × ' + rect.h + ' px меньше ' + MIN + ' × ' + MIN +
-            ' — программа такую не копирует, и буфер обмена остаётся прежним. Потяните шире.'
-        );
+        resetDemo(LT.demoTooSmall(rect.w, rect.h, MIN));
         return;
       }
       showResult(rect);
@@ -525,8 +589,7 @@
         var scale = Math.min(0.55, fitScale(lastRect, messageShot.clientWidth - 12, 200));
         messageShot.replaceChildren(makeCard(lastRect, scale));
         message.hidden = false;
-        statusOut.textContent =
-          'Вставили. В программе снимок лежит в буфере сразу после отпускания мыши — остаётся нажать Ctrl+V там, куда вставляете.';
+        statusOut.textContent = LT.demoPasted;
       });
     }
 
@@ -637,12 +700,12 @@
     fields[field].value = DEFAULTS[field].slice()
     paint(field)
     stopListening()
-    say('Вернули значение по умолчанию.', 'ok')
+    say(LT.resetDone, 'ok')
   }
 
   function stopListening() {
     if (listening) {
-      listening.button.textContent = 'Изменить'
+      listening.button.textContent = LT.changeLabel
       listening.button.removeAttribute('data-active')
       listening = null
     }
@@ -652,9 +715,9 @@
   function startListening(field) {
     stopListening()
     listening = { field, button: fields[field].button }
-    listening.button.textContent = 'Нажмите…'
+    listening.button.textContent = LT.listeningLabel
     listening.button.setAttribute('data-active', '')
-    say('Нажмите сочетание. Esc — отмена, Backspace — сброс.')
+    say(LT.listenPrompt)
     document.addEventListener('keydown', onKey, true)
   }
 
@@ -710,12 +773,12 @@
       // refuses to hand Escape to any application, so explain that instead of
       // silently treating it as a cancel.
       if (event.ctrlKey || event.altKey || event.metaKey) {
-        say('Escape назначить нельзя: Windows не отдаёт её программам.', 'warn')
+        say(LT.escapeReserved, 'warn')
         return
       }
       stopListening()
       paint(field)
-      say('Отменили — осталось прежнее сочетание.')
+      say(LT.cancelledKept)
       return
     }
     if (event.key === 'Backspace' && !event.ctrlKey && !event.altKey && !event.metaKey) {
@@ -734,22 +797,21 @@
     if (!key) return
 
     if (key === 'Esc') {
-      say('Escape назначить нельзя: Windows не отдаёт её программам.', 'warn')
+      say(LT.escapeReserved, 'warn')
       return
     }
 
     const parts = modifiers.concat(key)
     const other = field === 'area' ? 'full' : 'area'
     if (parts.join('+') === fields[other].value.join('+')) {
-      const name = field === 'area' ? 'снимком всего экрана' : 'снимком области'
-      say('Это сочетание уже занято ' + name + '. Выберите другое.', 'warn')
+      say(LT.takenBy(field), 'warn')
       return
     }
 
     fields[field].value = parts
     paint(field)
     stopListening()
-    say('Готово. В приложении это же сочетание записывается так же.', 'ok')
+    say(LT.saved, 'ok')
   }
 
   Object.keys(fields).forEach((field) => {
@@ -759,7 +821,7 @@
         if (listening && listening.field === field) {
           stopListening()
           paint(field)
-          say('Отменили.')
+          say(LT.cancelled)
           return
         }
         startListening(field)

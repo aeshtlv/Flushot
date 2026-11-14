@@ -66,16 +66,27 @@ async function rasteriseIcon(svg, size) {
  * `width` is the rendered width in CSS pixels at the largest breakpoint; the
  * file is written at twice that, which is what a Retina-class display asks for.
  * Anything narrower is a waste of bandwidth on a landing page.
+ *
+ * Each language has its own set, drawn from the same program with the interface
+ * in that language: the English page shows English windows. They are separate
+ * files rather than one shared set because a screenshot of a Russian interface
+ * under an English headline reads as an unfinished translation.
  */
 const IMAGES = [
   // The hero is a real Flushot output of the synthetic demo scene, not a capture
   // of whatever was on the author's desktop.
-  { src: 'source/hero-framed.png', out: 'hero', width: 820, height: null },
-  { src: 'source/ui-overlay.png', out: 'overlay', width: 640, height: null },
-  { src: 'source/ui-annotate.png', out: 'annotate', width: 640, height: null },
-  { src: 'source/ui-ocr.png', out: 'ocr', width: 640, height: null },
-  { src: 'source/ui-settings.png', out: 'settings', width: 260, height: null },
-  { src: 'source/multi-monitor.png', out: 'monitors', width: 420, height: null }
+  { src: 'hero-framed.png', out: 'hero', width: 820, height: null },
+  { src: 'ui-overlay.png', out: 'overlay', width: 640, height: null },
+  { src: 'ui-annotate.png', out: 'annotate', width: 640, height: null },
+  { src: 'ui-ocr.png', out: 'ocr', width: 640, height: null },
+  { src: 'ui-settings.png', out: 'settings', width: 260, height: null },
+  { src: 'multi-monitor.png', out: 'monitors', width: 420, height: null }
+]
+
+/** Where each language's originals live and where its sizes go. */
+const LANGUAGES = [
+  { code: 'ru', from: 'source', to: 'assets' },
+  { code: 'en', from: 'source/en', to: 'assets/en' }
 ]
 
 async function ensureDirs() {
@@ -84,19 +95,20 @@ async function ensureDirs() {
   }
 }
 
-async function buildImages() {
+async function buildImages(from, to) {
   const rows = []
+  await fs.mkdir(path.join(SITE, to), { recursive: true })
   for (const image of IMAGES) {
-    const source = path.join(ROOT, image.src)
-    if (!existsSync(source)) throw new Error(`missing source image: ${image.src}`)
+    const source = path.join(ROOT, from, image.src)
+    if (!existsSync(source)) throw new Error(`missing source image: ${from}/${image.src}`)
 
     const meta = await sharp(source).metadata()
     // Never upscale: a 520px-wide settings panel rendered at 520 stays 520.
     const targetWidth = Math.min(Math.round(image.width * 2), meta.width)
     const base = sharp(source).resize({ width: targetWidth, withoutEnlargement: true })
 
-    const pngPath = path.join(ASSETS, `${image.out}.png`)
-    const webpPath = path.join(ASSETS, `${image.out}.webp`)
+    const pngPath = path.join(SITE, to, `${image.out}.png`)
+    const webpPath = path.join(SITE, to, `${image.out}.webp`)
 
     const png = await base.clone().png({ compressionLevel: 9, palette: true }).toBuffer()
     const webp = await base.clone().webp({ quality: 86, effort: 6 }).toBuffer()
@@ -105,6 +117,7 @@ async function buildImages() {
 
     const outMeta = await sharp(pngPath).metadata()
     rows.push({
+      lang: to.endsWith('en') ? 'en/' : '',
       name: image.out,
       width: outMeta.width,
       height: outMeta.height,
@@ -149,22 +162,48 @@ async function buildOgImage() {
   return { copied: false, kb: Math.round((await fs.stat(target)).size / 1024) }
 }
 
+/**
+ * The English card, built the same way as the Russian one: copied from the social
+ * folder when it is there, and drawn from the English hero screenshot otherwise,
+ * so the file the English page points at always exists.
+ */
+async function buildOgImageEn() {
+  const target = path.join(SITE, 'og-image-en.png')
+  const from = path.join(ROOT, 'smm', '02-превью-ссылки-en-1200x630.png')
+  if (existsSync(from)) {
+    await fs.copyFile(from, target)
+    return { copied: true, kb: Math.round((await fs.stat(target)).size / 1024) }
+  }
+  await sharp(path.join(ASSETS, 'en', 'hero.png'))
+    .resize(1200, 630, { fit: 'cover', position: 'centre' })
+    .flatten({ background: '#0A0F1C' })
+    .png({ compressionLevel: 9 })
+    .toFile(target)
+  return { copied: false, kb: Math.round((await fs.stat(target)).size / 1024) }
+}
+
 async function main() {
   await ensureDirs()
 
-  const images = await buildImages()
+  console.log('Images')
+  let total = 0
+  for (const language of LANGUAGES) {
+    const images = await buildImages(language.from, language.to)
+    console.log(`  ${language.code}:`)
+    for (const row of images) {
+      console.log(`    ${row.name.padEnd(10)} ${String(row.width).padStart(4)}×${String(row.height).padEnd(5)} png ${String(row.pngKB).padStart(4)} KB   webp ${String(row.webpKB).padStart(4)} KB`)
+    }
+    total += images.reduce((sum, row) => sum + row.webpKB, 0)
+  }
+
   const icons = await buildIcons()
   const og = await buildOgImage()
+  const ogEn = await buildOgImageEn()
 
-  console.log('Images')
-  for (const row of images) {
-    console.log(`  ${row.name.padEnd(10)} ${String(row.width).padStart(4)}×${String(row.height).padEnd(5)} png ${String(row.pngKB).padStart(4)} KB   webp ${String(row.webpKB).padStart(4)} KB`)
-  }
   console.log(`\nIcons: favicon.svg, favicon-32.png (${icons.png32} B), apple-touch-icon.png (${icons.apple} B), icon-512.png`)
   console.log(`Social preview: og-image.png ${og.kb} KB${og.copied ? ' (from smm/)' : ' (generated)'}`)
-
-  const total = images.reduce((sum, row) => sum + row.webpKB, 0)
-  console.log(`\nPage image weight (WebP): ${total} KB`)
+  console.log(`Social preview: og-image-en.png ${ogEn.kb} KB${ogEn.copied ? ' (from smm/)' : ' (generated)'}`)
+  console.log(`\nPage image weight (WebP): ${total} KB, both languages`)
 }
 
 main().catch((error) => {
