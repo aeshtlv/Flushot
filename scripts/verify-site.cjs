@@ -848,6 +848,67 @@ function checkDownloadSizes() {
 }
 
 /**
+ * Every version stamp the page shows must be the version in package.json.
+ *
+ * The badge in the site header read "2.3.0" for two releases while the hero line,
+ * the section title, the footer, the structured data and all three download links
+ * said 2.4.x. It survived because the bump scripts replace the *current* string and
+ * that badge was already two versions behind, so no pattern ever matched it — and
+ * because the number carries no Cyrillic, the English-page check had no reason to
+ * look at it either.
+ *
+ * Only structural places are examined. Prose that legitimately names an older
+ * version ("available since 2.3.0") must not fail the build, so the check looks at
+ * elements that are meant to describe *this* release.
+ */
+function checkVersionStamps() {
+  const version = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version
+  const pages = [
+    { file: 'index.html', language: 'ru' },
+    { file: 'en/index.html', language: 'en' }
+  ]
+
+  for (const { file, language } of pages) {
+    const html = read(file)
+    const stamps = [
+      ['the header badge', /<span class="brand__ver">([^<]*)<\/span>/],
+      ['the hero line', /class="eyebrow"[^>]*>([^<]*)</],
+      ['the download heading', /id="download-title">([^<]*)</],
+      ['the footer', /<div class="footer__brand">[\s\S]*?<span>([^<]*)<\/span>/],
+      ['the structured data', /"softwareVersion": "([^"]*)"/]
+    ]
+
+    for (const [where, pattern] of stamps) {
+      const match = pattern.exec(html)
+      if (!match) {
+        fail(`${file}: ${where} is missing — the page no longer states its version there`)
+        continue
+      }
+      const text = match[1]
+      const shown = /\d+\.\d+\.\d+/.exec(text)
+      if (!shown) {
+        fail(`${file}: ${where} shows no version number ("${text.trim()}")`)
+        continue
+      }
+      if (shown[0] !== version) {
+        fail(`${file}: ${where} says ${shown[0]}, but package.json says ${version}`)
+      }
+    }
+
+    // Every download link names a file version, and they must all be this release.
+    const links = [...html.matchAll(/releases\/latest\/download\/Flushot-([\d.]+)-/g)].map((match) => match[1])
+    if (links.length === 0) fail(`${file}: there are no versioned download links`)
+    for (const linked of links) {
+      if (linked !== version) {
+        fail(`${file}: a download button offers ${linked}, but the release is ${version}`)
+      }
+    }
+  }
+
+  notes.push(`every version stamp on both pages is ${version}`)
+}
+
+/**
  * Every asset the page loads must carry the hash of the file it points at.
  *
  * The server caches these URLs for a year, which is only safe while the URL
@@ -934,6 +995,7 @@ async function main() {
   await checkBrandMark()
   await checkReleaseLinks()
   checkDownloadSizes()
+  checkVersionStamps()
   await checkAssetStamps()
   await reportSize()
 
