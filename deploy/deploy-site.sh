@@ -35,14 +35,35 @@ echo "==> resolving $REPO@$BRANCH"
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 
+resolve_sha() {
+    curl -fsSL --max-time 60 "https://api.github.com/repos/$REPO/commits/$BRANCH" \
+        | sed -n 's/^[[:space:]]*"sha": "\([0-9a-f]\{40\}\)",$/\1/p' \
+        | head -1
+}
+
 # The branch head, resolved to a SHA first. Fetching the branch *archive* directly
 # is served from a cache that lags several minutes behind a push, so a deploy run
 # right after one silently installs the previous commit.
-SHA=$(curl -fsSL --max-time 60 \
-    "https://api.github.com/repos/$REPO/commits/$BRANCH" \
-    | sed -n 's/^[[:space:]]*"sha": "\([0-9a-f]\{40\}\)",$/\1/p' \
-    | head -1)
+SHA=$(resolve_sha)
 [ -n "$SHA" ] || { echo "could not resolve $BRANCH to a commit"; exit 1; }
+
+# And the API itself is a few seconds behind a push. If the head still equals what
+# this script last published, the usual cause is a deploy run the moment after a
+# push, not a genuine "nothing changed" — so wait for the head to move before
+# deciding. Twenty seconds covers the observed lag; the wait is announced, and a
+# head that never moves simply resolves to the same commit and deploys as asked.
+LAST_SHA_FILE=/var/lib/flushot-last-deployed
+if [ -f "$LAST_SHA_FILE" ] && [ "$(cat "$LAST_SHA_FILE")" = "$SHA" ]; then
+    echo "==> $BRANCH is still at $(echo "$SHA" | cut -c1-7), waiting up to 20s for a newer commit"
+    for _ in $(seq 1 10); do
+        sleep 2
+        NEW=$(resolve_sha)
+        [ -n "$NEW" ] && [ "$NEW" != "$SHA" ] || continue
+        SHA="$NEW"
+        echo "==> moved to $(echo "$SHA" | cut -c1-7)"
+        break
+    done
+fi
 
 echo "==> fetching $REPO@$BRANCH ($(echo "$SHA" | cut -c1-7))"
 curl -fsSL --max-time 120 \
@@ -81,6 +102,8 @@ ls -1dt "$RELEASES"/flushot.ink-* | tail -n +$((KEEP + 1)) | xargs -r rm -rf
 
 COUNT=$(find "$TARGET" -type f | wc -l)
 SIZE=$(du -sh "$TARGET" | cut -f1)
+mkdir -p "$(dirname "$LAST_SHA_FILE")"
+echo "$SHA" > "$LAST_SHA_FILE"
 echo "==> live: $COUNT files, $SIZE, from $BRANCH at $(echo "$SHA" | cut -c1-7)"
 
 curl -s -o /dev/null -w "==> local check: HTTP %{http_code}\n" \
