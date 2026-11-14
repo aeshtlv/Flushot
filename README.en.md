@@ -109,7 +109,7 @@ Releasing the mouse then shows the annotation bar and `Ctrl+C` copies, as it did
 |---|---|
 | [README.md](README.md) | full documentation in Russian: features, settings, structure |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | capture pipeline, DPI handling, image quality, OCR, performance |
-| [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | commands, self-test, packaging, site and screenshot checks |
+| [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | commands, self-test, packaging, screenshot checks |
 | [docs/GITHUB.md](docs/GITHUB.md) | publishing releases and the site |
 | [docs/HOSTING.md](docs/HOSTING.md) | server, domain, HTTPS, deploying the site |
 | [CHANGELOG.md](CHANGELOG.md) | version history |

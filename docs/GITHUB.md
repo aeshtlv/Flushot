@@ -39,47 +39,50 @@ gh release create "v$V" --title "Flushot $V" --notes-file CHANGELOG.md \
   "share/Flushot-$V-win64.zip" "share/Flushot-$V-installer.zip" "share/Flushot-$V-portable.zip"
 ```
 
-4. Обновить `CHANGELOG.md` и имена архивов в `README.md`, `README.en.md` и `site/index.html`,
-   затем прогнать `npm run verify:site` и `npm run verify:docs`.
+4. Обновить `CHANGELOG.md` и имена архивов в `README.md` и `README.en.md`, затем прогнать
+   `npm run verify:docs`. Страница на сайте правится в ветке `site`: там же и её проверки.
+
+## Ветки
+
+В репозитории две долгоживущие ветки, и они не сливаются:
+
+| Ветка | Содержимое |
+|---|---|
+| `main` | программа: `src/`, `tests/`, `build/`, `scripts/`, `docs/` |
+| `site` | лендинг: `site/`, `smm/`, `source/`, `logo/` и свои скрипты |
+
+Страницы в `main` нет намеренно: репозиторий программы должен читаться как программа. Слияние
+`main` в `site` вернуло бы `site/` и `smm/` обратно, поэтому ветки независимы, а общие файлы
+(`logo/logo.svg` и шесть снимков интерфейса) лежат в `site` копиями. Как обновлять снимки —
+в README самой ветки.
 
 ## Сайт
 
-`site/` — статика без сборщика. Кнопки скачивания ведут в Releases, поэтому папку можно
-публиковать целиком, ничего не копируя внутрь.
-
 Боевой сайт живёт на своём сервере: **https://flushot.ink**, nginx, выкладка командой
-`bash /root/deploy-site.sh`. Как это устроено — в [HOSTING.md](HOSTING.md).
+`bash /root/deploy-site.sh`. Она забирает ветку `site`. Как это устроено — в
+[HOSTING.md](HOSTING.md).
 
-GitHub Pages остаётся как резервная копия. Workflow `.github/workflows/pages.yml` выкладывает
-`site/` при каждом изменении в `main`, источник уже настроен: **Settings → Pages →
-Build and deployment → Source: GitHub Actions**. Копия доступна по адресу
+GitHub Pages остаётся как резервная копия. Workflow `.github/workflows/pages.yml` в ветке
+`site` выкладывает папку при каждом изменении в ней; источник уже настроен:
+**Settings → Pages → Build and deployment → Source: GitHub Actions**. Копия доступна по адресу
 `https://aeshtlv.github.io/Flushot/`, но в её `canonical` указан `flushot.ink`, поэтому
 поисковики не считают её дублем.
 
-Альтернатива без workflow:
+Проверки страницы запускаются в ветке `site`:
 
 ```bash
-git subtree push --prefix site origin gh-pages
-```
-
-и затем выбрать источником ветку `gh-pages`. Минус: папку нужно пушить заново после каждой правки.
-
-Проверки страницы:
-
-```bash
-npm run verify:site            # ссылки, контраст, разметка, шрифты, адреса архивов
-node scripts/shot-site.cjs     # рендер в headless-браузере на пяти ширинах
+npm run verify      # ссылки, контраст, разметка, шрифты, адреса архивов
+npm run shots       # рендер в headless-браузере на шести ширинах
 ```
 
 При переезде на другой домен нужно обновить `canonical`, `og:url`, `og:image` и `twitter:image`
 в начале `site/index.html`, а также `sitemap.xml` и `robots.txt` — им нужен абсолютный адрес.
-Подробнее — в [site/КАК ОПУБЛИКОВАТЬ.txt](../site/КАК%20ОПУБЛИКОВАТЬ.txt).
-
 ## Что проверить после публикации
 
 - Главная страница репозитория показывает `README.md` с картинками из `docs/` и `logo/`.
 - Вкладка **Releases** содержит три архива, и ссылки из README открываются.
-- Вкладка **Actions** — зелёные прогоны `CI` (типы, тесты, сайт, документация) и `Pages`.
+- Вкладка **Actions** — зелёные прогоны `CI` (типы, тесты, документация) в `main` и `Pages`
+  в ветке `site`.
 - Сайт открывается по адресу `https://flushot.ink`, кнопки на нём скачивают архивы. Копия на
   `https://aeshtlv.github.io/Flushot/` остаётся рабочей, но её `canonical` указывает на свой
   домен: поисковики считают основной версией `flushot.ink`.

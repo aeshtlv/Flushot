@@ -7,8 +7,8 @@
  * these constants, so there is one geometry rather than three.
  *
  * A copy can drift from its source, so `tests/logo.test.ts` reads `logo/logo.svg`
- * and fails if the subpaths here stop matching it. The site reads the SVG file
- * itself (`scripts/build-site.cjs`), which is why the test matters: the site would
+ * and fails if the subpaths here stop matching it. The landing page reads the SVG
+ * file itself, in the `site` branch, which is why the test matters: the page would
  * follow a change automatically while the app would not.
  */
 

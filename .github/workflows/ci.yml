@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   check:
-    name: Types, tests, site
+    name: Types, tests, docs
     runs-on: windows-latest
     timeout-minutes: 20
 
@@ -35,11 +35,6 @@ jobs:
 
       - name: Unit tests
         run: npm test
-
-      # No browser needed, so this runs on a bare runner. The download buttons point at
-      # GitHub Releases, so nothing here depends on the archives being present.
-      - name: Site checks
-        run: npm run verify:site
 
       # A renamed file or a moved heading turns a link into a silent 404 on GitHub.
       - name: Documentation links

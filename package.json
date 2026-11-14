@@ -31,14 +31,10 @@
     "test:watch": "vitest",
     "icons": "node scripts/generate-icons.mjs",
     "verify:docs": "node scripts/verify-docs.cjs",
-    "verify:site": "node scripts/verify-site.cjs",
-    "stamp": "node scripts/stamp-assets.cjs",
+    "shots": "node scripts/make-hero-image.cjs && node scripts/make-ui-shots.cjs && node scripts/make-tray-sheet.cjs",
     "dist": "npm run build && electron-builder --win nsis portable",
     "dist:dir": "npm run build && electron-builder --dir --win",
-    "self-test": "npm run build && electron . --self-test",
-    "verify:live": "node scripts/check-live.cjs",
-    "verify:fold": "node scripts/measure-fold.cjs",
-    "verify:demo": "node scripts/test-try-demo.cjs"
+    "self-test": "npm run build && electron . --self-test"
   },
   "dependencies": {
     "sharp": "^0.35.5"

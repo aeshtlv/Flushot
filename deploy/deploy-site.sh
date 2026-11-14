@@ -5,6 +5,10 @@
 # is the single source of truth, and a deploy should not depend on someone
 # remembering which local copy was current.
 #
+# It comes from the `site` branch, not `main`: the program repository keeps no
+# landing page. This script and the nginx configs stay in `main`, because they
+# are server infrastructure rather than page content.
+#
 # Layout:
 #   /var/www/releases/flushot.ink-<stamp>/   one directory per deploy
 #   /var/www/flushot.ink                     symlink -> current release
@@ -15,12 +19,12 @@
 # on disk; rollback is one command (see the end of this file).
 #
 # Usage:
-#   bash /root/deploy-site.sh              # deploy main
+#   bash /root/deploy-site.sh              # deploy the site branch
 #   bash /root/deploy-site.sh <branch>     # deploy another branch or tag
 set -euo pipefail
 
 REPO=aeshtlv/Flushot
-BRANCH="${1:-main}"
+BRANCH="${1:-site}"
 WEB=/var/www/flushot.ink
 RELEASES=/var/www/releases
 STAMP=$(date -u +%Y%m%dT%H%M%SZ)
