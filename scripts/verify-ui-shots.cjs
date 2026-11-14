@@ -22,6 +22,8 @@ const { spawn } = require('node:child_process')
 const sharp = require('sharp')
 
 const ROOT = path.join(__dirname, '..')
+/** The version the screenshots show, read so the pictures cannot go stale. */
+const VERSION = JSON.parse(require('node:fs').readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version
 const DOCS = path.join(ROOT, 'docs')
 const BUILD = path.join(ROOT, '.tmp', 'imaging-build')
 const HTTP_PORT = 8133
@@ -467,7 +469,7 @@ async function main() {
         settings: defaults,
         capture,
         card,
-        info: { version: '2.2.3', hotkey: 'Ctrl+Shift+S', settingsPath: '' },
+        info: { version: VERSION, hotkey: 'Ctrl+Shift+S', settingsPath: '' },
         scene: helpers.scene,
         slots: [{ x: 0, y: 0, width: 2560, height: 1440 }]
       })
@@ -1276,7 +1278,7 @@ async function main() {
           settings: defaults,
           capture,
           card,
-          info: { version: '2.2.4', hotkey: 'Ctrl+Shift+S', settingsPath: '' },
+          info: { version: VERSION, hotkey: 'Ctrl+Shift+S', settingsPath: '' },
           scene: helpers.scene,
           slots: [
             { x: 0, y: 0, width: 1920, height: 1080 },

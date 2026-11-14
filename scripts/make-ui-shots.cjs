@@ -32,6 +32,8 @@ const { spawn, execFileSync } = require('node:child_process')
 const sharp = require('sharp')
 
 const ROOT = path.join(__dirname, '..')
+/** The version the screenshots show, read so the pictures cannot go stale. */
+const VERSION = JSON.parse(require('node:fs').readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version
 /**
  * Which interface language to photograph.
  *
@@ -429,7 +431,7 @@ async function main() {
           settings,
           capture,
           card,
-          info: { version: '2.2.3', hotkey: 'Ctrl+Shift+S', settingsPath: '' },
+          info: { version: VERSION, hotkey: 'Ctrl+Shift+S', settingsPath: '' },
           scene,
           slots: [{ x: 0, y: 0, width: 2560, height: 1440 }]
         })
@@ -634,7 +636,7 @@ async function main() {
           settings,
           capture,
           card,
-          info: { version: '2.2.3', hotkey: 'Ctrl+Shift+S', settingsPath: '' },
+          info: { version: VERSION, hotkey: 'Ctrl+Shift+S', settingsPath: '' },
           scene,
           // The same desktop drawn twice: the point of the picture is the
           // selection crossing the seam, not the wallpaper.
