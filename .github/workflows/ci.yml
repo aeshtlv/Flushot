@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [site]
   pull_request:
   workflow_dispatch:
 
@@ -11,9 +11,9 @@ permissions:
 
 jobs:
   check:
-    name: Types, tests, site
+    name: Site checks
     runs-on: windows-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -26,21 +26,15 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
-      # The renderer and the main process are two separate TypeScript projects with
-      # different libs, so one `tsc` would miss half the errors.
-      - name: Type check
-        run: npm run typecheck
+      # Contrast in both themes, tokens defined everywhere, local links resolve,
+      # every asset carries the current content hash, heading levels, page weight.
+      - name: Page checks
+        run: npm run verify
 
-      - name: Unit tests
-        run: npm test
-
-      # No browser needed, so this runs on a bare runner. The download buttons point at
-      # GitHub Releases, so nothing here depends on the archives being present.
-      - name: Site checks
-        run: npm run verify:site
-
-      # A renamed file or a moved heading turns a link into a silent 404 on GitHub.
-      - name: Documentation links
-        run: npm run verify:docs
+      # A page can pass the markup checks and still ship a stale `?v=` stamp, which
+      # leaves visitors on the old CSS. `stamp` is idempotent, so it prints either
+      # "already up to date" or the list of references it had to move.
+      - name: Asset stamps
+        run: npm run stamp

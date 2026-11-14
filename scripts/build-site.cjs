@@ -10,10 +10,15 @@
  *  - the social preview image.
  *
  * The download archives are deliberately *not* copied in: the buttons point at
- * GitHub Releases, because three archives of 110–160 MB cannot live in a repository
+ * GitHub Releases, because three archives of 94–143 MB cannot live in a repository
  * and the folder has to stay publishable as-is.
  *
  * Usage: node scripts/build-site.cjs
+ *
+ * The six screenshots it reads live in source/. They are produced by the
+ * application repository — scripts/make-hero-image.cjs and
+ * scripts/make-ui-shots.cjs there drive the shipping renderer — and are copied
+ * here so this branch stays publishable without the application source.
  */
 
 const path = require('node:path')
@@ -64,13 +69,13 @@ async function rasteriseIcon(svg, size) {
  */
 const IMAGES = [
   // The hero is a real Flushot output of the synthetic demo scene, not a capture
-  // of whatever was on the author's desktop. See scripts/make-hero-image.cjs.
-  { src: 'docs/hero-framed.png', out: 'hero', width: 820, height: null },
-  { src: 'docs/ui-overlay.png', out: 'overlay', width: 640, height: null },
-  { src: 'docs/ui-annotate.png', out: 'annotate', width: 640, height: null },
-  { src: 'docs/ui-ocr.png', out: 'ocr', width: 640, height: null },
-  { src: 'docs/ui-settings.png', out: 'settings', width: 260, height: null },
-  { src: 'docs/multi-monitor.png', out: 'monitors', width: 420, height: null }
+  // of whatever was on the author's desktop.
+  { src: 'source/hero-framed.png', out: 'hero', width: 820, height: null },
+  { src: 'source/ui-overlay.png', out: 'overlay', width: 640, height: null },
+  { src: 'source/ui-annotate.png', out: 'annotate', width: 640, height: null },
+  { src: 'source/ui-ocr.png', out: 'ocr', width: 640, height: null },
+  { src: 'source/ui-settings.png', out: 'settings', width: 260, height: null },
+  { src: 'source/multi-monitor.png', out: 'monitors', width: 420, height: null }
 ]
 
 async function ensureDirs() {

@@ -2,12 +2,15 @@ name: Pages
 
 # Publishes `site/` to GitHub Pages. The folder is plain HTML, CSS, JS and images —
 # there is nothing to build, so the workflow uploads it as-is. The download buttons
-# point at this repository's Releases, which is why the folder can be published
-# without carrying three archives of 110–160 MB.
+# point at the program repository's Releases, which is why the folder can be
+# published without carrying three archives of 94–143 MB.
+#
+# This workflow lives on the `site` branch and is triggered by it: the program
+# branch `main` has no `site/` at all.
 
 on:
   push:
-    branches: [main]
+    branches: [site]
     paths:
       - 'site/**'
       - '.github/workflows/pages.yml'

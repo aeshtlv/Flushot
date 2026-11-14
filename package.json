@@ -1,60 +1,25 @@
 {
-  "name": "flushot",
+  "name": "flushot-site",
   "version": "2.3.0",
-  "description": "Screenshot tool for Windows: select a region and get a finished picture with a frame, annotations and text recognition",
-  "main": "./out/main/index.js",
-  "author": "Flushot",
-  "license": "MIT",
   "private": true,
+  "description": "Landing page for Flushot — its own branch, kept out of the program repository",
   "repository": {
     "type": "git",
     "url": "https://github.com/aeshtlv/Flushot.git"
   },
   "homepage": "https://flushot.ink/",
-  "keywords": [
-    "screenshot",
-    "screen-capture",
-    "annotations",
-    "ocr",
-    "electron",
-    "windows"
-  ],
-  "engines": {
-    "node": ">=20.19"
-  },
   "scripts": {
-    "dev": "electron-vite dev",
-    "start": "electron-vite preview",
-    "build": "electron-vite build",
-    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "icons": "node scripts/generate-icons.mjs",
-    "verify:docs": "node scripts/verify-docs.cjs",
-    "verify:site": "node scripts/verify-site.cjs",
+    "assets": "node scripts/build-site.cjs && node scripts/build-fonts.cjs",
     "stamp": "node scripts/stamp-assets.cjs",
-    "dist": "npm run build && electron-builder --win nsis portable",
-    "dist:dir": "npm run build && electron-builder --dir --win",
-    "self-test": "npm run build && electron . --self-test",
-    "verify:live": "node scripts/check-live.cjs",
-    "verify:fold": "node scripts/measure-fold.cjs",
-    "verify:demo": "node scripts/test-try-demo.cjs"
-  },
-  "dependencies": {
-    "sharp": "^0.35.5"
+    "verify": "node scripts/verify-site.cjs",
+    "check:fold": "node scripts/measure-fold.cjs",
+    "check:demo": "node scripts/test-try-demo.cjs",
+    "check:hotkeys": "node scripts/test-hotkey-demo.cjs",
+    "check:live": "node scripts/check-live.cjs",
+    "shots": "node scripts/shot-site.cjs",
+    "serve": "node scripts/serve-site.cjs"
   },
   "devDependencies": {
-    "@types/node": "^22.18.0",
-    "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0",
-    "@vitejs/plugin-react": "^6.1.2",
-    "electron": "^44.9.0",
-    "electron-builder": "^26.15.3",
-    "electron-vite": "^6.0.0",
-    "react": "^19.3.1",
-    "react-dom": "^19.3.1",
-    "typescript": "^5.9.3",
-    "vite": "^8.3.4",
-    "vitest": "^5.0.5"
+    "sharp": "^0.35.5"
   }
 }
