@@ -38,7 +38,7 @@ module.exports = [
   ['aria-label="Переключить на светлую тему"', 'aria-label="Switch to light theme"'],
 
   // Hero
-  ['Windows 10 и 11 · версия 2.3.0 · бесплатно', 'Windows 10 and 11 · version 2.3.0 · free'],
+  ['Windows 10 и 11 · версия 2.4.0 · бесплатно', 'Windows 10 and 11 · version 2.4.0 · free'],
   ['<span>Снимок экрана,</span>', '<span>A screenshot</span>'],
   ['<span>готовый к вставке</span>', '<span>ready to paste</span>'],
   [
