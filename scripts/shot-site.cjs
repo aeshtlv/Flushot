@@ -53,9 +53,12 @@ const MEASURE = `(() => {
   };
 
   out.viewport = { width: window.innerWidth, height: window.innerHeight };
-  out.docWidth = document.documentElement.scrollWidth;
+  // clientWidth, not innerWidth: under mobile emulation the layout viewport can
+  // be wider than the window it is drawn in, and subtracting innerWidth then
+  // reports zero overflow for a page that really does scroll sideways.
+  out.docWidth = document.documentElement.clientWidth;
   out.docHeight = document.documentElement.scrollHeight;
-  out.overflowX = document.documentElement.scrollWidth - window.innerWidth;
+  out.overflowX = document.documentElement.scrollWidth - document.documentElement.clientWidth;
 
   out.wide = [];
   for (const el of document.querySelectorAll('body *')) {
@@ -65,7 +68,7 @@ const MEASURE = `(() => {
     if (el.classList.contains('skip')) continue;
     // Anything inside a horizontal scroller is meant to be wider than its box.
     if (el.closest('.term__body, pre, .gallery')) continue;
-    if (r.right > window.innerWidth + 1 || r.left < -1) {
+    if (r.right > document.documentElement.clientWidth + 1 || r.left < -1) {
       out.wide.push({
         tag: el.tagName.toLowerCase(),
         cls: (typeof el.className === 'string' ? el.className : '').slice(0, 40),
@@ -473,6 +476,10 @@ async function shoot(language) {
     console.log(
       `\n[${language}] ${viewport.name}  ${viewport.width}×${viewport.height}  doc ${metrics.docWidth}×${metrics.docHeight}  overflowX=${metrics.overflowX}`
     )
+    if (metrics.overflowX > 0) {
+      console.log(`  OVERFLOW: the page scrolls ${metrics.overflowX}px sideways`)
+      problems += 1
+    }
     if (metrics.wide.length) {
       console.log(`  WIDE: ${JSON.stringify(metrics.wide)}`)
       problems += 1

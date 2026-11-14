@@ -143,7 +143,7 @@ async function main() {
       }
     })
 
-    console.log(`checking ${URL_TO_CHECK}\n`)
+    console.log(`checking ${PAGES.length === 1 ? PAGES[0] : `${PAGES.length} pages`}\n`)
 
     for (const url of PAGES) {
       console.log(`\n${url}`)
