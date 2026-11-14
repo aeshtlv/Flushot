@@ -786,8 +786,8 @@ async function runAnnotationCheck(
     result.ok = magenta > 500
     if (!result.ok) result.note = `помеченных пикселей: ${magenta}`
 
-    // Reuse this very result for the format round trip: it is the exact buffer a
-    // user would have on screen when they press "Сохранить".
+    // The format round trip happens after the copy on purpose: the copied picture
+    // is the exact buffer a user has on screen when they press "Сохранить".
     if (settings) result.formats = await runFormatCheck(session, settings, outputDir)
   } catch (error) {
     result.note = error instanceof Error ? error.message : String(error)
@@ -800,14 +800,50 @@ async function runAnnotationCheck(
 }
 
 /**
+ * Opens a round, draws a region and confirms it, leaving the session holding a
+ * result that `save()` or `copy()` can act on.
+ *
+ * A successful save or copy closes the overlay — that is what the program does for
+ * a user too — so anything that has to act twice starts again through here rather
+ * than reusing a result that no longer exists.
+ */
+async function openResult(session: CaptureSession): Promise<BrowserWindow | null> {
+  session.cancel()
+  await wait(150)
+  session.prewarm()
+  await wait(300)
+  await session.start()
+  await session.whenAllReady()
+  await wait(200)
+
+  const overlay = BrowserWindow.getAllWindows().find((win) => win.webContents.getURL().includes('overlay'))
+  if (!overlay) return null
+
+  await overlay.webContents.executeJavaScript(DRAG_SCRIPT)
+  await wait(300)
+  await overlay.webContents.executeJavaScript(
+    `window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true })), true`
+  )
+  // Wait for the session to hold the picture, not for the caption to appear: the
+  // previous round's caption is still in the document until React commits the
+  // reset, so the markup lies about readiness for a moment. The main process
+  // knows the truth.
+  for (let waited = 0; waited < 6000 && !session.hasResult; waited += 100) {
+    await wait(100)
+  }
+  return session.hasResult ? overlay : null
+}
+
+/**
  * Saves the result the session is already holding as PNG, JPEG and WebP through
  * the real save path, then reads every file back with sharp.
  *
- * It deliberately reuses an existing capture instead of taking a new one: the
- * encode function is unit-tested, but that says nothing about whether the chosen
- * format reaches the file — the setting has to survive sanitising, the filename
- * has to get the right extension, and the write has to land. This is the check
- * that would have caught a "WebP does nothing" report.
+ * It goes through the real save path rather than the encode function, which is
+ * unit-tested: that says nothing about whether the chosen format reaches the file
+ * — the setting has to survive sanitising, the filename has to get the right
+ * extension, and the write has to land. This is the check that would have caught a
+ * "WebP does nothing" report. Each format takes its own round, because saving is
+ * what closes the overlay.
  */
 async function runFormatCheck(
   session: CaptureSession,
@@ -815,11 +851,6 @@ async function runFormatCheck(
   outputDir: string
 ): Promise<{ ok: boolean; note?: string; files: Record<string, string> }> {
   const result: { ok: boolean; note?: string; files: Record<string, string> } = { ok: false, files: {} }
-  if (!session.hasResult) {
-    result.note = 'нет готового снимка для проверки форматов'
-    return result
-  }
-
   const before = await settings.load()
   const directory = path.join(outputDir, 'formats')
   await fs.rm(directory, { recursive: true, force: true })
@@ -830,6 +861,13 @@ async function runFormatCheck(
 
     for (const format of ['png', 'jpeg', 'webp'] as const) {
       await settings.update({ format })
+      // Saving closes the overlay, exactly as it does for a user, so every format
+      // but the first needs a fresh round. The first one can use the result the
+      // caller already has, which is the buffer that was just copied.
+      if (!session.hasResult && !(await openResult(session))) {
+        result.note = 'окно выделения не найдено'
+        return result
+      }
       const saved = await session.save()
       if (!saved.ok || !saved.path) {
         result.note = `${format}: ${saved.message}`
@@ -2146,11 +2184,25 @@ export async function runSelfTest(session?: CaptureSession, settingsStore?: Sett
       report.rawCompare = { bytes: 0, maxDiff: -1, error: error instanceof Error ? error.message : String(error) }
     }
 
+    // What a mouse release means depends on the saved preference: the fast mode
+    // copies and closes, the editor mode keeps the region and shows the result
+    // screen. Every capture check below drives the overlay for real, so a check
+    // that trusted whatever the profile happened to hold would pass or fail for a
+    // reason that has nothing to do with the program. Each group therefore sets
+    // the mode it is about, and the saved value is put back afterwards.
+    const savedAfterRegion = settingsStore ? (await settingsStore.load()).afterRegion : 'copy'
+    const setAfterRegion = async (mode: 'copy' | 'edit'): Promise<void> => {
+      if (settingsStore) await settingsStore.update({ afterRegion: mode })
+    }
+
     // The real scenario: hotkey → overlay → drag a region → Ctrl+C → clipboard.
+    await setAfterRegion('copy')
     const realCopy = await runRealCopyCheck(session, outputDir)
     report.latency = { ...session?.lastTimings }
 
-    // Annotations must reach the clipboard, not just the screen.
+    // Annotations must reach the clipboard, not just the screen. That needs the
+    // editor: the check confirms a region and expects the picture with its tools.
+    await setAfterRegion('edit')
     const annotateCopy = await runAnnotationCheck(session, settingsStore, outputDir)
     report.annotateCopy = annotateCopy
     report.formats = annotateCopy.formats ?? { ok: false, note: 'проверка форматов не выполнена', files: {} }
@@ -2172,6 +2224,7 @@ export async function runSelfTest(session?: CaptureSession, settingsStore?: Sett
     })
     report.seam = await runSeamCheck(session, frameWidth, outputDir)
     report.perf = runPerfCheck(session, realCopy.warm ?? {}, report.seam)
+    await setAfterRegion(savedAfterRegion)
     report.debug = {
       lastError: session?.lastError ?? 'нет сессии',
       windows: BrowserWindow.getAllWindows().map((win) => ({
@@ -2357,7 +2410,9 @@ export async function runSelfTest(session?: CaptureSession, settingsStore?: Sett
 
     if (!report.ok) {
       report.errors.push(
-        `ui check failed: overlay=${overlayOk} overlayCopy=${overlayCopyOk} globalCopy=${globalCopyOk} annotate=${annotateOk}(${annotatePage.facts.annotateTools} tools, ${annotatePage.facts.annotateSwatches} swatches, count ${annotatePage.facts.annotateCount}, painted ${annotatePage.facts.annotatePainted}, size ${annotatePage.facts.annotateSize}) annotateCopy=${annotateCopy.ok}(${annotateCopy.note ?? annotateCopy.magenta + ' px, ' + annotateCopy.size}) shortcut=${globalShortcutOk} realCopy=${realCopy.ok}(${realCopy.note ?? realCopy.clipboard}) fullscreen=${report.fullscreen?.ok ?? 'нет'}(${report.fullscreen?.note || report.fullscreen?.size || ''}) rebind=${report.hotkeyRebind?.ok ?? 'нет'}(${report.hotkeyRebind?.note || report.hotkeyRebind?.saved || ''}) preview=${report.previewResize?.ok ?? 'нет'}(${report.previewResize?.note || report.previewResize?.wide || ''}) accelerators=${report.accelerators?.ok ?? 'нет'}(${report.accelerators?.rejected?.join(' | ') || report.accelerators?.checked}) settings=${settingsOk} compact=${compactOk} hotkey=${hotkeyOk} perf=${report.perf.ok}(${report.perf.note || report.perf.composeMs + ' ms'}) (stored ${stored.hotkey})`
+        `ui check failed: overlay=${overlayOk} overlayCopy=${overlayCopyOk} globalCopy=${globalCopyOk} annotate=${annotateOk}(${annotatePage.facts.annotateTools} tools, ${annotatePage.facts.annotateSwatches} swatches, count ${annotatePage.facts.annotateCount}, painted ${annotatePage.facts.annotatePainted}, size ${annotatePage.facts.annotateSize}) annotateCopy=${annotateCopy.ok}(${annotateCopy.note ?? annotateCopy.magenta + ' px, ' + annotateCopy.size}) shortcut=${globalShortcutOk} realCopy=${realCopy.ok}(${realCopy.note ?? realCopy.clipboard}) fullscreen=${report.fullscreen?.ok ?? 'нет'}(${report.fullscreen?.note || report.fullscreen?.size || ''}) rebind=${report.hotkeyRebind?.ok ?? 'нет'}(${report.hotkeyRebind?.note || report.hotkeyRebind?.saved || ''}) preview=${report.previewResize?.ok ?? 'нет'}(${report.previewResize?.note || report.previewResize?.wide || ''}) accelerators=${report.accelerators?.ok ?? 'нет'}(${report.accelerators?.rejected?.join(' | ') || report.accelerators?.checked}) settings=${settingsOk} compact=${compactOk} hotkey=${hotkeyOk} perf=${report.perf.ok}(${report.perf.note || report.perf.composeMs + ' ms'}) (stored ${stored.hotkey})`,
+        // The rest of the verdict, so no condition can fail without being named.
+        `also: canvas=${report.canvas?.width}×${report.canvas?.height} (expected ${report.canvas?.expectedWidth}×${report.canvas?.expectedHeight}) clipboard=${report.clipboard} files=${report.files.length} formats=${report.formats?.ok}(${report.formats?.note ?? ''}) virtual=${report.virtual?.ok}(${report.virtual?.note ?? ''}) seam=${report.seam?.ok}(${report.seam?.note ?? ''}) ocr=${report.ocr?.ok}(${report.ocr?.note ?? ''}) pixels=${rawMatchesPng}(${report.rawCompare?.maxDiff ?? '?'} max diff) color=${colorOk}(${bitmapPixel}) prewarm=${prewarmOk}(${strayOverlays} shown) warm=${warmFast}(${warmVisible} ms, limit 550) imaging=${report.warmImaging.ok}`
       )
     }
     await fs.writeFile(path.join(outputDir, 'report.json'), JSON.stringify(report, null, 2))

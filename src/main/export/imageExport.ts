@@ -12,6 +12,18 @@ export interface ExportOptions {
   jpegQuality: number
 }
 
+/**
+ * The lossy encoder settings, in one place so a test can assert them.
+ *
+ * Effort is not visible anywhere in the finished file — the pixels and the size are
+ * the same at effort 2 and 4 — so a wall-clock test is the only way to notice it
+ * changing, and on a busy machine the clock cannot tell a slow encoder from a slow
+ * laptop. As a constant it can be checked directly, and the timing test keeps only
+ * the role of catching an order-of-magnitude slip.
+ */
+export const WEBP_EXPORT = { alphaQuality: 100, effort: 2, smartSubsample: false } as const
+export const JPEG_EXPORT = { chromaSubsampling: '4:4:4' } as const
+
 /** Raw pixels as a sharp input, without copying the buffer. */
 function fromRaster(raster: Raster): ReturnType<typeof sharp> {
   return sharp(Buffer.from(raster.data.buffer, raster.data.byteOffset, raster.data.byteLength), {
@@ -37,14 +49,14 @@ export async function encodeRaster(raster: Raster, options: ExportOptions): Prom
   if (options.format === 'webp') {
     return fromRaster(raster)
       .removeAlpha()
-      .webp({ quality, alphaQuality: 100, effort: 2, smartSubsample: false })
+      .webp({ quality, ...WEBP_EXPORT })
       .toBuffer()
   }
 
   if (options.format === 'jpeg') {
     return fromRaster(raster)
       .flatten({ background: '#FFFFFF' })
-      .jpeg({ quality, chromaSubsampling: '4:4:4' })
+      .jpeg({ quality, ...JPEG_EXPORT })
       .toBuffer()
   }
 
@@ -88,13 +100,13 @@ export async function encodeImage(pngBuffer: Buffer, options: ExportOptions): Pr
 
   if (options.format === 'webp') {
     return sharp(pngBuffer)
-      .webp({ quality, alphaQuality: 100, effort: 2, smartSubsample: false })
+      .webp({ quality, ...WEBP_EXPORT })
       .toBuffer()
   }
 
   return sharp(pngBuffer)
     .flatten({ background: '#FFFFFF' })
-    .jpeg({ quality, chromaSubsampling: '4:4:4' })
+    .jpeg({ quality, ...JPEG_EXPORT })
     .toBuffer()
 }
 
