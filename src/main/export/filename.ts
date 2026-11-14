@@ -1,4 +1,5 @@
 import type { ImageFormat } from '../../shared/types'
+import { tr } from '../i18n'
 
 function pad(value: number, length = 2): string {
   return String(value).padStart(length, '0')
@@ -35,5 +36,5 @@ export function uniqueFilename(candidate: string, exists: (path: string) => bool
     const next = `${base}_${index}${ext}`
     if (!exists(next)) return next
   }
-  throw new Error('Не удалось подобрать имя файла')
+  throw new Error(tr('export.filenameFailed'))
 }

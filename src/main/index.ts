@@ -11,6 +11,7 @@ import { SettingsStore } from './settings/SettingsStore'
 import { syncAutostart } from './system/autostart'
 import { createTray, destroyTray, rebuildMenu } from './ui/tray'
 import { getSettingsWindow, openSettingsWindow } from './windows/settingsWindow'
+import { setLanguage, tr } from './i18n'
 
 app.setAppUserModelId('com.flushot.app')
 
@@ -46,10 +47,10 @@ function ensureUsableTemp(): void {
       // Chromium and native modules may read the environment directly.
       process.env.TEMP = fallback
       process.env.TMP = fallback
-      console.warn(`Системная папка Temp недоступна, используется ${fallback}`)
+      console.warn(tr('app.tempUnavailable', { fallback }))
     }
   } catch (error) {
-    console.error('Не удалось подготовить резервную папку Temp', error)
+    console.error(tr('app.tempPrepareFailed'), error)
   }
 }
 
@@ -78,8 +79,8 @@ if (!app.requestSingleInstanceLock()) {
       await bootstrap()
     })
     .catch((error: unknown) => {
-      console.error('Не удалось запустить Flushot', error)
-      dialog.showErrorBox('Flushot', `Не удалось запустить приложение.\n\n${String(error)}`)
+      console.error(tr('app.startFailed'), error)
+      dialog.showErrorBox('Flushot', tr('app.startFailedDetail', { detail: String(error) }))
       app.quit()
     })
 }
@@ -91,7 +92,7 @@ function notify(message: string, title = 'Flushot'): void {
       return
     }
   } catch (error) {
-    console.warn('Не удалось показать уведомление', error)
+    console.warn(tr('app.notificationFailed'), error)
   }
   console.warn(`${title}: ${message}`)
 }
@@ -115,10 +116,13 @@ async function initCore(): Promise<void> {
   const defaultDirectory = path.join(app.getPath('pictures'), 'Flushot')
   settingsStore = new SettingsStore(path.join(app.getPath('userData'), 'settings.json'), defaultDirectory)
   await settingsStore.load()
+  // Before anything can speak: the tray, the first notification and every error
+  // go through `tr`, and they must already be in the user's language.
+  setLanguage(settingsStore.peek()?.language, app.getLocale())
 
   session = new CaptureSession({
     settings: settingsStore,
-    onError: (message) => notify(message, 'Flushot — ошибка'),
+    onError: (message) => notify(message, tr('app.notifyTitle')),
     onStateChange: () => rebuildMenu(trayActions())
   })
 
@@ -129,6 +133,14 @@ async function initCore(): Promise<void> {
     getFullscreenHotkey: () => activeFullscreenHotkey,
     defaultDirectory,
     onHotkeysChanged: () => applyHotkeyChange(),
+    // Language lives in the settings file like everything else, so a change has
+    // to reach the tray menu too — it is the one piece of the interface that is
+    // built outside the renderer. The overlay picks the new value up on the next
+    // capture, because it reads the settings when it opens.
+    onSettingsChanged: () => {
+      setLanguage(settingsStore.peek()?.language, app.getLocale())
+      rebuildMenu(trayActions())
+    },
     openSettings: () => openSettingsWindow({ closeCapture: () => session.cancel() })
   })
 }
@@ -141,8 +153,8 @@ async function bootstrap(): Promise<void> {
   try {
     registerGlobalHotkey()
   } catch (error) {
-    console.error('Не удалось назначить горячие клавиши', error)
-    notify('Горячие клавиши не назначены — задайте их в настройках.', 'Flushot')
+    console.error(tr('app.hotkeysFailed'), error)
+    notify(tr('app.hotkeysNotAssigned'), 'Flushot')
   }
   await createTray(trayActions())
 
@@ -155,7 +167,7 @@ async function bootstrap(): Promise<void> {
     if (actual !== stored.launchAtLogin) {
       void settingsStore.update({ launchAtLogin: actual })
       if (stored.launchAtLogin && !actual) {
-        notify('Не удалось включить автозапуск: Windows отклонила изменение.', 'Flushot')
+        notify(tr('app.autostartRejected'), 'Flushot')
       }
     }
   }
@@ -191,11 +203,11 @@ async function bootstrap(): Promise<void> {
   }
 
   process.on('uncaughtException', (error) => {
-    console.error('Необработанная ошибка', error)
-    notify(`Непредвиденная ошибка: ${error.message}`, 'Flushot')
+    console.error(tr('app.unhandledError'), error)
+    notify(tr('app.unexpectedError', { message: error.message }), 'Flushot')
   })
   process.on('unhandledRejection', (reason) => {
-    console.error('Необработанный отказ промиса', reason)
+    console.error(tr('app.unhandledRejection'), reason)
   })
 }
 
@@ -212,7 +224,7 @@ function bindShortcut(accelerator: string, handler: () => void): boolean {
   try {
     return globalShortcut.register(accelerator, handler)
   } catch (error) {
-    console.warn(`Сочетание ${accelerator} не принимается системой`, error)
+    console.warn(tr('app.comboRejected', { combo: accelerator }), error)
     return false
   }
 }
@@ -234,7 +246,7 @@ function registerGlobalHotkey(): void {
   try {
     globalShortcut.unregisterAll()
   } catch (error) {
-    console.warn('Не удалось освободить прежние сочетания', error)
+    console.warn(tr('app.hotkeysReleaseFailed'), error)
   }
   activeHotkey = ''
   activeFullscreenHotkey = ''
@@ -248,9 +260,9 @@ function registerGlobalHotkey(): void {
   }
 
   if (!activeHotkey) {
-    notify(`Не удалось назначить ${formatAccelerator(preferred)} — выберите другое сочетание в настройках.`, 'Flushot')
+    notify(tr('app.hotkeyUnavailable', { combo: formatAccelerator(preferred) }), 'Flushot')
   } else if (activeHotkey !== preferred) {
-    notify(`${formatAccelerator(preferred)} занята другой программой. Flushot использует ${formatAccelerator(activeHotkey)}.`)
+    notify(tr('app.hotkeyTaken', { combo: formatAccelerator(preferred), active: formatAccelerator(activeHotkey) }))
   }
 
   // Then the full-screen key, skipping whatever the region key already holds.
@@ -264,12 +276,15 @@ function registerGlobalHotkey(): void {
 
   if (!activeFullscreenHotkey) {
     notify(
-      `Не удалось назначить ${formatAccelerator(preferredFull)} для снимка всего экрана — выберите другое сочетание в настройках.`,
+      tr('app.fullscreenHotkeyUnavailable', { combo: formatAccelerator(preferredFull) }),
       'Flushot'
     )
   } else if (activeFullscreenHotkey !== preferredFull) {
     notify(
-      `${formatAccelerator(preferredFull)} занята другой программой. Снимок всего экрана — ${formatAccelerator(activeFullscreenHotkey)}.`
+      tr('app.fullscreenHotkeyTaken', {
+        combo: formatAccelerator(preferredFull),
+        active: formatAccelerator(activeFullscreenHotkey)
+      })
     )
   }
 }
@@ -295,7 +310,7 @@ async function startCapture(options: { fullscreen?: boolean } = {}): Promise<voi
   try {
     await session.start(options)
   } catch (error) {
-    notify(error instanceof Error ? error.message : 'Не удалось начать захват', 'Flushot')
+    notify(error instanceof Error ? error.message : tr('app.captureFailed'), 'Flushot')
   }
 }
 

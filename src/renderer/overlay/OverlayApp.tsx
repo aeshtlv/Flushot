@@ -10,6 +10,7 @@ import {
 } from 'react'
 import { selectionPixelSize, selectionToImageRect } from '../../shared/geometry'
 import { decideRegion } from '../../shared/afterRegion'
+import { resolveLanguage, t, type MessageKey } from '../../shared/i18n'
 import type {
   Annotation,
   AnnotationLayerPayload,
@@ -26,6 +27,7 @@ import {
   ANNOTATION_COLORS,
   DEFAULT_STROKE,
   DEFAULT_TEXT_SIZE,
+  LINE_WIDTH_LABELS,
   STROKE_WIDTHS,
   TEXT_SIZE_LABELS,
   TEXT_SIZES,
@@ -85,6 +87,13 @@ const DEMO = new URLSearchParams(window.location.search).has('demo')
  * reachable in demo mode otherwise (no capture happens there).
  */
 const DEMO_RESULT = new URLSearchParams(window.location.search).get('stage') === 'result'
+/**
+ * Language forced through the address, used when generated screenshots need a
+ * particular language. Only the two shipped languages are accepted: this is a
+ * switch for our own scripts, not a way to ask for a translation that does not
+ * exist.
+ */
+const FORCED_LANG = new URLSearchParams(window.location.search).get('lang')
 
 /** Padding around the result column, in CSS pixels. Must match `.result-layer`. */
 const LAYER_PADDING = 24
@@ -99,11 +108,12 @@ const RESULT_CHROME = 200
  * is a product artefact — it appears on the landing page and in the README — and
  * `scripts/verify-demo-scene.cjs` measures it.
  */
-const DEMO_SHOT = demoSceneUrl()
 const DEMO_INIT: OverlayInit = {
   display: {
     id: 'demo',
-    label: 'Демо-экран',
+    // Left empty: the tag falls back to the translated demo name, which is not
+    // known here because this constant is built before any preference is read.
+    label: '',
     bounds: { x: 0, y: 0, width: 1280, height: 720 },
     scaleFactor: 1,
     imageWidth: 1280,
@@ -127,7 +137,8 @@ const DEMO_INIT: OverlayInit = {
     hotkey: 'CommandOrControl+Shift+S',
     hotkeyFullscreen: 'CommandOrControl+Shift+3',
     launchAtLogin: false,
-    afterRegion: 'copy'
+    afterRegion: 'copy',
+    language: 'auto'
   },
   hotkey: 'CommandOrControl+Shift+S'
 }
@@ -193,6 +204,23 @@ export function OverlayApp(): JSX.Element {
   const [ocrMarquee, setOcrMarquee] = useState<OcrRegion | null>(null)
   /** Where the drag started, in picture pixels. */
   const ocrDrag = useRef<{ x: number; y: number } | null>(null)
+
+  /**
+   * Interface language, resolved the same way the settings window resolves it.
+   *
+   * `init` carries the saved preference, so the overlay never has to ask for it;
+   * before `init` arrives there is nothing on screen to translate anyway. The
+   * tooltip is the only text the overlay shows, and it follows the same choice as
+   * the window that produced it.
+   */
+  const lang = resolveLanguage(
+    FORCED_LANG === 'ru' || FORCED_LANG === 'en' ? FORCED_LANG : init?.settings.language,
+    navigator.language
+  )
+  const tr = useCallback(
+    (key: MessageKey, vars?: Record<string, string | number>) => t(lang, key, vars),
+    [lang]
+  )
 
   /**
    * Resolve once the current React commit has been painted.
@@ -350,10 +378,10 @@ export function OverlayApp(): JSX.Element {
   useEffect(() => {
     if (DEMO) {
       setInit(DEMO_INIT)
-      setShotUrl(DEMO_SHOT)
+      setShotUrl(demoSceneUrl(lang))
       if (DEMO_RESULT) {
         // 1280 × 720 picture plus the 64 px frame on each side.
-        setPreview(DEMO_SHOT)
+        setPreview(demoSceneUrl(lang))
         setSize({ width: 1280 + 128, height: 720 + 128 })
         setStage('result')
       }
@@ -427,7 +455,7 @@ export function OverlayApp(): JSX.Element {
     }
     // selection.reset is stable
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [lang])
 
   // The window is revealed as soon as a frame is ready to paint: metadata on a
   // cold start, a pushed frame on every later hotkey.
@@ -483,7 +511,7 @@ export function OverlayApp(): JSX.Element {
     if (rect.width < 8 || rect.height < 8) return
 
     if (DEMO) {
-      showToast('Демо-режим: снимок не создаётся', 'ok')
+      showToast(tr('overlay.demoNoCapture'), 'ok')
       return
     }
 
@@ -515,9 +543,9 @@ export function OverlayApp(): JSX.Element {
       if (result.message) showToast(result.message, 'ok')
     } catch (error) {
       setStage('selecting')
-      showToast(error instanceof Error ? error.message : 'Не удалось создать снимок', 'error')
+      showToast(error instanceof Error ? error.message : tr('overlay.captureFailed'), 'error')
     }
-  }, [hostFor, init, showToast, viewport])
+  }, [hostFor, init, showToast, tr, viewport])
 
   /**
    * Copy the composed card to the clipboard and close, without the preview step.
@@ -537,12 +565,12 @@ export function OverlayApp(): JSX.Element {
     const rect = region ?? rectRef.current
     if (!rect) return
     if (rect.width < 8 || rect.height < 8) {
-      showToast('Слишком маленькая область — выделите не меньше 8 × 8 пикселей', 'error')
+      showToast(tr('capture.tooSmall'), 'error')
       return
     }
 
     if (DEMO) {
-      showToast('Демо-режим: буфер недоступен', 'ok')
+      showToast(tr('overlay.demoNoClipboard'), 'ok')
       return
     }
 
@@ -583,9 +611,9 @@ export function OverlayApp(): JSX.Element {
       copyingRef.current = false
       setBlanked(false)
       setStage('selecting')
-      showToast(error instanceof Error ? error.message : 'Не удалось скопировать снимок', 'error')
+      showToast(error instanceof Error ? error.message : tr('overlay.copyFailed'), 'error')
     }
-  }, [afterPaint, init, showToast, viewport])
+  }, [afterPaint, init, showToast, tr, viewport])
 
   /**
    * The drawing as raw pixels, cropped to the area that actually has paint on it.
@@ -638,7 +666,7 @@ export function OverlayApp(): JSX.Element {
   const runAction = useCallback(
     async (action: 'save' | 'copy') => {
       if (DEMO) {
-        showToast(action === 'save' ? 'Демо-режим: сохранение недоступно' : 'Демо-режим: буфер недоступен', 'ok')
+        showToast(tr(action === 'save' ? 'overlay.demoNoSave' : 'overlay.demoNoClipboard'), 'ok')
         return
       }
       // Blank the picture here first, then let the main process hide the window.
@@ -681,10 +709,10 @@ export function OverlayApp(): JSX.Element {
       } catch (error) {
         setBlanked(false)
         setStage('result')
-        showToast(error instanceof Error ? error.message : 'Не удалось выполнить действие', 'error')
+        showToast(error instanceof Error ? error.message : tr('overlay.actionFailed'), 'error')
       }
     },
-    [afterPaint, init, layerPayload, showToast]
+    [afterPaint, init, layerPayload, showToast, tr]
   )
 
   /**
@@ -695,7 +723,7 @@ export function OverlayApp(): JSX.Element {
    */
   const recognizeText = useCallback(async (region?: OcrRegion) => {
     if (DEMO) {
-      setTextPanel({ status: 'failed', message: 'Демо-режим: распознавание недоступно' })
+      setTextPanel({ status: 'failed', message: tr('overlay.demoNoOcr') })
       return
     }
     setOcrPick(false)
@@ -707,24 +735,24 @@ export function OverlayApp(): JSX.Element {
       setTextPanel(
         outcome.ok
           ? { status: 'ready', outcome, region }
-          : { status: 'failed', message: outcome.error ?? 'Распознать текст не удалось', region }
+          : { status: 'failed', message: outcome.error ?? tr('overlay.ocrFailed'), region }
       )
     } catch (error) {
       setTextPanel({
         status: 'failed',
-        message: error instanceof Error ? error.message : 'Распознать текст не удалось'
+        message: error instanceof Error ? error.message : tr('overlay.ocrFailed')
       })
     }
-  }, [layerPayload])
+  }, [layerPayload, tr])
 
   const copyRecognizedText = useCallback(async (text: string): Promise<string> => {
     try {
       await window.flushot.copyText(text)
-      return 'Скопировано'
+      return tr('overlay.copied')
     } catch {
-      return 'Не удалось'
+      return tr('overlay.failed')
     }
-  }, [])
+  }, [tr])
 
   // Start the engine when it is about to be needed.
   //
@@ -1107,20 +1135,20 @@ export function OverlayApp(): JSX.Element {
 
       {stage === 'selecting' && !rect && (
         <div className="hint" style={hintStyle}>
-          <p className="hint__title">Выделите область экрана</p>
+          <p className="hint__title">{tr('overlay.selectTitle')}</p>
           {/* The hint promises what actually happens on release. In the fast mode that
               is the clipboard, and holding Shift is the only way to reach the editor
               from there — so both are stated before the user starts dragging, not in a
               tooltip nobody opens. */}
           {init.settings.afterRegion === 'edit' ? (
             <p className="hint__subtitle">
-              Перетащите мышь, чтобы создать снимок · <kbd>Enter</kbd> — готово · <kbd>Ctrl</kbd>+<kbd>C</kbd> —
-              скопировать · <kbd>Esc</kbd> — отмена
+              {tr('overlay.hintDrag')} · <kbd>Enter</kbd> — {tr('overlay.hintDone')} · <kbd>Ctrl</kbd>+
+              <kbd>C</kbd> — {tr('overlay.hintCopy')} · <kbd>Esc</kbd> — {tr('overlay.hintCancel')}
             </p>
           ) : (
             <p className="hint__subtitle">
-              Отпустите мышь — снимок сразу в буфере обмена · <kbd>Shift</kbd> при отпускании — перейти к пометкам ·{' '}
-              <kbd>Esc</kbd> — отмена
+              {tr('overlay.hintRelease')} · <kbd>Shift</kbd> {tr('overlay.hintShiftAnnotate')} ·{' '}
+              <kbd>Esc</kbd> — {tr('overlay.hintCancel')}
             </p>
           )}
         </div>
@@ -1132,9 +1160,9 @@ export function OverlayApp(): JSX.Element {
           style={{ left: barSpot.left, top: barSpot.top }}
           onPointerDown={(event) => event.stopPropagation()}
         >
-          <button className="tb tb--primary" onClick={() => void confirmSelection()} title="Открыть снимок для пометок (Enter)">
+          <button className="tb tb--primary" onClick={() => void confirmSelection()} title={tr('overlay.openForEdit')}>
             <CheckIcon />
-            <span>Создать</span>
+            <span>{tr('overlay.create')}</span>
           </button>
           {/* Copying straight from the selection is what most people reach for,
               and it used to be invisible: the only way was Ctrl+C, mentioned in
@@ -1142,17 +1170,17 @@ export function OverlayApp(): JSX.Element {
           <button
             className="tb tb--with-key"
             onClick={() => void copySelection()}
-            title="Скопировать сразу, без пометок (Ctrl+C)"
+            title={tr('overlay.copyImmediately')}
           >
             <CopyIcon />
-            <span>Копировать</span>
+            <span>{tr('overlay.copyShort')}</span>
             <kbd className="tb__key">Ctrl+C</kbd>
           </button>
           <span className="tb-divider" />
-          <button className="tb" onClick={resetSelection} title="Сбросить выделение (Esc)">
+          <button className="tb" onClick={resetSelection} title={tr('overlay.resetSelection')}>
             <RepeatIcon />
           </button>
-          <button className="tb" onClick={() => void closeOverlay()} title="Закрыть (Esc)">
+          <button className="tb" onClick={() => void closeOverlay()} title={tr('overlay.close')}>
             <CloseIcon />
           </button>
         </div>
@@ -1231,7 +1259,7 @@ export function OverlayApp(): JSX.Element {
                 {preview ? (
                   <img
                     src={preview}
-                    alt="Готовый снимок"
+                    alt={tr('overlay.resultAlt')}
                     // The card already carries the exact size; the picture fills it
                     // instead of being stretched by the browser into a soft blur.
                     draggable={false}
@@ -1276,6 +1304,7 @@ export function OverlayApp(): JSX.Element {
                       onCommit={(annotation) => setAnnotations((current) => [...current, annotation])}
                       onRemove={(index) => setAnnotations((current) => current.filter((_, at) => at !== index))}
                       canvasRef={annotateCanvas}
+                      language={init.settings.language}
                     />
 
                     {/* The fragment picker sits above the drawing surface and
@@ -1345,7 +1374,7 @@ export function OverlayApp(): JSX.Element {
                             }}
                           />
                         ) : (
-                          <span className="ocr-pick__hint">Выделите область с текстом</span>
+                          <span className="ocr-pick__hint">{tr('overlay.textPickHint')}</span>
                         )}
                       </div>
                     )}
@@ -1363,33 +1392,34 @@ export function OverlayApp(): JSX.Element {
                 {formatRatio(size.width, size.height)}
               </>
             ) : (
-              <>Готово</>
+              <>{tr('overlay.done')}</>
             )}
-            {/* The tester who reported this kept pressing "Создать", because
+            {/* The tester who reported this kept pressing "Create", because
                 nothing on screen said the picture was already finished. The keys
                 are on the buttons; this line says what they do without the
                 user having to hover anything. */}
             <span className="result-caption__dot" />
             <span className="result-caption__hint">
-              <kbd>Ctrl</kbd>+<kbd>C</kbd> скопировать · <kbd>Ctrl</kbd>+<kbd>S</kbd> сохранить
+              <kbd>Ctrl</kbd>+<kbd>C</kbd> {tr('overlay.hintCopy')} · <kbd>Ctrl</kbd>+<kbd>S</kbd> {tr('overlay.hintSave')}
             </span>
           </div>
 
           <div className="toolbar toolbar--annotate" onPointerDown={(event) => event.stopPropagation()}>
             {(
               [
-                ['arrow', ArrowIcon, 'Стрелка'],
-                ['line', LineIcon, 'Линия (Shift — ровно)'],
-                ['rect', RectIcon, 'Рамка'],
-                ['pen', PenIcon, 'Карандаш'],
-                ['text', TextIcon, 'Текст'],
-                ['step', StepIcon, 'Нумерация шагов'],
-                ['move', MoveIcon, 'Перемещение'],
-                ['blur', BlurIcon, 'Скрыть область']
+                ['arrow', ArrowIcon, 'overlay.toolArrow'],
+                ['line', LineIcon, 'overlay.toolLine'],
+                ['rect', RectIcon, 'overlay.toolRect'],
+                ['pen', PenIcon, 'overlay.toolPen'],
+                ['text', TextIcon, 'overlay.toolText'],
+                ['step', StepIcon, 'overlay.toolStep'],
+                ['move', MoveIcon, 'overlay.toolMove'],
+                ['blur', BlurIcon, 'overlay.toolBlur']
               ] as const
             ).map(([value, Icon, label]) => (
               <button
                 key={value}
+                data-tool={value}
                 className={`tb tb--tool ${tool === value ? 'is-active' : ''}`}
                 disabled={stage === 'busy'}
                 onClick={() => {
@@ -1397,8 +1427,8 @@ export function OverlayApp(): JSX.Element {
                   setOcrPick(false)
                   setOcrMarquee(null)
                 }}
-                title={label}
-                aria-label={label}
+                title={tr(label)}
+                aria-label={tr(label)}
                 aria-pressed={tool === value}
               >
                 <Icon />
@@ -1415,7 +1445,7 @@ export function OverlayApp(): JSX.Element {
                 disabled={stage === 'busy'}
                 onClick={() => setColor(swatch)}
                 title={swatch}
-                aria-label={`Цвет ${swatch}`}
+                aria-label={tr('overlay.colorSwatch', { color: swatch })}
               />
             ))}
 
@@ -1431,8 +1461,8 @@ export function OverlayApp(): JSX.Element {
                     className={`tb tb--text-size ${textSize === value ? 'is-active' : ''}`}
                     disabled={stage === 'busy'}
                     onClick={() => setTextSize(value)}
-                    title={tool === 'step' ? `Размер метки: ${TEXT_SIZE_LABELS[index].toLowerCase()}` : TEXT_SIZE_LABELS[index]}
-                    aria-label={TEXT_SIZE_LABELS[index]}
+                    title={tr(tool === 'step' ? 'overlay.textSize' : TEXT_SIZE_LABELS[index], tool === 'step' ? { size: tr(TEXT_SIZE_LABELS[index]).toLowerCase() } : undefined)}
+                    aria-label={tr(TEXT_SIZE_LABELS[index])}
                     aria-pressed={textSize === value}
                   >
                     <span className="text-size" style={{ fontSize: 9 + index * 3 }}>
@@ -1448,8 +1478,8 @@ export function OverlayApp(): JSX.Element {
                       className={`tb tb--stroke ${stroke === value ? 'is-active' : ''}`}
                       disabled={stage === 'busy'}
                       onClick={() => setStroke(value)}
-                      title={['Тонкая линия', 'Обычная линия', 'Толстая линия'][index]}
-                      aria-label={['Тонкая линия', 'Обычная линия', 'Толстая линия'][index]}
+                      title={tr(LINE_WIDTH_LABELS[index])}
+                      aria-label={tr(LINE_WIDTH_LABELS[index])}
                       aria-pressed={stroke === value}
                     >
                       <span className="stroke-dot" style={{ width: 5 + index * 4, height: 5 + index * 4 }} />
@@ -1462,7 +1492,7 @@ export function OverlayApp(): JSX.Element {
               className="tb"
               disabled={stage === 'busy' || annotations.length === 0}
               onClick={() => setAnnotations((current) => current.slice(0, -1))}
-              title="Отменить пометку (Ctrl+Z)"
+              title={tr('overlay.undoAnnotation')}
             >
               <UndoIcon />
             </button>
@@ -1473,25 +1503,26 @@ export function OverlayApp(): JSX.Element {
               className="tb tb--primary tb--with-key"
               disabled={stage === 'busy'}
               onClick={() => void runAction('copy')}
-              title="Скопировать в буфер (Ctrl+C)"
+              title={tr('overlay.copyToClipboard')}
             >
               <CopyIcon />
-              <span>Копировать</span>
+              <span>{tr('overlay.copyShort')}</span>
               <kbd className="tb__key">Ctrl+C</kbd>
             </button>
             <button
               className="tb tb--with-key"
               disabled={stage === 'busy'}
               onClick={() => void runAction('save')}
-              title="Сохранить (Ctrl+S)"
+              title={tr('overlay.save')}
             >
               <SaveIcon />
-              <span>Сохранить</span>
+              <span>{tr('overlay.saveShort')}</span>
               <kbd className="tb__key">Ctrl+S</kbd>
             </button>
 
             <span className="tb-divider" />
             <button
+              data-ocr-pick
               className={`tb ${textPanel || ocrPick ? 'is-active' : ''}`}
               disabled={stage === 'busy'}
               // Arms the fragment picker instead of reading the whole picture: a
@@ -1506,12 +1537,12 @@ export function OverlayApp(): JSX.Element {
               onPointerEnter={() => window.flushot.warmTextRecognition()}
               title={
                 ocrPick
-                  ? 'Выделите на снимке область с текстом'
-                  : 'Распознать текст: выделите область или кликните по снимку'
+                  ? tr('overlay.textSelectPrompt')
+                  : tr('overlay.textToolTitle')
               }
             >
               <TextScanIcon />
-              <span>Текст</span>
+              <span>{tr('overlay.toolText')}</span>
             </button>
 
             {/* A capture that spans two monitors is bigger than one screen. The
@@ -1523,10 +1554,11 @@ export function OverlayApp(): JSX.Element {
                 <div className="zoom" onPointerDown={(event) => event.stopPropagation()}>
                   <button
                     className="tb tb--zoom"
+                    data-zoom="out"
                     disabled={stage === 'busy' || zoom <= fit + 0.001}
                     onClick={() => setZoomValue(stepZoom(zoom, -1, fit))}
-                    title="Уменьшить (−)"
-                    aria-label="Уменьшить масштаб"
+                    title={tr('overlay.zoomOutTitle')}
+                    aria-label={tr('overlay.zoomOut')}
                   >
                     <ZoomOutIcon />
                   </button>
@@ -1539,14 +1571,15 @@ export function OverlayApp(): JSX.Element {
                     value={Math.round(zoom * 100)}
                     disabled={stage === 'busy'}
                     onChange={(event) => setZoomValue(clampZoom(Number(event.target.value) / 100, fit))}
-                    aria-label="Масштаб"
+                    aria-label={tr('overlay.zoomLevel')}
                   />
                   <button
                     className="tb tb--zoom"
+                    data-zoom="in"
                     disabled={stage === 'busy' || zoom >= 0.999}
                     onClick={() => setZoomValue(stepZoom(zoom, 1, fit))}
-                    title="Увеличить (+)"
-                    aria-label="Увеличить масштаб"
+                    title={tr('overlay.zoomInTitle')}
+                    aria-label={tr('overlay.zoomIn')}
                   >
                     <ZoomInIcon />
                   </button>
@@ -1555,10 +1588,11 @@ export function OverlayApp(): JSX.Element {
                   </span>
                   <button
                     className={`tb tb--zoom ${zoomValue === null ? 'is-active' : ''}`}
+                    data-zoom="fit"
                     disabled={stage === 'busy'}
                     onClick={() => setZoomValue(null)}
-                    title="Вписать в экран (0)"
-                    aria-label="Вписать в экран"
+                    title={tr('overlay.fitToScreenTitle')}
+                    aria-label={tr('overlay.fitToScreen')}
                     aria-pressed={zoomValue === null}
                   >
                     <FitIcon />
@@ -1568,14 +1602,14 @@ export function OverlayApp(): JSX.Element {
             )}
 
             <span className="tb-divider" />
-            <button className="tb" disabled={stage === 'busy'} onClick={resetSelection} title="Выделить заново">
+            <button className="tb" disabled={stage === 'busy'} onClick={resetSelection} title={tr('overlay.selectAgain')}>
               <RepeatIcon />
             </button>
             <button
               className="tb"
               disabled={stage === 'busy'}
               onClick={() => void closeOverlay()}
-              title="Отменить (Esc)"
+              title={tr('overlay.cancel')}
             >
               <CloseIcon />
             </button>
@@ -1590,6 +1624,7 @@ export function OverlayApp(): JSX.Element {
               onCopy={copyRecognizedText}
               onClose={() => setTextPanel(null)}
               onRetry={() => void recognizeText(textPanel.region)}
+              language={init?.settings.language}
             />
           )}
         </div>
@@ -1603,7 +1638,7 @@ export function OverlayApp(): JSX.Element {
       )}
 
       <span className="display-tag">
-        {init.display.label} · {Math.round(init.display.scaleFactor * 100)}%
+        {init.display.label || tr('overlay.demoScreen')} · {Math.round(init.display.scaleFactor * 100)}%
       </span>
     </div>
   )

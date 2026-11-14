@@ -5,6 +5,7 @@ import type { ImageFormat } from '../../shared/types'
 import { FAST_PNG } from '../imaging/compose'
 import { choosePngPolicy } from '../imaging/pngPolicy'
 import type { Raster } from '../imaging/raster'
+import { tr } from '../i18n'
 
 export interface ExportOptions {
   format: ImageFormat
@@ -104,7 +105,7 @@ export async function writeImageFile(filePath: string, data: Buffer): Promise<vo
 
 export async function ensureDirectory(directory: string): Promise<void> {
   const stat = await fs.stat(directory)
-  if (!stat.isDirectory()) throw new Error('Выбранный путь не является папкой')
+  if (!stat.isDirectory()) throw new Error(tr('export.pathNotFolder'))
 }
 
 export async function isDirectoryWritable(directory: string): Promise<boolean> {

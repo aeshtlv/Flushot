@@ -1,3 +1,5 @@
+import type { LanguagePreference } from './i18n'
+
 export type ThemeMode = 'light' | 'dark'
 export type BackgroundPreset = 'white' | 'gray' | 'custom'
 export type ImageFormat = 'png' | 'jpeg' | 'webp'
@@ -53,6 +55,11 @@ export interface ScreenshotSettings {
    * opens it for annotations. See `AfterRegion`.
    */
   afterRegion: AfterRegion
+  /**
+   * Interface language. `auto` follows the Windows display language; the two
+   * explicit values pin it.
+   */
+  language: LanguagePreference
 }
 
 // ---------------------------------------------------------------------------

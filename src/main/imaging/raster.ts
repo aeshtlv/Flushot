@@ -2,6 +2,7 @@ import sharp from 'sharp'
 import { parseHexColor } from './color'
 import type { ComposeOptions } from './compose'
 import type { FrameLayout } from './layout'
+import { tr } from '../i18n'
 
 /** RGBA pixels at a known size, exactly as an image encoder wants them. */
 export interface Raster {
@@ -57,7 +58,7 @@ async function cornerTile(radius: number, sigma: number): Promise<CornerTile> {
   let pipeline = sharp(svg).ensureAlpha().extractChannel('alpha').toColourspace('b-w')
   if (sigma > 0) pipeline = pipeline.blur(sigma)
   const { data, info } = await pipeline.raw().toBuffer({ resolveWithObject: true })
-  if (info.width !== stride || info.height !== stride) throw new Error('Не удалось построить маску тени')
+  if (info.width !== stride || info.height !== stride) throw new Error(tr('imaging.shadowMaskFailed'))
 
   // The last row is solid along its whole length (the shape extends past the
   // tile), so it is exactly the straight-edge profile.
@@ -186,7 +187,7 @@ function cornerCoverage(radius: number, x: number, y: number): number {
 function drawCard(canvas: Raster, source: Raster, area: { x: number; y: number; width: number; height: number }, layout: FrameLayout): void {
   const width = Math.min(area.width, source.width - area.x)
   const height = Math.min(area.height, source.height - area.y)
-  if (width <= 0 || height <= 0) throw new Error('Пустая область выделения')
+  if (width <= 0 || height <= 0) throw new Error(tr('imaging.emptyRegion'))
 
   const destination = new Uint32Array(canvas.data.buffer, canvas.data.byteOffset, canvas.width * canvas.height)
   const origin = new Uint32Array(source.data.buffer, source.data.byteOffset, source.width * source.height)

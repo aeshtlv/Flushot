@@ -2,6 +2,7 @@ import sharp from 'sharp'
 import type { ScreenBounds } from '../../shared/virtualScreen'
 import { virtualImageSize, virtualPlacements, virtualScale } from '../../shared/virtualScreen'
 import { uprightBitmap } from './orientation'
+import { tr } from '../i18n'
 
 /** RGBA pixels at physical resolution, as produced by the capture layer. */
 export interface RawBitmap {
@@ -38,7 +39,7 @@ function asBuffer(bitmap: RawBitmap): Buffer {
 export async function buildVirtualFrame(
   screens: (ScreenBounds & { raw: RawBitmap; rotation?: number })[]
 ): Promise<VirtualFrame> {
-  if (screens.length === 0) throw new Error('Не найдено ни одного экрана')
+  if (screens.length === 0) throw new Error(tr('capture.noDisplay'))
 
   const scale = virtualScale(screens)
   const size = virtualImageSize(screens, scale)

@@ -1,6 +1,7 @@
 import { BrowserWindow } from 'electron'
 import { getAppIcon } from '../ui/icon'
 import { preloadPath, rendererUrl } from './paths'
+import { tr } from '../i18n'
 
 let settingsWindow: BrowserWindow | null = null
 
@@ -51,7 +52,7 @@ export function openSettingsWindow(options: { closeCapture?: () => void } = {}):
   const load = kind === 'url' ? window.loadURL(value) : window.loadFile(value)
   void load.catch((error: unknown) => {
     window.destroy()
-    console.error('Не удалось загрузить окно настроек', error)
+    console.error(tr('shell.settingsLoadFailed'), error)
   })
 
   window.once('ready-to-show', () => {

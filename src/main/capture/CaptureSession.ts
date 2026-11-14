@@ -35,6 +35,7 @@ import { buildVirtualFrame, type RawBitmap } from './virtualFrame'
 import { pasteAnnotationLayer } from '../imaging/annotations'
 import { recognizeCardPicture } from '../ocr/recognize'
 import { warmOcr } from '../ocr/worker'
+import { tr } from '../i18n'
 
 export interface CaptureSessionDeps {
   settings: SettingsStore
@@ -143,7 +144,7 @@ export class CaptureSession {
       this.clearSnapshots()
 
       const displays = screen.getAllDisplays()
-      if (displays.length === 0) throw new Error('Не найдено ни одного экрана')
+      if (displays.length === 0) throw new Error(tr('capture.noDisplay'))
 
       let resolveCapture: () => void = () => undefined
       this.captureReady = new Promise<void>((resolve) => {
@@ -156,7 +157,7 @@ export class CaptureSession {
       this.syncOverlays(displays)
       mark('windows')
 
-      if (this.overlays.length === 0) throw new Error('Не удалось открыть оверлей выделения')
+      if (this.overlays.length === 0) throw new Error(tr('capture.overlayFailed'))
       this.expectedReady = this.overlays.length
 
       const captureTimings: CaptureTimings = {}
@@ -207,7 +208,7 @@ export class CaptureSession {
       this.active = false
       this.destroyOverlays()
       this.clearSnapshots()
-      this.deps.onError(error instanceof Error ? error.message : 'Не удалось запустить захват экрана')
+      this.deps.onError(error instanceof Error ? error.message : tr('capture.startFailed'))
       this.deps.onStateChange()
     } finally {
       this.starting = false
@@ -241,7 +242,11 @@ export class CaptureSession {
     const screens = toScreens(displays)
     const union = virtualBounds(screens)
     const scale = virtualScale(screens)
-    this.virtualDescriptor = describeVirtual(screens, virtualImageSize(screens, scale))
+    this.virtualDescriptor = describeVirtual(
+      screens,
+      virtualImageSize(screens, scale),
+      screens.length > 1 ? tr('capture.allScreens', { count: screens.length }) : tr('capture.oneScreen')
+    )
 
     while (this.overlays.length > 1) {
       const extra = this.overlays.pop()
@@ -371,7 +376,7 @@ export class CaptureSession {
     const { kind, value } = rendererUrl('overlay')
     const load = kind === 'url' ? win.loadURL(value) : win.loadFile(value)
     void load.catch((error: unknown) => {
-      this.deps.onError(`Не удалось загрузить интерфейс выделения: ${String(error)}`)
+      this.deps.onError(tr('capture.uiLoadFailed', { detail: String(error) }))
       win.destroy()
     })
 
@@ -406,7 +411,7 @@ export class CaptureSession {
    */
   async getInit(webContentsId: number): Promise<OverlayInit> {
     const displayId = this.displayByWebContents.get(webContentsId)
-    if (!displayId) throw new Error('Окно выделения не найдено')
+    if (!displayId) throw new Error(tr('capture.windowMissing'))
 
     // Pre-warmed windows ask for metadata long before the first hotkey.
     const settings = this.deps.settings.peek() ?? (await this.deps.settings.load())
@@ -415,7 +420,7 @@ export class CaptureSession {
     // Geometry is known from the display list before any pixels arrive, which
     // lets the renderer size its canvas up front.
     const display = this.virtualDescriptor
-    if (!display) throw new Error('Экран не найден')
+    if (!display) throw new Error(tr('capture.displayMissing'))
 
     return { display, settings, hotkey: settings.hotkey, fullscreen: this.fullscreen }
   }
@@ -423,13 +428,13 @@ export class CaptureSession {
   /** The frozen virtual desktop; waits for the capture to finish. */
   async getShot(webContentsId: number): Promise<OverlayShot> {
     const displayId = this.displayByWebContents.get(webContentsId)
-    if (!displayId) throw new Error('Окно выделения не найдено')
+    if (!displayId) throw new Error(tr('capture.windowMissing'))
 
     if (!this.captureDone) {
       await Promise.race([this.captureReady, new Promise<void>((resolve) => setTimeout(resolve, 5000))])
     }
 
-    if (!this.virtualRaw) throw new Error('Снимок экрана больше недоступен')
+    if (!this.virtualRaw) throw new Error(tr('capture.shotGone'))
     return this.virtualRaw
   }
 
@@ -507,14 +512,14 @@ export class CaptureSession {
   async captureSelection(selection: CaptureSelection, senderId: number): Promise<ActionResult> {
     const displayId = this.displayByWebContents.get(senderId)
     if (!displayId || displayId !== selection.displayId) {
-      return { ok: false, message: 'Окно выделения устарело. Нажмите Ctrl+Shift+S снова.' }
+      return { ok: false, message: tr('capture.sessionStale') }
     }
     const settings = this.deps.settings.peek()
     const descriptor = this.virtualDescriptor
-    if (!this.natives.size || !settings || !descriptor) return { ok: false, message: 'Снимок экрана больше недоступен' }
+    if (!this.natives.size || !settings || !descriptor) return { ok: false, message: tr('capture.shotGone') }
 
     if (!isUsableSelection(selection.rect, 8)) {
-      return { ok: false, message: 'Слишком маленькая область — выделите не меньше 8 × 8 пикселей' }
+      return { ok: false, message: tr('capture.tooSmall') }
     }
 
     try {
@@ -553,21 +558,26 @@ export class CaptureSession {
           void saveToFolder({ raster: card.raster, layout: card.layout, settings, window: null, png: copied.png })
             .then((saved) => {
               if (saved.ok) return
-              console.warn('Снимок скопирован, но не сохранён:', saved.message)
+              console.warn(tr('capture.copiedNotSaved', { detail: saved.message }))
               // The picture is safe on the clipboard, so this is a warning and not an
               // error — but it is the only way the user finds out that the folder has
               // gone away. Once, so it does not talk over every later screenshot.
               if (!this.copySaveWarned) {
                 this.copySaveWarned = true
-                this.deps.onError(`Снимок скопирован, но не сохранён в папку «${directory}». Выберите другую в настройках.`)
+                this.deps.onError(tr('capture.copiedNotSavedFolder', { directory }))
               }
             })
-            .catch((error: unknown) => console.warn('Не удалось сохранить снимок', error))
+            .catch((error: unknown) => console.warn(tr('capture.saveFailed'), error))
         }
 
         this.cancel()
         return copied.ok
-          ? { ok: true, message: `Скопировано в буфер обмена · ${card.raster.width} × ${card.raster.height}`, width: card.raster.width, height: card.raster.height }
+          ? {
+            ok: true,
+            message: tr('capture.copied', { width: card.raster.width, height: card.raster.height }),
+            width: card.raster.width,
+            height: card.raster.height
+          }
           : { ok: false, message: copied.message }
       }
 
@@ -602,16 +612,21 @@ export class CaptureSession {
         if (saved.ok) {
           return { ok: true, message: saved.message, path: saved.path, preview: card.preview, ...size }
         }
-        return { ok: true, message: `Снимок готов, но сохранить не удалось: ${saved.message}`, preview: card.preview, ...size }
+        return {
+          ok: true,
+          message: tr('capture.readyNotSaved', { detail: saved.message }),
+          preview: card.preview,
+          ...size
+        }
       }
 
-      return { ok: true, message: `Готово · ${size.width} × ${size.height}`, preview: card.preview, ...size }
+      return { ok: true, message: tr('capture.done', { width: size.width, height: size.height }), preview: card.preview, ...size }
     } catch (error) {
       this.result = null
       this.pendingPng = null
       return {
         ok: false,
-        message: error instanceof Error ? error.message : 'Не удалось обработать выделенную область'
+        message: error instanceof Error ? error.message : tr('capture.processFailed')
       }
     }
   }
@@ -724,9 +739,9 @@ export class CaptureSession {
   async save(annotations?: AnnotationLayerPayload, window: BrowserWindow | null = null): Promise<ActionResult> {
     this.conceal(true)
     const context = await this.resultContext(annotations)
-    if (!context) return { ok: false, message: this.result ? 'Настройки недоступны' : 'Сначала создайте снимок' }
+    if (!context) return { ok: false, message: tr(this.result ? 'capture.settingsUnavailable' : 'capture.captureFirst') }
     // `saveResult` honours the configured mode. Saving straight to the folder
-    // used to ignore "спрашивать каждый раз" entirely: the choice existed in the
+    // used to ignore "ask every time" entirely: the choice existed in the
     // settings window and did nothing.
     return this.settle(await saveResult({ ...context, window }, annotations, () => this.conceal()))
   }
@@ -734,7 +749,7 @@ export class CaptureSession {
   async copy(annotations?: AnnotationLayerPayload): Promise<ActionResult> {
     this.conceal()
     const context = await this.resultContext(annotations)
-    if (!context) return { ok: false, message: this.result ? 'Настройки недоступны' : 'Сначала создайте снимок' }
+    if (!context) return { ok: false, message: tr(this.result ? 'capture.settingsUnavailable' : 'capture.captureFirst') }
     return this.settle(await copyResult(context, annotations))
   }
 
@@ -742,13 +757,13 @@ export class CaptureSession {
    * Recognize the text on the picture as the user sees it.
    *
    * The drawing is pasted in first, so a blurred or covered area is really gone
-   * from the image the engine reads — otherwise "скрыть область" would hide a
+   * from the image the engine reads — otherwise the hide tool would cover a
    * password on screen and hand it straight back as text.
    *
    * `region` narrows the work to the fragment the user selected on the result.
    */
   async recognizeText(annotations?: AnnotationLayerPayload, region?: OcrRegion): Promise<OcrOutcome> {
-    if (!this.result) return { ok: false, lines: [], error: 'Сначала создайте снимок' }
+    if (!this.result) return { ok: false, lines: [], error: tr('capture.captureFirst') }
     const card = annotations ? pasteAnnotationLayer(this.result.raster, this.result.layout, annotations) : this.result.raster
     return recognizeCardPicture(card, this.result.layout, region)
   }

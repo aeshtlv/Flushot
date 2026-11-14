@@ -11,13 +11,33 @@ import {
   normalizeAccelerator,
   reservedByWindows
 } from '../../shared/hotkey'
-import type { AfterRegion, BackgroundPreset, ImageFormat, SaveMode, ScreenshotSettings, ThemeMode } from '../../shared/types'
+import {
+  LANGUAGE_NAMES,
+  LANGUAGES,
+  resolveLanguage,
+  t,
+  type Language,
+  type LanguagePreference,
+  type MessageKey
+} from '../../shared/i18n'
+import type {
+  AfterRegion,
+  BackgroundPreset,
+  ImageFormat,
+  SaveMode,
+  ScreenshotSettings,
+  ThemeMode
+} from '../../shared/types'
 import { BrandMark } from '../BrandMark'
 
-const BACKDROP_OPTIONS: { value: BackgroundPreset; label: string; swatch: string }[] = [
-  { value: 'white', label: 'Белый', swatch: BACKGROUND_PRESETS.white },
-  { value: 'gray', label: 'Серый', swatch: BACKGROUND_PRESETS.gray },
-  { value: 'custom', label: 'Свой цвет', swatch: 'conic-gradient(from 210deg, #ff9f0a, #ff375f, #bf5af2, #0a84ff, #32d74b, #ff9f0a)' }
+const BACKDROP_OPTIONS: { value: BackgroundPreset; label: MessageKey; swatch: string }[] = [
+  { value: 'white', label: 'settings.backgroundWhite', swatch: BACKGROUND_PRESETS.white },
+  { value: 'gray', label: 'settings.backgroundGray', swatch: BACKGROUND_PRESETS.gray },
+  {
+    value: 'custom',
+    label: 'settings.backgroundCustom',
+    swatch: 'conic-gradient(from 210deg, #ff9f0a, #ff375f, #bf5af2, #0a84ff, #32d74b, #ff9f0a)'
+  }
 ]
 
 export function SettingsApp(): JSX.Element {
@@ -48,6 +68,21 @@ export function SettingsApp(): JSX.Element {
     if (!settings) return
     document.documentElement.dataset.theme = settings.theme
   }, [settings?.theme])
+
+  /**
+   * The interface language.
+   *
+   * Resolved here rather than received from the main process: the settings
+   * payload already carries the preference, and the system language is a property
+   * of this renderer. Both sides run the same `resolveLanguage`, so a changed
+   * preference reaches the window with the same update that changes everything
+   * else — no extra IPC call, no chance of the two disagreeing.
+   */
+  const lang: Language = resolveLanguage(settings?.language, navigator.language)
+  const tr = useCallback(
+    (key: MessageKey, vars?: Record<string, string | number>) => t(lang, key, vars),
+    [lang]
+  )
 
   // The frame is measured rather than the window: the padding and the scrollbar
   // differ between platforms, and the frame is what the picture has to fill.
@@ -106,9 +141,9 @@ export function SettingsApp(): JSX.Element {
       const next = await window.flushot.updateSettings(changes)
       setSettings(next)
     } catch (error) {
-      showError(error instanceof Error ? error.message : 'Не удалось сохранить настройки')
+      showError(error instanceof Error ? error.message : t(lang, 'settings.saveFailed'))
     }
-  }, [showError])
+  }, [lang, showError])
 
   const pickFolder = useCallback(async () => {
     try {
@@ -116,34 +151,35 @@ export function SettingsApp(): JSX.Element {
       if (result.canceled || !result.path) return
       await patch({ saveDirectory: result.path })
     } catch (error) {
-      showError(error instanceof Error ? error.message : 'Не удалось выбрать папку')
+      showError(error instanceof Error ? error.message : t(lang, 'settings.folderPickFailed'))
     }
-  }, [patch, showError])
+  }, [lang, patch, showError])
 
   const openFolder = useCallback(async () => {
     try {
       await window.flushot.openSaveFolder()
     } catch (error) {
-      showError(error instanceof Error ? error.message : 'Не удалось открыть папку')
+      showError(error instanceof Error ? error.message : t(lang, 'settings.folderOpenFailed'))
     }
-  }, [showError])
+  }, [lang, showError])
 
   const reset = useCallback(async () => {
     try {
       const next = await window.flushot.resetSettings()
       setSettings(next)
     } catch (error) {
-      showError(error instanceof Error ? error.message : 'Не удалось сбросить настройки')
+      showError(error instanceof Error ? error.message : t(lang, 'settings.resetFailed'))
     }
-  }, [showError])
+  }, [lang, showError])
 
   const saveHotkey = useCallback(
     async (field: 'hotkey' | 'hotkeyFullscreen', hotkey: string) => {
       if (!isValidAccelerator(hotkey)) {
-        showError('Добавьте модификатор: Ctrl, Alt или Shift')
+        showError(tr('settings.hotkeyNeedsModifier'))
         return
       }
       const normalized = normalizeAccelerator(hotkey)
+      const combo = formatAccelerator(normalized)
 
       // The two actions need different combinations: Windows binds a global
       // shortcut to one handler only, so an identical pair would leave one of
@@ -155,7 +191,10 @@ export function SettingsApp(): JSX.Element {
       })
       if (clash) {
         showError(
-          `${formatAccelerator(normalized)} уже занята ${clash === 'hotkey' ? 'выделением области' : 'снимком всего экрана'} — выберите другое сочетание`
+          tr('settings.hotkeyClash', {
+            combo,
+            action: tr(clash === 'hotkey' ? 'settings.actionRegion' : 'settings.actionFullscreen')
+          })
         )
         return
       }
@@ -163,9 +202,9 @@ export function SettingsApp(): JSX.Element {
       // Ask the system before saving. A combination Windows reserves for itself
       // cannot be taken by any program, and the honest answer is to name the
       // owner instead of saving a value that will silently do nothing.
-      const reserved = reservedByWindows(normalized)
+      const reserved = reservedByWindows(normalized, lang)
       if (reserved) {
-        showError(`${formatAccelerator(normalized)} занята ${reserved.owner}. ${reserved.hint}`)
+        showError(tr('settings.hotkeyReserved', { combo, owner: reserved.owner, hint: reserved.hint }))
         return
       }
       try {
@@ -176,8 +215,12 @@ export function SettingsApp(): JSX.Element {
           // asked to choose their own key.
           showError(
             probe.hint
-              ? `${formatAccelerator(normalized)} занята ${probe.owner ?? 'другой программой'}. ${probe.hint}`
-              : `${formatAccelerator(normalized)} занята другой программой — закройте её или наберите другое сочетание.`
+              ? tr('settings.hotkeyTakenWithHint', {
+                  combo,
+                  owner: probe.owner ?? tr('settings.otherProgram'),
+                  hint: probe.hint
+                })
+              : tr('settings.hotkeyTaken', { combo })
           )
           return
         }
@@ -195,17 +238,17 @@ export function SettingsApp(): JSX.Element {
           // different problem from another app owning it.
           showError(
             next[field]
-              ? `${formatAccelerator(normalized)} занята другой программой — работает ${formatAccelerator(next[field])}`
-              : `${formatAccelerator(normalized)} не удалось назначить — выберите другое сочетание`
+              ? tr('settings.hotkeySwitched', { combo, active: formatAccelerator(next[field]) })
+              : tr('settings.hotkeyNotAssigned', { combo })
           )
         } else if (isIntrusiveShortcut(normalized)) {
-          showError(`Клавиша ${formatAccelerator(normalized)} перехватывается во всех программах — печатать её не получится`)
+          showError(tr('settings.hotkeyIntrusive', { combo }))
         }
       } catch (error) {
-        showError(error instanceof Error ? error.message : 'Не удалось изменить клавишу')
+        showError(error instanceof Error ? error.message : tr('settings.hotkeyChangeFailed'))
       }
     },
-    [settings?.hotkey, settings?.hotkeyFullscreen, showError]
+    [lang, settings?.hotkey, settings?.hotkeyFullscreen, showError, tr]
   )
 
   const customColor = useMemo(() => {
@@ -214,7 +257,7 @@ export function SettingsApp(): JSX.Element {
   }, [settings])
 
   if (!settings) {
-    return <div className="loading">Загрузка настроек…</div>
+    return <div className="loading">{t(lang, 'settings.loading')}</div>
   }
 
   return (
@@ -224,7 +267,7 @@ export function SettingsApp(): JSX.Element {
           <BrandMark size={16} className="logo" />
           <span>Flushot</span>
         </div>
-        <button className="icon-button" onClick={() => void window.flushot.closeWindow()} title="Закрыть (Esc)">
+        <button className="icon-button" onClick={() => void window.flushot.closeWindow()} title={tr('settings.close')}>
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <path d="m6 6 12 12M18 6 6 18" />
           </svg>
@@ -232,12 +275,12 @@ export function SettingsApp(): JSX.Element {
       </header>
 
       <main className="content">
-        <section className="preview" aria-label="Предпросмотр результата">
+        <section className="preview" aria-label={tr('settings.previewLabel')}>
           <div className="preview__frame" ref={previewFrame}>
-            {preview ? <img src={preview} alt="Предпросмотр снимка" /> : <div className="preview__skeleton" />}
+            {preview ? <img src={preview} alt={tr('settings.previewAlt')} /> : <div className="preview__skeleton" />}
           </div>
           <div className="preview__meta">
-            <span>Снимок + рамка</span>
+            <span>{tr('settings.previewCaption')}</span>
             <span className="dot" />
             <span>{formatSummary(settings.format, settings.jpegQuality)}</span>
           </div>
@@ -247,34 +290,34 @@ export function SettingsApp(): JSX.Element {
           {/* Colours live right under the preview: the effect of every swatch is
               visible immediately, without scrolling. */}
           <section className="panel">
-            <h2>Оформление</h2>
+            <h2>{tr('settings.sectionAppearance')}</h2>
 
-            <Row label="Тема" hint="Светлая по умолчанию">
+            <Row label={tr('settings.theme')} hint={tr('settings.themeHint')}>
               <Segmented<ThemeMode>
                 value={settings.theme}
                 options={[
-                  { value: 'light', label: 'Светлая' },
-                  { value: 'dark', label: 'Тёмная' }
+                  { value: 'light', label: tr('settings.themeLight') },
+                  { value: 'dark', label: tr('settings.themeDark') }
                 ]}
                 onChange={(theme) => void patch({ theme })}
               />
             </Row>
 
-            <Row label="Фон" hint="Свободное поле вокруг снимка">
+            <Row label={tr('settings.background')} hint={tr('settings.backgroundHint')}>
               <div className="swatches">
                 {BACKDROP_OPTIONS.map((option) => (
                   <button
                     key={option.value}
                     className={`swatch ${settings.backgroundPreset === option.value ? 'is-active' : ''}`}
                     onClick={() => void patch({ backgroundPreset: option.value })}
-                    title={option.label}
+                    title={tr(option.label)}
                     aria-pressed={settings.backgroundPreset === option.value}
                   >
                     <span className="swatch__color" style={{ background: option.swatch }} />
-                    <span className="swatch__label">{option.label}</span>
+                    <span className="swatch__label">{tr(option.label)}</span>
                   </button>
                 ))}
-                <label className={`swatch swatch--picker ${settings.backgroundPreset === 'custom' ? 'is-active' : ''}`} title="Выбрать цвет">
+                <label className={`swatch swatch--picker ${settings.backgroundPreset === 'custom' ? 'is-active' : ''}`} title={tr('settings.pickColor')}>
                   <input
                     type="color"
                     value={customColor}
@@ -284,7 +327,7 @@ export function SettingsApp(): JSX.Element {
                     }}
                   />
                   <span className="swatch__color swatch__color--custom" style={{ background: settings.backgroundColor }} />
-                  <span className="swatch__label">Палитра</span>
+                  <span className="swatch__label">{tr('settings.palette')}</span>
                 </label>
 
                 {settings.paletteColors.map((saved) => (
@@ -293,7 +336,7 @@ export function SettingsApp(): JSX.Element {
                     className={`swatch swatch--saved ${
                       settings.backgroundPreset === 'custom' && settings.backgroundColor === saved ? 'is-active' : ''
                     }`}
-                    title={`${saved} — правый клик, чтобы убрать`}
+                    title={tr('settings.paletteRemove', { color: saved })}
                     onClick={() => void patch({ backgroundPreset: 'custom', backgroundColor: saved })}
                     onContextMenu={(event) => {
                       event.preventDefault()
@@ -309,21 +352,22 @@ export function SettingsApp(): JSX.Element {
                 {settings.backgroundPreset === 'custom' && !settings.paletteColors.includes(settings.backgroundColor) && (
                   <button
                     className="swatch swatch--add"
-                    title="Сохранить этот цвет в палитру"
+                    title={tr('settings.paletteAdd')}
                     disabled={settings.paletteColors.length >= PALETTE_LIMIT}
                     onClick={() =>
                       void patch({ paletteColors: [...settings.paletteColors, settings.backgroundColor].slice(0, PALETTE_LIMIT) })
                     }
                   >
                     <span className="swatch__color swatch__color--add" />
-                    <span className="swatch__label">В палитру</span>
+                    <span className="swatch__label">{tr('settings.paletteAddShort')}</span>
                   </button>
                 )}
               </div>
             </Row>
 
             <Slider
-              label="Толщина рамки"
+              name="frameWidth"
+              label={tr('settings.frameWidth')}
               value={settings.frameWidth}
               min={SETTINGS_LIMITS.frameWidth.min}
               max={SETTINGS_LIMITS.frameWidth.max}
@@ -332,7 +376,8 @@ export function SettingsApp(): JSX.Element {
             />
 
             <Slider
-              label="Скругление углов"
+              name="cornerRadius"
+              label={tr('settings.cornerRadius')}
               value={settings.cornerRadius}
               min={SETTINGS_LIMITS.cornerRadius.min}
               max={SETTINGS_LIMITS.cornerRadius.max}
@@ -342,10 +387,11 @@ export function SettingsApp(): JSX.Element {
           </section>
 
           <section className="panel">
-            <h2>Снимок</h2>
+            <h2>{tr('settings.sectionCapture')}</h2>
 
-            <Row label="Горячая клавиша" hint="Выделение области — сочетание или одна клавиша">
+            <Row label={tr('settings.hotkey')} hint={tr('settings.hotkeyHint')}>
               <HotkeyRecorder
+                lang={lang}
                 value={settings.hotkey}
                 fallback={DEFAULT_HOTKEY}
                 fallbackLabel={formatAccelerator(DEFAULT_HOTKEY)}
@@ -353,8 +399,9 @@ export function SettingsApp(): JSX.Element {
               />
             </Row>
 
-            <Row label="Весь экран" hint="Сразу снимок всего экрана, без выделения">
+            <Row label={tr('settings.fullscreen')} hint={tr('settings.fullscreenHint')}>
               <HotkeyRecorder
+                lang={lang}
                 value={settings.hotkeyFullscreen}
                 fallback={DEFAULT_FULLSCREEN_HOTKEY}
                 fallbackLabel={formatAccelerator(DEFAULT_FULLSCREEN_HOTKEY)}
@@ -363,24 +410,25 @@ export function SettingsApp(): JSX.Element {
             </Row>
 
             <Row
-              label="После выделения"
-              hint={
+              label={tr('settings.afterRegion')}
+              hint={t(
+                lang,
                 settings.afterRegion === 'copy'
-                  ? 'Отпустили мышь — снимок уже в буфере, вставляйте через Ctrl+V. Shift при отпускании открывает пометки'
-                  : 'Снимок открывается для пометок; скопировать можно по Ctrl+C'
-              }
+                  ? 'settings.afterRegionCopyHint'
+                  : 'settings.afterRegionEditHint'
+              )}
             >
               <Segmented<AfterRegion>
                 value={settings.afterRegion}
                 options={[
-                  { value: 'copy', label: 'Сразу в буфер' },
-                  { value: 'edit', label: 'Открывать' }
+                  { value: 'copy', label: tr('settings.afterRegionCopy') },
+                  { value: 'edit', label: tr('settings.afterRegionEdit') }
                 ]}
                 onChange={(afterRegion) => void patch({ afterRegion })}
               />
             </Row>
 
-            <Row label="Запускать с Windows" hint="Flushot стартует в трее, окно не открывается">
+            <Row label={tr('settings.launchAtLogin')} hint={tr('settings.launchAtLoginHint')}>
               <Toggle
                 checked={settings.launchAtLogin}
                 onChange={(launchAtLogin) => void patch({ launchAtLogin })}
@@ -389,14 +437,15 @@ export function SettingsApp(): JSX.Element {
           </section>
 
           <section className="panel">
-            <h2>Тень</h2>
+            <h2>{tr('settings.sectionShadow')}</h2>
 
-            <Row label="Тень вокруг снимка">
+            <Row label={tr('settings.shadow')}>
               <Toggle checked={settings.shadowEnabled} onChange={(shadowEnabled) => void patch({ shadowEnabled })} />
             </Row>
 
             <Slider
-              label="Интенсивность"
+              name="shadowIntensity"
+              label={tr('settings.shadowIntensity')}
               value={settings.shadowIntensity}
               min={SETTINGS_LIMITS.shadowIntensity.min}
               max={SETTINGS_LIMITS.shadowIntensity.max}
@@ -405,7 +454,8 @@ export function SettingsApp(): JSX.Element {
               onChange={(shadowIntensity) => void patch({ shadowIntensity })}
             />
             <Slider
-              label="Радиус размытия"
+              name="shadowBlur"
+              label={tr('settings.shadowBlur')}
               value={settings.shadowBlur}
               min={SETTINGS_LIMITS.shadowBlur.min}
               max={SETTINGS_LIMITS.shadowBlur.max}
@@ -416,31 +466,31 @@ export function SettingsApp(): JSX.Element {
           </section>
 
           <section className="panel">
-            <h2>Сохранение</h2>
+            <h2>{tr('settings.sectionSaving')}</h2>
 
-            <Row label="Папка" hint="Нажмите на путь, чтобы открыть папку">
+            <Row label={tr('settings.folder')} hint={tr('settings.folderHint')}>
               <div className="folder">
-                <button className="folder__path" onClick={() => void openFolder()} title={`Открыть ${settings.saveDirectory}`}>
+                <button className="folder__path" onClick={() => void openFolder()} title={tr('settings.folderOpen', { path: settings.saveDirectory })}>
                   {settings.saveDirectory}
                 </button>
                 <button className="button" onClick={() => void pickFolder()}>
-                  Изменить…
+                  {tr('settings.folderChange')}
                 </button>
               </div>
             </Row>
 
-            <Row label="После снимка" hint="Как поступать с готовым изображением">
+            <Row label={tr('settings.afterShot')} hint={tr('settings.afterShotHint')}>
               <Segmented<SaveMode>
                 value={settings.saveMode}
                 options={[
-                  { value: 'folder', label: 'Сохранять в папку' },
-                  { value: 'ask', label: 'Спрашивать' }
+                  { value: 'folder', label: tr('settings.saveToFolder') },
+                  { value: 'ask', label: tr('settings.askWhere') }
                 ]}
                 onChange={(saveMode) => void patch({ saveMode })}
               />
             </Row>
 
-            <Row label="Формат">
+            <Row label={tr('settings.format')}>
               <Segmented<ImageFormat>
                 value={settings.format}
                 options={[
@@ -454,7 +504,8 @@ export function SettingsApp(): JSX.Element {
 
             {settings.format !== 'png' && (
               <Slider
-                label={settings.format === 'webp' ? 'Качество WebP' : 'Качество JPEG'}
+                name="quality"
+                label={tr(settings.format === 'webp' ? 'settings.qualityWebp' : 'settings.qualityJpeg')}
                 value={settings.jpegQuality}
                 min={SETTINGS_LIMITS.jpegQuality.min}
                 max={SETTINGS_LIMITS.jpegQuality.max}
@@ -464,18 +515,38 @@ export function SettingsApp(): JSX.Element {
             )}
           </section>
 
+          {/* Language sits after the settings that change how a screenshot looks,
+              because it changes nothing about the picture — only this window and
+              the overlay. Anyone who needs it is looking for it by name. */}
+          <section className="panel">
+            <h2>{tr('settings.sectionLanguage')}</h2>
+
+            <Row label={tr('settings.language')} hint={tr('settings.languageHint')}>
+              <div className="segmented segmented--wrap" role="group">
+                {(['auto', ...LANGUAGES] as LanguagePreference[]).map((option) => (
+                  <button
+                    key={option}
+                    className={`segmented__item ${settings.language === option ? 'is-active' : ''}`}
+                    aria-pressed={settings.language === option}
+                    onClick={() => void patch({ language: option })}
+                  >
+                    {option === 'auto' ? tr('settings.languageAuto') : LANGUAGE_NAMES[option]}
+                  </button>
+                ))}
+              </div>
+            </Row>
+          </section>
+
           {/* Deliberately at the very end: reaching it requires scrolling past
               every setting, so it cannot be hit while changing colours. */}
           <section className="panel panel--reset">
             <div className="reset">
               <div className="reset__text">
-                <span className="reset__title">Сбросить все настройки</span>
-                <span className="reset__hint">
-                  Вернуть оформление, тень, сохранение и горячую клавишу к значениям по умолчанию
-                </span>
+                <span className="reset__title">{tr('settings.resetTitle')}</span>
+                <span className="reset__hint">{tr('settings.resetHint')}</span>
               </div>
               <button className="button button--danger" onClick={() => void reset()}>
-                Сбросить
+                {tr('settings.resetButton')}
               </button>
             </div>
           </section>
@@ -485,7 +556,7 @@ export function SettingsApp(): JSX.Element {
       <footer className="footer">
         <div className="footer__hint">
           <kbd>{formatAccelerator(settings.hotkey)}</kbd>
-          <span>вызов выделения</span>
+          <span>{tr('settings.footerHint')}</span>
         </div>
         <span className="version">v{info?.version ?? '1.0.0'}</span>
         {status && (
@@ -503,11 +574,13 @@ export function SettingsApp(): JSX.Element {
  * reset button restores the default shortcut.
  */
 function HotkeyRecorder({
+  lang,
   value,
   fallback,
   fallbackLabel,
   onCommit
 }: {
+  lang: Language
   value: string
   /** Combination the reset button restores. */
   fallback: string
@@ -554,12 +627,20 @@ function HotkeyRecorder({
       <button
         className={`hotkey__field ${recording ? 'is-recording' : ''}`}
         onClick={() => setRecording((current) => !current)}
-        title={recording ? 'Нажмите сочетание клавиш, Esc — отмена' : 'Нажмите, чтобы записать сочетание'}
+        title={t(lang, recording ? 'settings.recordingTitle' : 'settings.recordTitle')}
       >
-        {recording ? <span className="hotkey__prompt">Нажмите сочетание…</span> : <kbd>{formatAccelerator(value)}</kbd>}
+        {recording ? (
+          <span className="hotkey__prompt">{t(lang, 'settings.recordingPrompt')}</span>
+        ) : (
+          <kbd>{formatAccelerator(value)}</kbd>
+        )}
       </button>
-      <button className="button button--ghost" onClick={() => onCommit(fallback)} title={`Вернуть ${fallbackLabel}`}>
-        Сброс
+      <button
+        className="button button--ghost"
+        onClick={() => onCommit(fallback)}
+        title={t(lang, 'settings.resetHotkey', { combo: fallbackLabel })}
+      >
+        {t(lang, 'settings.resetHotkeyShort')}
       </button>
     </div>
   )
@@ -632,6 +713,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (value: boo
 }
 
 function Slider({
+  name,
   label,
   value,
   min,
@@ -640,6 +722,14 @@ function Slider({
   disabled,
   onChange
 }: {
+  /**
+   * Stable name for the slider itself.
+   *
+   * The label is interface text and therefore translated, so anything that has
+   * to find this control — the self-test, the screenshot script — cannot look
+   * for the word. The name does not change with the language.
+   */
+  name: string
   label: string
   value: number
   min: number
@@ -649,7 +739,7 @@ function Slider({
   onChange: (value: number) => void
 }): JSX.Element {
   return (
-    <div className={`slider ${disabled ? 'is-disabled' : ''}`}>
+    <div className={`slider ${disabled ? 'is-disabled' : ''}`} data-slider={name}>
       <div className="slider__head">
         <span className="row__label">{label}</span>
         <span className="slider__value">

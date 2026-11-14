@@ -1,5 +1,6 @@
 import { Menu, Tray, app, nativeTheme } from 'electron'
 import { formatAccelerator } from '../../shared/hotkey'
+import { tr } from '../i18n'
 import { HOTKEY } from '../../shared/settings'
 import { getTrayIcon } from './icon'
 
@@ -34,7 +35,7 @@ export async function createTray(actions: TrayActions): Promise<Tray | null> {
     followTheme()
     return tray
   } catch (error) {
-    console.error('Не удалось создать значок в трее', error)
+    console.error(tr('tray.createFailed'), error)
     return null
   }
 }
@@ -58,11 +59,11 @@ function followTheme(): void {
 
 /** Empty accelerator means "nothing could be bound", which must not read as a key. */
 function hotkeyLabel(value: string | undefined): string {
-  return value ? formatAccelerator(value) : 'не назначена'
+  return value ? formatAccelerator(value) : tr('tray.noHotkey')
 }
 
 function tooltip(value: string | undefined): string {
-  return `Flushot — снимок экрана (${hotkeyLabel(value)})`
+  return tr('tray.tooltip', { hotkey: hotkeyLabel(value) })
 }
 
 export function rebuildMenu(actions: TrayActions): void {
@@ -71,23 +72,23 @@ export function rebuildMenu(actions: TrayActions): void {
   tray.setToolTip(tooltip(actions.hotkey))
   const menu = Menu.buildFromTemplate([
     {
-      label: 'Сделать снимок',
+      label: tr('tray.capture'),
       // An empty accelerator would show a blank hint and do nothing, so it is
       // dropped rather than rendered as an empty key.
       accelerator: hotkey || undefined,
       click: actions.capture
     },
     {
-      label: 'Снимок всего экрана',
+      label: tr('tray.fullscreen'),
       accelerator: actions.hotkeyFullscreen || undefined,
       click: actions.captureFullscreen
     },
     { type: 'separator' },
-    { label: 'Настройки…', click: actions.openSettings },
-    { label: 'Открыть папку сохранения', click: actions.openFolder },
+    { label: tr('tray.settings'), click: actions.openSettings },
+    { label: tr('tray.openFolder'), click: actions.openFolder },
     { type: 'separator' },
     { label: `Flushot ${app.getVersion()}`, enabled: false },
-    { label: 'Выход', click: actions.quit }
+    { label: tr('tray.quit'), click: actions.quit }
   ])
   tray.setContextMenu(menu)
 }

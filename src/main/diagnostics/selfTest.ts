@@ -18,6 +18,7 @@ import { ocrSampleSvg } from '../ocr/sample'
 import type { SettingsStore } from '../settings/SettingsStore'
 import { preloadPath, rendererUrl } from '../windows/paths'
 import { virtualBounds, virtualScale } from '../../shared/virtualScreen'
+import { tr } from '../i18n'
 
 interface SelfTestReport {
   ok: boolean
@@ -49,6 +50,8 @@ interface SelfTestReport {
   ui: { settings: string[]; overlay: string[] }
   facts: {
     settings: Record<string, string>
+    /** Language switch: heading before, in English, and after switching back. */
+    language: Record<string, string>
     webp: Record<string, string>
     compact: Record<string, string>
     hotkey: Record<string, string>
@@ -262,6 +265,11 @@ async function inspectWindow(
         webpQuality: String(window.__webpQuality || ''),
         webpRestored: String(window.__webpRestored || ''),
         firstPanel: ((document.querySelector('.panel h2') || {}).textContent || '').trim(),
+        // The three headings the language check reads: before, in English, and
+        // after switching back to automatic.
+        langBefore: String(window.__langBefore || ''),
+        langEnglish: String(window.__langEnglish || ''),
+        langRestored: String(window.__langRestored || ''),
         // All colour buttons must share one width and sit on two even columns.
         swatchAligned: String(
           (() => {
@@ -403,9 +411,8 @@ const WEBP_SCRIPT = `(async () => {
   webp.click();
   await pause(600);
   window.__webpLabel = caption();
-  const quality = Array.from(document.querySelectorAll('.row__label')).find((el) =>
-    el.textContent.includes('Качество')
-  );
+  // Found by name, not by word: the row's label is translated.
+  const quality = document.querySelector('[data-slider="quality"] .row__label');
   window.__webpQuality = (quality && quality.textContent.trim()) || '';
 
   // Put the format back: the profile is shared with every later check.
@@ -416,7 +423,46 @@ const WEBP_SCRIPT = `(async () => {
   return true
 })()`
 
-/** Clicking the recorder and pressing Ctrl+Alt+P must save a new shortcut. */
+/**
+ * Switching the interface language must reach the window through the real IPC.
+ *
+ * The headings are read from the language panel itself: "Язык" becomes
+ * "Language", and the theme segments beside it change too, which is what proves
+ * the whole window re-rendered rather than one label. Switching back at the end
+ * is not politeness — this profile is shared with every later check, and they
+ * read the Russian headings.
+ */
+const LANGUAGE_SCRIPT = `(async () => {
+  const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const panel = document.querySelector('.segmented--wrap');
+  const heading = () => {
+    const section = panel && panel.closest('.panel');
+    const node = section && section.querySelector('h2');
+    return (node && node.textContent.trim()) || '';
+  };
+  const themes = () =>
+    Array.from(document.querySelectorAll('.segmented:not(.segmented--wrap) .segmented__item'))
+      .slice(0, 2)
+      .map((el) => el.textContent.trim())
+      .join('/');
+  if (!panel) return false;
+  const items = Array.from(panel.querySelectorAll('.segmented__item'));
+  // auto, Русский, English — the two languages are written in themselves, which
+  // is how the row is built.
+  const auto = items[0];
+  const english = items[items.length - 1];
+  if (!auto || !english) return false;
+
+  window.__langBefore = heading() + '|' + themes();
+  english.click();
+  await pause(900);
+  window.__langEnglish = heading() + '|' + themes();
+  auto.click();
+  await pause(900);
+  window.__langRestored = heading() + '|' + themes();
+  return true
+})()`
+
 const HOTKEY_SCRIPT = `(async () => {
   const field = document.querySelector('.hotkey__field');
   if (!field) return false;
@@ -1052,7 +1098,7 @@ async function runSeamCheck(
         box.height <= viewport.clientHeight + 1;
 
       // The + button first: it is the plainest path a user takes.
-      const plus = document.querySelector('[aria-label="Увеличить масштаб"]');
+      const plus = document.querySelector('[data-zoom="in"]');
       if (plus) {
         plus.click();
         await pause(150);
@@ -1151,7 +1197,7 @@ async function runSeamCheck(
     // Back to the fitted view, so the saved screenshot shows the whole picture.
     await overlay.webContents.executeJavaScript(`(async () => {
       const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-      const fitButton = document.querySelector('[aria-label="Вписать в экран"]');
+      const fitButton = document.querySelector('[data-zoom="fit"]');
       if (fitButton) fitButton.click();
       await pause(350);
       return true
@@ -1870,7 +1916,18 @@ export async function runSelfTest(session?: CaptureSession, settingsStore?: Sett
     displays: [],
     canvas: null,
     ui: { settings: [], overlay: [] },
-    facts: { settings: {}, webp: {}, compact: {}, hotkey: {}, overlay: {}, overlayCopy: {}, overlayGlobalCopy: {}, annotate: {}, color: {} },
+    facts: {
+      settings: {},
+      language: {},
+      webp: {},
+      compact: {},
+      hotkey: {},
+      overlay: {},
+      overlayCopy: {},
+      overlayGlobalCopy: {},
+      annotate: {},
+      color: {}
+    },
     files: [],
     clipboard: 'not checked',
     errors: []
@@ -1969,6 +2026,14 @@ export async function runSelfTest(session?: CaptureSession, settingsStore?: Sett
       { width: 520, height: 820 },
       path.join(outputDir, 'ui-settings-webp.png'),
       WEBP_SCRIPT
+    )
+    // Switching the language and switching back: the row writes through IPC and
+    // the window re-renders from the saved value, so this is the whole path.
+    const languagePage = await inspectWindow(
+      settingsUrl.kind === 'url' ? settingsUrl.value : `file:///${settingsUrl.value.replace(/\\/g, '/')}`,
+      { width: 520, height: 820 },
+      path.join(outputDir, 'ui-settings-language.png'),
+      LANGUAGE_SCRIPT
     )
     // Recording a custom shortcut must reach the settings store.
     const hotkeyPage = await inspectWindow(
@@ -2136,6 +2201,7 @@ export async function runSelfTest(session?: CaptureSession, settingsStore?: Sett
     report.ui = { settings: settingsPage.labels, overlay: overlayPage.labels }
     report.facts = {
       settings: settingsPage.facts,
+      language: languagePage.facts,
       webp: webpPage.facts,
       compact: compactPage.facts,
       hotkey: hotkeyPage.facts,
@@ -2158,10 +2224,14 @@ export async function runSelfTest(session?: CaptureSession, settingsStore?: Sett
 
     // The overlay must have drawn a 600×400 selection with its size badge and
     // toolbar, and the settings window must show its preview and panels.
+    // These three look for visible words, so they ask for the words the interface
+    // is currently using instead of the Russian ones: the self-test runs in the
+    // same language as the app, and a hard-coded label would fail on an English
+    // machine while the app itself was fine.
     const overlayOk =
       overlayPage.facts.badge.replace(/\s/g, '').startsWith('600×400') &&
       overlayPage.facts.toolbar === 'visible' &&
-      overlayPage.labels.includes('Создать')
+      overlayPage.labels.includes(tr('overlay.create'))
     const settingsOk =
       settingsPage.facts.panels === '5' &&
       settingsPage.facts.overflowX === 'false' &&
@@ -2172,10 +2242,20 @@ export async function runSelfTest(session?: CaptureSession, settingsStore?: Sett
       settingsPage.facts.previewSticky === 'false' &&
       // The default format is PNG, so the caption must say so and not "JPEG".
       settingsPage.facts.formatLabel === 'PNG' &&
-      settingsPage.facts.firstPanel === 'Оформление' &&
+      settingsPage.facts.firstPanel === tr('settings.sectionAppearance') &&
       settingsPage.facts.swatchAligned === 'true' &&
-      settingsPage.labels.includes('Изменить…')
+      settingsPage.labels.includes(tr('settings.folderChange'))
     const compactOk = compactPage.facts.overflowX === 'false' && compactPage.facts.clipped === '0'
+    // The window has to actually change language, and change back: a saved value
+    // that the renderer ignored would look identical to a working switch.
+    // `heading|theme labels`: English names in both halves is what proves the
+    // whole window re-rendered, and an identical pair afterwards proves the
+    // switch is reversible.
+    const languageOk =
+      languagePage.facts.langEnglish === 'Language|Light/Dark' &&
+      languagePage.facts.langEnglish !== languagePage.facts.langBefore &&
+      languagePage.facts.langRestored === languagePage.facts.langBefore
+    report.facts.language = { ...languagePage.facts, ok: String(languageOk) }
     // Choosing WebP must reach the caption, the quality row and back again.
     const webpOk =
       webpPage.facts.webpLabel.startsWith('WebP ·') &&
@@ -2258,6 +2338,7 @@ export async function runSelfTest(session?: CaptureSession, settingsStore?: Sett
       (report.ocr?.ok ?? false) &&
       report.perf.ok &&
       webpOk &&
+      languageOk &&
       // Reported, not gated: a restricted token can deny registry writes to
       // child processes, which says nothing about the app itself.
       report.autostart !== undefined &&

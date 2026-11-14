@@ -14,6 +14,8 @@
  * rendered text to prove nothing overlaps or spills out of its column.
  */
 
+import { sceneStrings, type SceneLanguage } from '../../shared/demoSceneText'
+
 const W = 1280
 const H = 720
 
@@ -52,13 +54,14 @@ function lineBar(x: number, y: number, width: number, height: number, fill: stri
   return `<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="${radius}" fill="${fill}"/>`
 }
 
+/** Shape of the sidebar; the words come from the language table. */
 const SIDEBAR_ITEMS = [
-  { label: 'Обзор', icon: 'grid' },
-  { label: 'Документы', icon: 'file' },
-  { label: 'Отчёты', icon: 'chart', active: true },
-  { label: 'Команда', icon: 'people' },
-  { label: 'Клиенты', icon: 'user' },
-  { label: 'Настройки', icon: 'gear' }
+  { icon: 'grid' },
+  { icon: 'file' },
+  { icon: 'chart', active: true },
+  { icon: 'people' },
+  { icon: 'user' },
+  { icon: 'gear' }
 ]
 
 function sidebarIcon(kind: string, x: number, y: number, color: string): string {
@@ -79,13 +82,6 @@ function sidebarIcon(kind: string, x: number, y: number, color: string): string 
   }
 }
 
-const TABLE_ROWS = [
-  { name: 'Выручка, млн ₽', plan: '42,0', fact: '45,8', delta: '+9 %', up: true },
-  { name: 'Новые клиенты', plan: '120', fact: '134', delta: '+12 %', up: true },
-  { name: 'Средний чек, ₽', plan: '18 400', fact: '17 900', delta: '−3 %', up: false },
-  { name: 'Отток, %', plan: '3,0', fact: '2,1', delta: '−0,9', up: true }
-]
-
 const BARS = [
   { label: 'Q4', height: 46 },
   { label: 'Q1', height: 64 },
@@ -93,7 +89,8 @@ const BARS = [
   { label: 'Q3', height: 104 }
 ]
 
-export function demoSceneSvg(): string {
+export function demoSceneSvg(lang: SceneLanguage = 'ru'): string {
+  const strings = sceneStrings(lang)
   const winX = 80
   const winY = 44
   const winW = 1120
@@ -122,7 +119,7 @@ export function demoSceneSvg(): string {
     size: 12.5,
     weight: 500,
     fill: '#3f4451',
-    content: 'Квартальный отчёт — Q3 2026'
+    content: strings.title
   })
 
   // The caption buttons, at the size Windows draws them: 46 px wide and the full
@@ -152,7 +149,7 @@ export function demoSceneSvg(): string {
       size: 13.5,
       weight: item.active ? 600 : 400,
       fill: item.active ? '#1d4ed8' : '#4b5563',
-      content: item.label
+      content: strings.sidebar[index]
     })
   })
 
@@ -167,28 +164,23 @@ export function demoSceneSvg(): string {
     weight: 700,
     fill: '#4338ca',
     anchor: 'middle',
-    content: 'АС'
+    content: strings.initials
   })
-  svg += text({ x: winX + 54, y: boxY + 22, size: 12, weight: 600, fill: '#374151', content: 'А. Смирнов' })
-  svg += text({ x: winX + 54, y: boxY + 40, size: 11, fill: '#8a93a3', content: 'Аналитик' })
+  svg += text({ x: winX + 54, y: boxY + 22, size: 12, weight: 600, fill: '#374151', content: strings.person })
+  svg += text({ x: winX + 54, y: boxY + 40, size: 11, fill: '#8a93a3', content: strings.role })
   svg += lineBar(winX + 24, boxY + 56, sideW - 48, 8, '#dde2ea', 4)
 
   // Main column
-  svg += text({ x: contentX, y: winY + 108, size: 26, weight: 700, fill: '#111827', content: 'Квартальный отчёт' })
+  svg += text({ x: contentX, y: winY + 108, size: 26, weight: 700, fill: '#111827', content: strings.heading })
   svg += text({
     x: contentX,
     y: winY + 132,
     size: 12.5,
     fill: '#8a93a3',
-    content: 'Июль — сентябрь 2026 · обновлено 12 октября'
+    content: strings.subtitle
   })
 
-  const paragraph = [
-    'Выручка выросла на 18 % относительно прошлого квартала. Рост дали',
-    'новые клиенты в среднем сегменте: 134 договора вместо плановых 120.',
-    'Отток снизился до 2,1 % — лучший показатель за год.'
-  ]
-  paragraph.forEach((line, index) => {
+  strings.paragraph.forEach((line, index) => {
     svg += text({ x: contentX, y: winY + 166 + index * 22, size: 13, fill: '#4b5563', content: line })
   })
 
@@ -202,7 +194,7 @@ export function demoSceneSvg(): string {
     weight: 600,
     fill: '#ffffff',
     anchor: 'middle',
-    content: 'Скачать PDF'
+    content: strings.download
   })
   svg += `<rect x="${contentX + 144}" y="${btnY}" width="122" height="34" rx="8" fill="#ffffff" stroke="#d8dce4"/>`
   svg += text({
@@ -212,7 +204,7 @@ export function demoSceneSvg(): string {
     weight: 500,
     fill: '#374151',
     anchor: 'middle',
-    content: 'Поделиться'
+    content: strings.share
   })
 
   // Chart card on the right of the header area
@@ -221,8 +213,8 @@ export function demoSceneSvg(): string {
   const chartW = contentRight - chartX
   const chartH = 188
   svg += `<rect x="${chartX}" y="${chartY}" width="${chartW}" height="${chartH}" rx="12" fill="#fbfcfe" stroke="#e7e9ee"/>`
-  svg += text({ x: chartX + 18, y: chartY + 28, size: 12.5, weight: 600, fill: '#374151', content: 'Выручка по кварталам' })
-  svg += text({ x: chartX + chartW - 18, y: chartY + 28, size: 12, fill: '#8a93a3', anchor: 'end', content: 'млн ₽' })
+  svg += text({ x: chartX + 18, y: chartY + 28, size: 12.5, weight: 600, fill: '#374151', content: strings.chartTitle })
+  svg += text({ x: chartX + chartW - 18, y: chartY + 28, size: 12, fill: '#8a93a3', anchor: 'end', content: strings.chartUnit })
 
   const barBase = chartY + chartH - 34
   const barW = 34
@@ -243,13 +235,13 @@ export function demoSceneSvg(): string {
   const colFact = 850
   const colDelta = contentRight
 
-  svg += text({ x: colName, y: tableY, size: 11.5, weight: 600, fill: '#8a93a3', content: 'ПОКАЗАТЕЛЬ' })
-  svg += text({ x: colPlan, y: tableY, size: 11.5, weight: 600, fill: '#8a93a3', anchor: 'end', content: 'ПЛАН' })
-  svg += text({ x: colFact, y: tableY, size: 11.5, weight: 600, fill: '#8a93a3', anchor: 'end', content: 'ФАКТ' })
+  svg += text({ x: colName, y: tableY, size: 11.5, weight: 600, fill: '#8a93a3', content: strings.indicator })
+  svg += text({ x: colPlan, y: tableY, size: 11.5, weight: 600, fill: '#8a93a3', anchor: 'end', content: strings.plan })
+  svg += text({ x: colFact, y: tableY, size: 11.5, weight: 600, fill: '#8a93a3', anchor: 'end', content: strings.fact })
   svg += text({ x: colDelta, y: tableY, size: 11.5, weight: 600, fill: '#8a93a3', anchor: 'end', content: 'Δ' })
   svg += `<rect x="${contentX}" y="${tableY + 10}" width="${contentRight - contentX}" height="1" fill="#e7e9ee"/>`
 
-  TABLE_ROWS.forEach((row, index) => {
+  strings.rows.forEach((row, index) => {
     const y = tableY + 40 + index * 38
     if (index > 0) {
       svg += `<rect x="${contentX}" y="${y - 25}" width="${contentRight - contentX}" height="1" fill="#f0f2f6"/>`
@@ -272,9 +264,9 @@ export function demoSceneSvg(): string {
   const statusY = winY + winH - 34
   svg += `<rect x="${winX}" y="${statusY}" width="${winW}" height="34" fill="#fafbfc"/>`
   svg += `<rect x="${winX}" y="${statusY}" width="${winW}" height="1" fill="#e7e9ee"/>`
-  svg += text({ x: contentX, y: statusY + 21, size: 11.5, fill: '#8a93a3', content: 'Все изменения сохранены' })
-  svg += circleAvatar(winX + winW - 120, statusY + 17, '#c7d2fe', '#4338ca', 'АС', 11)
-  svg += circleAvatar(winX + winW - 98, statusY + 17, '#bbf7d0', '#15803d', 'МК', 11)
+  svg += text({ x: contentX, y: statusY + 21, size: 11.5, fill: '#8a93a3', content: strings.saved })
+  svg += circleAvatar(winX + winW - 120, statusY + 17, '#c7d2fe', '#4338ca', strings.others[0], 11)
+  svg += circleAvatar(winX + winW - 98, statusY + 17, '#bbf7d0', '#15803d', strings.others[1], 11)
   svg += text({ x: winX + winW - 80, y: statusY + 21, size: 11.5, fill: '#8a93a3', content: '+3' })
   svg += `</g>`
 
@@ -316,6 +308,6 @@ function circleAvatar(cx: number, cy: number, background: string, color: string,
 }
 
 /** Ready-to-use `data:` URL for an `<img src>`. */
-export function demoSceneUrl(): string {
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(demoSceneSvg())}`
+export function demoSceneUrl(lang: SceneLanguage = 'ru'): string {
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(demoSceneSvg(lang))}`
 }

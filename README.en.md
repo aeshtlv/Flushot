@@ -13,7 +13,11 @@ paste, in a neat frame with a soft shadow and rounded corners, at full resolutio
 
 | Region selection | Annotations | Result |
 |---|---|---|
-| ![Region selection](docs/ui-overlay.png) | ![Annotations](docs/ui-annotate.png) | ![Framed card](docs/hero-framed.png) |
+| ![Region selection](docs/en/ui-overlay.png) | ![Annotations](docs/en/ui-annotate.png) | ![Framed card](docs/en/hero-framed.png) |
+
+| Recognised text | Settings | Two monitors |
+|---|---|---|
+| ![Text recognition](docs/en/ui-ocr.png) | ![Settings window](docs/en/ui-settings.png) | ![Screenshot across two monitors](docs/en/multi-monitor.png) |
 
 ## Features
 
@@ -37,6 +41,9 @@ paste, in a neat frame with a soft shadow and rounded corners, at full resolutio
   resolution. Correct at Windows scaling 100, 125, 150 and 200 %.
 - **Tray and hotkeys.** Separate hotkeys for a region and for the whole screen, run at login, tray icon
   that follows the taskbar theme.
+- **English and Russian.** The whole interface — settings, overlay, annotation bar, tray menu, messages —
+  is available in both. "Same as the system" follows the Windows language, and a language the program
+  does not know falls back to English.
 
 ## Download
 
@@ -67,7 +74,7 @@ npm run dev
 
 ```bash
 npm run typecheck    # tsc for main and renderer
-npm test             # 360 tests in 24 files
+npm test             # 380 tests in 25 files
 npm run build        # production build in out/
 npm run dist         # installer and portable build in release/
 npm run self-test    # end-to-end check on a live system

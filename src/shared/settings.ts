@@ -1,4 +1,5 @@
 import { DEFAULT_FULLSCREEN_HOTKEY, FALLBACK_FULLSCREEN_HOTKEY, DEFAULT_HOTKEY, isValidAccelerator, normalizeAccelerator } from './hotkey'
+import type { LanguagePreference } from './i18n'
 import type { AfterRegion, ImageFormat, ScreenshotSettings } from './types'
 
 /** Default width of the background frame drawn around the screenshot (px). */
@@ -67,7 +68,8 @@ export function defaultSettings(picturesDirectory: string): ScreenshotSettings {
     hotkey: DEFAULT_HOTKEY,
     hotkeyFullscreen: DEFAULT_FULLSCREEN_HOTKEY,
     launchAtLogin: false,
-    afterRegion: DEFAULT_AFTER_REGION
+    afterRegion: DEFAULT_AFTER_REGION,
+    language: 'auto'
   }
 }
 
@@ -163,7 +165,12 @@ export function sanitizeSettings(input: unknown, picturesDirectory: string): Scr
     // nothing. The second one falls back to its default instead.
     hotkeyFullscreen: sanitizeFullscreenHotkey(raw.hotkeyFullscreen, raw.hotkey, defaults),
     launchAtLogin: typeof raw.launchAtLogin === 'boolean' ? raw.launchAtLogin : defaults.launchAtLogin,
-    afterRegion: oneOf<AfterRegion>(raw.afterRegion, ['copy', 'edit'] as const, defaults.afterRegion)
+    afterRegion: oneOf<AfterRegion>(raw.afterRegion, ['copy', 'edit'] as const, defaults.afterRegion),
+    // `auto` is deliberately the fallback and not the system language: a saved
+    // file that says nothing about language belongs to someone who has never
+    // been offered the choice, and they should get their own language once the
+    // app can resolve it.
+    language: oneOf<LanguagePreference>(raw.language, ['auto', 'ru', 'en'] as const, defaults.language)
   }
 }
 

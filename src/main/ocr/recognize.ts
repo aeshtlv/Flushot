@@ -21,6 +21,7 @@ import type { OcrOutcome } from '../../shared/types'
 import { mergeReadings, type MergedReading, type OcrBox } from './merge'
 import { ocrLanguages, recognizeRaw, type OcrRawResult } from './worker'
 import type { OcrLine } from '../../shared/types'
+import { tr } from '../i18n'
 
 /**
  * How much to enlarge before recognition.
@@ -180,7 +181,7 @@ export async function recognizeCardPicture(
   try {
     const langs = await ocrLanguages()
     if (!langs || langs.length === 0) {
-      return { ok: false, lines: [], error: 'Распознавание текста недоступно на этом компьютере' }
+      return { ok: false, lines: [], error: tr('ocr.unavailable') }
     }
     const engines = langs.slice(0, MAX_ENGINES)
 
@@ -204,7 +205,7 @@ export async function recognizeCardPicture(
           }))
         )
       } catch (error) {
-        lastError = error instanceof Error ? error.message : 'Не удалось подготовить снимок к распознаванию'
+        lastError = error instanceof Error ? error.message : tr('ocr.prepareFailed')
       } finally {
         // The file has been read; removing it now keeps the user's screen on disk for
         // the shortest time possible rather than for the whole recognition.
@@ -217,7 +218,7 @@ export async function recognizeCardPicture(
       return {
         ok: false,
         lines: [],
-        error: lastError ?? 'Распознать текст не удалось'
+        error: lastError ?? tr('ocr.failed')
       }
     }
 
@@ -302,7 +303,7 @@ export async function recognizePictureFile(
 ): Promise<OcrOutcome> {
   const langs = await ocrLanguages()
   if (!langs || langs.length === 0) {
-    return { ok: false, lines: [], error: 'Распознавание текста недоступно на этом компьютере' }
+    return { ok: false, lines: [], error: tr('ocr.unavailable') }
   }
 
   const raw = await recognizeRaw(file, langs.slice(0, MAX_ENGINES))

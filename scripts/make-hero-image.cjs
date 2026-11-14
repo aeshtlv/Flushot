@@ -21,7 +21,9 @@ const sharp = require('sharp')
 
 const ROOT = path.join(__dirname, '..')
 const BUILD = path.join(ROOT, '.tmp', 'imaging-build')
-const OUT = path.join(ROOT, 'docs')
+/** `--lang=en` builds the English hero, which the English page shows. */
+const LANG = process.argv.includes('--lang=en') ? 'en' : 'ru'
+const OUT = LANG === 'en' ? path.join(ROOT, 'docs', 'en') : path.join(ROOT, 'docs')
 
 /** Compile only what the compositor needs. Pulling in main/index.ts would drag
  *  Electron into a plain Node process. */
@@ -69,20 +71,15 @@ function loadImaging() {
 
 async function main() {
   await fs.rm(BUILD, { recursive: true, force: true })
+  await fs.mkdir(OUT, { recursive: true })
   compileImaging()
 
   const { compose, settings: settingsModule } = loadImaging()
 
   // The scene, rendered at 2x so the framed result stays sharp when the site
   // shows it at 820 CSS pixels on a high-density display.
-  const sceneSource = await fs.readFile(path.join(ROOT, 'src', 'renderer', 'overlay', 'demoScene.ts'), 'utf8')
-  const ts = require('typescript')
-  const compiledScene = ts.transpileModule(sceneSource, {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 }
-  }).outputText
-  const sceneFile = path.join(BUILD, 'demoScene.cjs')
-  await fs.writeFile(sceneFile, compiledScene, 'utf8')
-  const svg = require(sceneFile).demoSceneSvg()
+  const { loadScene } = require('./scene-loader.cjs')
+  const svg = await loadScene(BUILD, LANG)
 
   const scenePng = await sharp(Buffer.from(svg))
     .resize({ width: 2560, kernel: 'lanczos3' })
@@ -105,7 +102,7 @@ async function main() {
 
   const meta = await sharp(heroPath).metadata()
   const stat = await fs.stat(heroPath)
-  console.log(`hero-framed.png  ${meta.width}×${meta.height}  ${(stat.size / 1024).toFixed(0)} KB`)
+  console.log(`${LANG === 'en' ? 'en/' : ''}hero-framed.png  ${meta.width}×${meta.height}  ${(stat.size / 1024).toFixed(0)} KB`)
   console.log(`frame ${defaults.frameWidth}px, radius ${defaults.cornerRadius}, shadow ${defaults.shadowEnabled ? 'on' : 'off'}`)
 
   await fs.rm(BUILD, { recursive: true, force: true })

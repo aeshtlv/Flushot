@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type JSX, type PointerEvent as ReactPointerEvent } from 'react'
 import { pointOf, snapSegment, textWrapWidth, translateAnnotation } from '../../shared/annotate'
+import { resolveLanguage, t, type LanguagePreference } from '../../shared/i18n'
 import type { Annotation, AnnotationTool, Point, TextAnnotation } from '../../shared/types'
 import { drawAll, drawAnnotation, findAnnotation, findTextAnnotation, type SourceBox } from './annotate'
 
@@ -20,6 +21,8 @@ export interface AnnotationCanvasProps {
   onCommit: (annotation: Annotation) => void
   onRemove: (index: number) => void
   canvasRef: React.RefObject<HTMLCanvasElement | null>
+  /** Saved interface language preference; the placeholder follows it. */
+  language: LanguagePreference | undefined
 }
 
 /**
@@ -56,8 +59,10 @@ export function AnnotationCanvas({
   source,
   onCommit,
   onRemove,
-  canvasRef
+  canvasRef,
+  language
 }: AnnotationCanvasProps): JSX.Element {
+  const lang = resolveLanguage(language, navigator.language)
   const [draft, setDraft] = useState<Annotation | null>(null)
   const [text, setText] = useState<TextDraft | null>(null)
   const drawing = useRef(false)
@@ -296,7 +301,7 @@ export function AnnotationCanvas({
           autoFocus
           rows={Math.min(12, Math.max(1, text.value.split('\n').length))}
           value={text.value}
-          placeholder="Текст · Enter — готово, Shift+Enter — новая строка"
+          placeholder={t(lang, 'overlay.textNote')}
           spellCheck={false}
           style={{
             left: `${text.at.x * 100}%`,

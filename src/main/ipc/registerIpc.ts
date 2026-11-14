@@ -15,6 +15,7 @@ import type { SettingsStore } from '../settings/SettingsStore'
 import { renderPreview } from '../settings/preview'
 import { isAutostartEnabled, setAutostart } from '../system/autostart'
 import { closeSettingsWindow, getSettingsWindow } from '../windows/settingsWindow'
+import { tr } from '../i18n'
 
 export interface IpcContext {
   session: CaptureSession
@@ -34,6 +35,12 @@ export interface IpcContext {
    * changed", and the new combination was never bound at all.
    */
   onHotkeysChanged?: () => void
+  /**
+   * Saved settings changed in a way the main process has to react to outside the
+   * renderer — currently the interface language, which the tray menu and every
+   * notification are built from.
+   */
+  onSettingsChanged?: () => void
   openSettings: () => void
 }
 
@@ -42,7 +49,7 @@ function senderWindow(event: Electron.IpcMainInvokeEvent): BrowserWindow | null 
 }
 
 function errorResult(error: unknown): ActionResult {
-  return { ok: false, message: error instanceof Error ? error.message : 'Неизвестная ошибка' }
+  return { ok: false, message: error instanceof Error ? error.message : tr('shell.unknownError') }
 }
 
 /**
@@ -56,7 +63,7 @@ function guard<Args extends unknown[]>(
     try {
       return await handler(...args)
     } catch (error) {
-      console.error('Ошибка обработчика IPC', error)
+      console.error(tr('shell.handlerFailed'), error)
       return errorResult(error)
     }
   }
@@ -122,8 +129,8 @@ export function registerIpc(context: IpcContext): void {
       try {
         return await session.recognizeText(annotations, region)
       } catch (error) {
-        console.error('Ошибка распознавания текста', error)
-        return { ok: false, lines: [], error: error instanceof Error ? error.message : 'Распознать текст не удалось' }
+        console.error(tr('shell.ocrFailed'), error)
+        return { ok: false, lines: [], error: error instanceof Error ? error.message : tr('ocr.failed') }
       }
     }
   )
@@ -160,6 +167,11 @@ export function registerIpc(context: IpcContext): void {
         next = await settings.update({ launchAtLogin: actual })
       }
     }
+
+    // The language lives in the same file but is used outside the renderer:
+    // the tray menu and every notification are built from it. The settings
+    // window re-renders itself from the payload it gets back.
+    if (before.language !== next.language) context.onSettingsChanged?.()
 
     if (before.hotkey !== next.hotkey || before.hotkeyFullscreen !== next.hotkeyFullscreen) {
       // Re-bind both keys, then report the combinations that are really active:
@@ -215,6 +227,7 @@ export function registerIpc(context: IpcContext): void {
   ipcMain.handle('settings:reset', async () => {
     const next = await settings.update(defaultSettings(defaultDirectory))
     context.onHotkeysChanged?.()
+    context.onSettingsChanged?.()
     const effective = context.getHotkey()
     const effectiveFull = context.getFullscreenHotkey()
     return {
@@ -227,7 +240,7 @@ export function registerIpc(context: IpcContext): void {
   ipcMain.handle('settings:pick-directory', async (event) => {
     const window = senderWindow(event)
     const options = {
-      title: 'Папка для сохранения снимков',
+      title: tr('shell.pickFolderTitle'),
       properties: ['openDirectory' as const, 'createDirectory' as const]
     }
     const result = window ? await dialog.showOpenDialog(window, options) : await dialog.showOpenDialog(options)

@@ -1,5 +1,6 @@
 import { app } from 'electron'
 import { resolveLaunchTarget, type LaunchTarget } from '../../shared/launch'
+import { tr } from '../i18n'
 
 export type { LaunchTarget }
 
@@ -38,7 +39,7 @@ export function isAutostartEnabled(): boolean {
     const target = launchTarget()
     return app.getLoginItemSettings({ path: target.path, args: target.args }).openAtLogin
   } catch (error) {
-    console.error('Не удалось прочитать автозапуск', error)
+    console.error(tr('shell.autostartReadFailed'), error)
     return false
   }
 }
@@ -55,7 +56,7 @@ export function setAutostart(enabled: boolean): boolean {
   try {
     app.setLoginItemSettings({ openAtLogin: enabled, path: target.path, args: target.args })
   } catch (error) {
-    console.error('Не удалось изменить автозапуск', error)
+    console.error(tr('shell.autostartWriteFailed'), error)
   }
   return isAutostartEnabled()
 }

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type JSX } from 'react'
+import { pluralForm, resolveLanguage, t, type LanguagePreference, type MessageKey } from '../../shared/i18n'
 import type { OcrOutcome, OcrRegion } from '../../shared/types'
 import { CloseIcon, CopyIcon, TextScanIcon } from './icons'
 
@@ -18,6 +19,14 @@ export interface TextPanelProps {
   onClose: () => void
   /** Ask again, for when the first attempt failed. */
   onRetry: () => void
+  /**
+   * Saved interface language preference.
+   *
+   * Passed in rather than read from a context: this panel is the one component
+   * that would otherwise need its own provider, and one prop is cheaper than a
+   * provider that exists for a single consumer.
+   */
+  language: LanguagePreference | undefined
 }
 
 /**
@@ -35,12 +44,18 @@ export interface TextPanelProps {
  * paste into another program first, which is the moment the feature stops being
  * worth using.
  */
-export function TextPanel({ state, onCopy, onClose, onRetry }: TextPanelProps): JSX.Element {
+export function TextPanel({ state, onCopy, onClose, onRetry, language }: TextPanelProps): JSX.Element {
   const [copied, setCopied] = useState<string | null>(null)
   const [draft, setDraft] = useState('')
   const editorRef = useRef<HTMLTextAreaElement>(null)
   /** Result already focused and selected, so a keystroke never re-selects. */
   const selectedFor = useRef<string | null>(null)
+
+  const lang = resolveLanguage(language, navigator.language)
+  const tr = useCallback(
+    (key: MessageKey, vars?: Record<string, string | number>) => t(lang, key, vars),
+    [lang]
+  )
 
   const outcome = state.status === 'ready' ? state.outcome : null
   const original = outcome?.text ?? ''
@@ -89,25 +104,34 @@ export function TextPanel({ state, onCopy, onClose, onRetry }: TextPanelProps): 
 
   const meta = useMemo(() => {
     if (state.status !== 'ready') return ''
-    if (state.outcome.lines.length === 0) return 'ничего не найдено'
+    if (state.outcome.lines.length === 0) return t(lang, 'text.nothing')
     const count = state.outcome.lines.length
-    const words = `${count} ${plural(count, 'строка', 'строки', 'строк')}`
+    // The counted noun goes through the shared plural rule: three forms in
+    // Russian, two in English, and "1 строк" reads as a bug in either.
+    const words = t(lang, `text.lines.${pluralForm(lang, count)}`, { count })
     const engines = languagesLabel(state.outcome)
     return engines ? `${words} · ${engines}` : words
-  }, [state])
+  }, [lang, state])
 
   return (
     <div className="text-panel" data-text-panel={state.status} onPointerDown={(event) => event.stopPropagation()}>
       <header className="text-panel__head">
         <TextScanIcon />
-        <span className="text-panel__title">{state.region ? 'Текст во фрагменте' : 'Текст на снимке'}</span>
+        <span className="text-panel__title">
+          {state.region ? tr('text.fragmentTitle') : tr('text.shotTitle')}
+        </span>
         {state.status === 'ready' && (
           <span className="text-panel__meta">
-            {edited && <span className="text-panel__edited">правлено</span>}
+            {edited && <span className="text-panel__edited">{tr('text.edited')}</span>}
             <span className="text-panel__summary">{meta}</span>
           </span>
         )}
-        <button className="tb tb--close" onClick={onClose} title="Закрыть (Esc)" aria-label="Закрыть панель текста">
+        <button
+          className="tb tb--close"
+          onClick={onClose}
+          title={tr('text.closeTitle')}
+          aria-label={tr('text.closePanel')}
+        >
           <CloseIcon />
         </button>
       </header>
@@ -115,7 +139,7 @@ export function TextPanel({ state, onCopy, onClose, onRetry }: TextPanelProps): 
       {state.status === 'loading' && (
         <div className="text-panel__body text-panel__body--note">
           <span className="spinner" />
-          Распознаю текст…
+          {tr('text.working')}
         </div>
       )}
 
@@ -123,16 +147,14 @@ export function TextPanel({ state, onCopy, onClose, onRetry }: TextPanelProps): 
         <div className="text-panel__body text-panel__body--note">
           <p className="text-panel__error">{state.message}</p>
           <button className="tb tb--primary" onClick={onRetry}>
-            Попробовать снова
+            {tr('text.retry')}
           </button>
         </div>
       )}
 
       {state.status === 'ready' &&
         (state.outcome.lines.length === 0 ? (
-          <div className="text-panel__body text-panel__body--note">
-            На этом снимке текст не найден. Попробуйте выделить область крупнее или с более чётким текстом.
-          </div>
+          <div className="text-panel__body text-panel__body--note">{tr('text.empty')}</div>
         ) : (
           <>
             <textarea
@@ -150,22 +172,20 @@ export function TextPanel({ state, onCopy, onClose, onRetry }: TextPanelProps): 
               autoComplete="off"
               autoCorrect="off"
               autoCapitalize="off"
-              aria-label="Распознанный текст, можно исправить"
+              aria-label={tr('text.editable')}
               data-ocr-editor
             />
             <footer className="text-panel__foot">
               <button className="tb tb--primary" onClick={() => void copy()} data-ocr-copy>
                 <CopyIcon />
-                {copied ?? (edited ? 'Копировать исправленное' : 'Копировать текст')}
+                {copied ?? tr(edited ? 'text.copyEdited' : 'text.copy')}
               </button>
               {edited && (
-                <button className="tb" onClick={revert} title="Вернуть текст, который распознал движок">
-                  Вернуть
+                <button className="tb" onClick={revert} title={tr('text.revert')}>
+                  {tr('text.revertShort')}
                 </button>
               )}
-              <span className="text-panel__hint">
-                {edited ? 'Текст можно править' : 'Можно править прямо здесь'}
-              </span>
+              <span className="text-panel__hint">{tr(edited ? 'text.canEdit' : 'text.editHint')}</span>
             </footer>
           </>
         ))}
@@ -182,14 +202,4 @@ export function TextPanel({ state, onCopy, onClose, onRetry }: TextPanelProps): 
 function languagesLabel(outcome: OcrOutcome): string {
   const langs = outcome.languages ?? (outcome.lang ? [outcome.lang] : [])
   return langs.join('+')
-}
-
-/** Russian plural, because "1 строк" reads as a bug. */
-function plural(count: number, one: string, few: string, many: string): string {
-  const mod100 = count % 100
-  const mod10 = count % 10
-  if (mod100 >= 11 && mod100 <= 14) return many
-  if (mod10 === 1) return one
-  if (mod10 >= 2 && mod10 <= 4) return few
-  return many
 }

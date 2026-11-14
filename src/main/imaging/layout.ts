@@ -1,4 +1,5 @@
 import { CARD_RADIUS, FRAME_WIDTH } from '../../shared/settings'
+import { tr } from '../i18n'
 
 export interface FrameLayout {
   /** Size of the finished image: the screenshot plus the frame on all sides. */
@@ -37,7 +38,7 @@ export function computeFrameLayout(
   cornerRadius: number = CARD_RADIUS
 ): FrameLayout {
   if (!Number.isFinite(imageWidth) || !Number.isFinite(imageHeight) || imageWidth <= 0 || imageHeight <= 0) {
-    throw new Error('Некорректный размер снимка')
+    throw new Error(tr('imaging.badSize'))
   }
 
   const safeFrame = Math.max(0, Math.floor(Number.isFinite(frame) ? frame : 0))

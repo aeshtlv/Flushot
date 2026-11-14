@@ -7,6 +7,7 @@ import { pasteAnnotationLayer } from '../imaging/annotations'
 import type { Raster } from '../imaging/raster'
 import { encodeRaster, writeImageFile } from './imageExport'
 import { buildScreenshotFilename, uniqueFilename } from './filename'
+import { tr } from '../i18n'
 
 export interface ResultContext {
   /** The finished card as pixels: picture, frame, corners and shadow. */
@@ -67,10 +68,10 @@ export async function saveToFolder(result: ResultContext, annotations?: Annotati
     const buffer = await encodeCard(result, annotations)
     await writeImageFile(target, buffer)
   } catch (error) {
-    console.error('Не удалось сохранить снимок', error)
-    return { ok: false, message: `Нет доступа к папке «${directory}». Выберите другую в настройках.` }
+    console.error(tr('export.saveFailed'), error)
+    return { ok: false, message: tr('export.noFolderAccess', { directory }) }
   }
-  return { ok: true, message: `Сохранено · ${fileName}`, path: target }
+  return { ok: true, message: tr('export.saved', { file: fileName }), path: target }
 }
 
 /** Show a native save dialog with a sensible default name. */
@@ -88,7 +89,7 @@ export async function saveWithDialog(
 
   const defaultPath = path.join(result.settings.saveDirectory, buildScreenshotFilename(new Date(), result.settings.format))
   const options = {
-    title: 'Сохранить снимок',
+    title: tr('export.saveDialogTitle'),
     defaultPath,
     filters,
     properties: ['createDirectory' as const, 'showOverwriteConfirmation' as const]
@@ -98,7 +99,7 @@ export async function saveWithDialog(
     ? await dialog.showSaveDialog(result.window, options)
     : await dialog.showSaveDialog(options)
   if (response.canceled || !response.filePath) {
-    return { ok: false, canceled: true, message: 'Сохранение отменено' }
+    return { ok: false, canceled: true, message: tr('export.cancelled') }
   }
 
   // The dialog is gone, so the picture can leave the screen before the encode
@@ -106,7 +107,11 @@ export async function saveWithDialog(
   beforeEncode?.()
   const buffer = await encodeCard(result, annotations)
   await writeImageFile(response.filePath, buffer)
-  return { ok: true, message: `Сохранено · ${path.basename(response.filePath)}`, path: response.filePath }
+  return {
+    ok: true,
+    message: tr('export.saved', { file: path.basename(response.filePath) }),
+    path: response.filePath
+  }
 }
 
 export async function saveResult(
@@ -135,7 +140,7 @@ export interface CopyOutcome extends ActionResult {
 export async function copyResult(result: ResultContext, annotations?: AnnotationLayerPayload): Promise<CopyOutcome> {
   const raster = finish(result, annotations)
   if (raster.width === 0 || raster.height === 0) {
-    return { ok: false, message: 'Не удалось подготовить изображение для буфера обмена' }
+    return { ok: false, message: tr('export.prepareClipboardFailed') }
   }
 
   // The clipboard always receives lossless PNG, even when files are saved as
@@ -147,5 +152,5 @@ export async function copyResult(result: ResultContext, annotations?: Annotation
   // A Buffer is already a Uint8Array, so it is wrapped without an extra copy.
   const blob = new Blob([png], { type: 'image/png' })
   await clipboard.write([new ClipboardItem({ 'image/png': blob })])
-  return { ok: true, message: 'Скопировано в буфер обмена', png }
+  return { ok: true, message: tr('export.copied'), png }
 }

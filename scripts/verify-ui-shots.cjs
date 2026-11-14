@@ -70,18 +70,12 @@ async function buildHelpers() {
     { cwd: ROOT, stdio: 'pipe' }
   )
 
-  const ts = require('typescript')
-  const source = await fs.readFile(path.join(ROOT, 'src', 'renderer', 'overlay', 'demoScene.ts'), 'utf8')
-  const js = ts.transpileModule(source, {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 }
-  }).outputText
-  const file = path.join(BUILD, 'demoScene.cjs')
-  await fs.writeFile(file, js, 'utf8')
+  const { loadScene } = require('./scene-loader.cjs')
 
   return {
     compose: require(path.join(BUILD, 'main', 'imaging', 'compose.js')),
     settings: require(path.join(BUILD, 'shared', 'settings.js')),
-    scene: require(file).demoSceneSvg()
+    scene: await loadScene(BUILD)
   }
 }
 
@@ -1340,13 +1334,52 @@ async function main() {
     await fs.rm(BUILD, { recursive: true, force: true })
   }
 
+  // The English set is produced by the same script with the preference saved to
+  // English. Its pixels cannot be read for words, so what is checked is that each
+  // picture exists, kept its size, and is genuinely a different drawing from the
+  // Russian one — a copy would mean the language never reached the window.
+  const russian = [
+    ['ui-overlay.png', 1280, 720],
+    ['ui-annotate.png', 1280, 720],
+    ['ui-ocr.png', 1280, 720],
+    ['ui-settings.png', 520, 820],
+    ['multi-monitor.png', 840, 945],
+    ['hero-framed.png', 2688, 1568]
+  ]
+  for (const [name, width, height] of russian) {
+    const ruFile = path.join(DOCS, name)
+    const enFile = path.join(DOCS, 'en', name)
+    try {
+      const [ru, en] = await Promise.all([sharp(ruFile), sharp(enFile)])
+      const ruMeta = await ru.metadata()
+      const enMeta = await en.metadata()
+      if (enMeta.width !== width || enMeta.height !== height) {
+        fail(`en/${name}: ${enMeta.width}×${enMeta.height}, expected ${width}×${height}`)
+        continue
+      }
+      if (ruMeta.width !== width || ruMeta.height !== height) {
+        fail(`${name}: ${ruMeta.width}×${ruMeta.height}, expected ${width}×${height}`)
+        continue
+      }
+      // Same size, different bytes: the words changed and nothing else did.
+      const [ruBytes, enBytes] = await Promise.all([fs.readFile(ruFile), fs.readFile(enFile)])
+      if (ruBytes.equals(enBytes)) {
+        fail(`en/${name} is byte-identical to the Russian one: the language never reached the window`)
+        continue
+      }
+      ok(`en/${name} ${width}×${height}, differs from the Russian set`)
+    } catch (error) {
+      fail(`en/${name}: ${error instanceof Error ? error.message : String(error)}`)
+    }
+  }
+
   for (const note of notes) console.log(`  · ${note}`)
   if (failures.length > 0) {
     console.error(`\n${failures.length} PROBLEM(S):`)
     for (const failure of failures) console.error(`  ✗ ${failure}`)
     process.exit(1)
   }
-  console.log('\nInterface screenshots match the interface.')
+  console.log('\nInterface screenshots match the interface, in both languages.')
 }
 
 main().catch((error) => {

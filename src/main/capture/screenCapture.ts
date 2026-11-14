@@ -1,5 +1,6 @@
 import { desktopCapturer, screen, type DesktopCapturerSource, type Display, type NativeImage } from 'electron'
 import type { DisplayCaptureSnapshot, DisplayDescriptor } from '../../shared/types'
+import { tr } from '../i18n'
 
 const THUMBNAIL_TIMEOUT_MS = 15_000
 
@@ -29,7 +30,7 @@ export function describeDisplay(display: Display): DisplayDescriptor {
   const height = Math.round(display.bounds.height * display.scaleFactor)
   return {
     id: String(display.id),
-    label: display.label || `Экран ${display.id}`,
+    label: display.label || `${tr('screen.displayLabel', { id: display.id })}`,
     bounds: { ...display.bounds },
     scaleFactor: display.scaleFactor,
     imageWidth: width,
@@ -65,7 +66,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promi
 export async function captureDisplays(timings: CaptureTimings = {}): Promise<NativeSnapshot[]> {
   const started = performance.now()
   const displays = screen.getAllDisplays()
-  if (displays.length === 0) throw new Error('Не найдено ни одного экрана')
+  if (displays.length === 0) throw new Error(tr('capture.noDisplay'))
 
   // Request the largest physical size among all monitors so no screen is
   // downsampled by the thumbnail request itself.
@@ -79,11 +80,11 @@ export async function captureDisplays(timings: CaptureTimings = {}): Promise<Nat
       fetchWindowIcons: false
     }),
     THUMBNAIL_TIMEOUT_MS,
-    'Истекло время ожидания захвата экрана'
+    tr('screen.captureTimeout')
   )
   timings.getSources = Math.round(performance.now() - started)
 
-  if (captures.length === 0) throw new Error('Не удалось получить снимок экрана')
+  if (captures.length === 0) throw new Error(tr('screen.captureFailed'))
 
   const used = new Set<string>()
   const snapshots: NativeSnapshot[] = []
@@ -97,13 +98,13 @@ export async function captureDisplays(timings: CaptureTimings = {}): Promise<Nat
       captures.find((s) => !used.has(s.id))
 
     if (!source || source.thumbnail.isEmpty()) {
-      throw new Error(`Не удалось захватить экран «${descriptor.label}»`)
+      throw new Error(tr('screen.displayCaptureFailed', { label: descriptor.label }))
     }
     used.add(source.id)
 
     const size = source.thumbnail.getSize()
     if (size.width === 0 || size.height === 0) {
-      throw new Error(`Экран «${descriptor.label}» вернул пустое изображение`)
+      throw new Error(tr('screen.displayEmpty', { label: descriptor.label }))
     }
 
     snapshots.push({

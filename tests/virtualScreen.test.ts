@@ -68,7 +68,8 @@ describe('virtual desktop', () => {
     expect(descriptor.id).toBe('virtual')
     expect(descriptor.bounds).toEqual({ x: 0, y: -1080, width: 1926, height: 2160 })
     expect(descriptor.imageWidth).toBe(1926)
-    expect(descriptor.label).toContain('2')
+    // The label is the caller's, so it is passed in rather than built here.
+    expect(descriptor.label).toBe('')
     // The individual monitors travel with the descriptor, so the overlay can put
     // the result on exactly one of them.
     expect(descriptor.monitors).toHaveLength(2)

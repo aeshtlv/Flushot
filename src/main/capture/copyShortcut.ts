@@ -1,4 +1,5 @@
 import { globalShortcut } from 'electron'
+import { tr } from '../i18n'
 
 /**
  * Ctrl+C pressed while a region is being selected must copy the screenshot.
@@ -23,7 +24,7 @@ export function registerCopyShortcut(handler: () => void): boolean {
   try {
     registered = globalShortcut.register(COPY_SHORTCUT, handler)
   } catch (error) {
-    console.warn('Не удалось зарегистрировать Ctrl+C для выделения', error)
+    console.warn(tr('capture.copyShortcutFailed'), error)
     registered = false
   }
   return registered

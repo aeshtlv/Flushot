@@ -43,7 +43,7 @@ export function clampRectToBounds(rect: Rect, bounds: Rect): Rect {
 export function selectionToImageRect(selection: Rect, display: DisplayGeometry): Rect {
   const values = [display.bounds.width, display.bounds.height, display.imageWidth, display.imageHeight]
   if (values.some((v) => !Number.isFinite(v) || v <= 0)) {
-    throw new Error('Некорректные размеры экрана для преобразования координат')
+    throw new Error('selectionToImageRect: display geometry must be finite and positive')
   }
 
   const sx = display.imageWidth / display.bounds.width

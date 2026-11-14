@@ -106,11 +106,16 @@ export function virtualImageSize(screens: ScreenBounds[], scale: number): { widt
  * its frozen frame is the composite — from the renderer's point of view a
  * three-monitor desk is simply one very wide screen.
  */
-export function describeVirtual(screens: ScreenBounds[], image: { width: number; height: number }): DisplayDescriptor {
+export function describeVirtual(
+  screens: ScreenBounds[],
+  image: { width: number; height: number },
+  /** What the overlay calls this desktop; the caller owns the language. */
+  label = ''
+): DisplayDescriptor {
   const union = virtualBounds(screens)
   return {
     id: 'virtual',
-    label: screens.length > 1 ? `Все экраны (${screens.length})` : 'Экран',
+    label,
     bounds: union,
     scaleFactor: virtualScale(screens),
     imageWidth: Math.max(1, Math.round(image.width)),

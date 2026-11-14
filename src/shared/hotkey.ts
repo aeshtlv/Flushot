@@ -4,6 +4,8 @@
  * be unit tested directly.
  */
 
+import { t, type Language, type MessageKey } from './i18n'
+
 export const DEFAULT_HOTKEY = 'CommandOrControl+Shift+S'
 /** Used only when the preferred combination is already taken by another app. */
 export const FALLBACK_HOTKEY = 'CommandOrControl+Alt+S'
@@ -244,33 +246,25 @@ export type HotkeyField = 'hotkey' | 'hotkeyFullscreen'
  * The owner is named because "занята другой программой" is useless advice for a
  * combination that no program can release.
  */
-const WINDOWS_RESERVED: Record<string, { owner: string; hint: string }> = {
-  'super+shift+s': {
-    owner: 'Ножницами Windows',
-    hint:
-      'Windows забирает это сочетание себе и открывает свои Ножницы, поэтому Flushot его не получит. ' +
-      'Либо удалите приложение «Ножницы» (Параметры → Приложения), либо выберите другое сочетание: ' +
-      'Ctrl+Shift+S, PrintScreen или Ctrl+Shift+X.'
-  },
-  'super+v': {
-    owner: 'журналом буфера обмена Windows',
-    hint: 'Это системное сочетание журнала буфера обмена. Выберите другое: Ctrl+Shift+S или PrintScreen.'
-  },
-  'super+e': {
-    owner: 'Проводником Windows',
-    hint: 'Это системное сочетание Проводника. Выберите другое: Ctrl+Shift+S или PrintScreen.'
-  },
-  'super+l': {
-    owner: 'блокировкой Windows',
-    hint: 'Это системное сочетание блокировки экрана. Выберите другое: Ctrl+Shift+S или PrintScreen.'
-  }
+const WINDOWS_RESERVED: Record<string, { owner: MessageKey; hint: MessageKey }> = {
+  'super+shift+s': { owner: 'hotkey.snippingOwner', hint: 'hotkey.snippingHint' },
+  'super+v': { owner: 'hotkey.clipboardOwner', hint: 'hotkey.clipboardHint' },
+  'super+e': { owner: 'hotkey.explorerOwner', hint: 'hotkey.explorerHint' },
+  'super+l': { owner: 'hotkey.lockOwner', hint: 'hotkey.lockHint' }
 }
 
 /**
  * Why Windows will refuse this combination, or `null` when it is not one of the
  * known system shortcuts.
+ *
+ * The owner is returned as message keys rather than as text: the answer is shown
+ * in the settings window and in a notification, and both need it in whatever
+ * language the interface is currently in, which is not known here.
  */
-export function reservedByWindows(value: string): { owner: string; hint: string } | null {
+export function reservedByWindows(
+  value: string,
+  language: Language = 'ru'
+): { owner: string; hint: string } | null {
   const parts = value.split('+').map((part) => part.trim()).filter(Boolean)
   const key = canonicalKey(parts[parts.length - 1] ?? '')
   if (!key) return null
@@ -280,7 +274,9 @@ export function reservedByWindows(value: string): { owner: string; hint: string 
     .filter(Boolean)
   const order = ['CommandOrControl', 'Control', 'Alt', 'Super', 'Shift']
   const sorted = [...modifiers].sort((a, b) => order.indexOf(a) - order.indexOf(b))
-  return WINDOWS_RESERVED[[...sorted, key].join('+').toLowerCase()] ?? null
+  const reserved = WINDOWS_RESERVED[[...sorted, key].join('+').toLowerCase()]
+  if (!reserved) return null
+  return { owner: t(language, reserved.owner), hint: t(language, reserved.hint) }
 }
 
 /**

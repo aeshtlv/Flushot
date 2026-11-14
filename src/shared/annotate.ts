@@ -5,6 +5,7 @@
  * unit-testable in plain Node, where the drawing code cannot run.
  */
 
+import type { MessageKey } from './i18n'
 import type { Annotation, Point } from './types'
 
 /** Palette offered in the toolbar. The first one is selected by default. */
@@ -13,6 +14,12 @@ export const ANNOTATION_COLORS = ['#FF3B30', '#FF9500', '#FFD60A', '#34C759', '#
 /** Stroke widths, as a fraction of the picture's shorter side. */
 export const STROKE_WIDTHS = [0.0025, 0.004, 0.007] as const
 export const DEFAULT_STROKE = 1
+/** Their tooltips, as message keys, for the same reason as the text sizes below. */
+export const LINE_WIDTH_LABELS = [
+  'overlay.lineThin',
+  'overlay.lineNormal',
+  'overlay.lineThick'
+] as const satisfies readonly MessageKey[]
 
 /**
  * Text sizes, as a fraction of the picture's shorter side, so the same choice
@@ -21,7 +28,20 @@ export const DEFAULT_STROKE = 1
  */
 export const TEXT_SIZES = [0.035, 0.05, 0.07, 0.1] as const
 export const DEFAULT_TEXT_SIZE = 1
-export const TEXT_SIZE_LABELS = ['Мелкий текст', 'Обычный текст', 'Крупный текст', 'Заголовок'] as const
+/**
+ * Names of those sizes, as message keys.
+ *
+ * They are what the toolbar tooltips say, and a tooltip is interface text: the
+ * label has to follow the interface language, so the list holds keys and not
+ * words. Four sizes but three width names, because "заголовок" is a different
+ * thing from "крупный", not a step on the same scale.
+ */
+export const TEXT_SIZE_LABELS = [
+  'overlay.sizeSmallText',
+  'overlay.sizeMediumText',
+  'overlay.sizeLargeText',
+  'overlay.sizeTitle'
+] as const satisfies readonly MessageKey[]
 
 /** The default size in one place, for callers that do not track a choice. */
 export const TEXT_SIZE = TEXT_SIZES[DEFAULT_TEXT_SIZE]

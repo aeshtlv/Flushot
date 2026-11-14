@@ -3,6 +3,7 @@ import { resolveBackgroundColor } from '../../shared/settings'
 import type { ScreenshotSettings } from '../../shared/types'
 import { computeFrameLayout, type FrameLayout } from './layout'
 import { composeCardRaster, type Raster } from './raster'
+import { tr } from '../i18n'
 
 export { parseHexColor } from './color'
 
@@ -75,7 +76,7 @@ function clampRect(
   imageWidth: number,
   imageHeight: number
 ): { left: number; top: number; width: number; height: number } {
-  if (rect.width <= 0 || rect.height <= 0) throw new Error('Пустая область выделения')
+  if (rect.width <= 0 || rect.height <= 0) throw new Error(tr('imaging.emptyRegion'))
   const left = Math.max(0, Math.min(Math.round(rect.x), imageWidth - 1))
   const top = Math.max(0, Math.min(Math.round(rect.y), imageHeight - 1))
   const width = Math.max(1, Math.min(Math.round(rect.width), imageWidth - left))
@@ -98,7 +99,7 @@ export function composeOptionsFromSettings(settings: ScreenshotSettings): Compos
 /** Crop the selected region from the frozen screenshot at native resolution. */
 export async function cropImage(image: Buffer, rect: { x: number; y: number; width: number; height: number }): Promise<Buffer> {
   const metadata = await sharp(image).metadata()
-  if (!metadata.width || !metadata.height) throw new Error('Не удалось прочитать снимок экрана')
+  if (!metadata.width || !metadata.height) throw new Error(tr('imaging.readShotFailed'))
   const area = clampRect(rect, metadata.width, metadata.height)
   return sharp(image).extract(area).png().toBuffer()
 }
@@ -110,7 +111,7 @@ async function toRaster(source: ImageSource): Promise<Raster> {
     return { data, width: source.width, height: source.height }
   }
   const decoded = await sharp(source).ensureAlpha().raw().toBuffer({ resolveWithObject: true })
-  if (decoded.info.channels !== 4) throw new Error('Не удалось прочитать выделенную область')
+  if (decoded.info.channels !== 4) throw new Error(tr('imaging.readRegionFailed'))
   return { data: decoded.data, width: decoded.info.width, height: decoded.info.height }
 }
 
@@ -234,7 +235,7 @@ export async function composeScreenshot(
   encode: PngEncode = {}
 ): Promise<Buffer> {
   const raster = await toRaster(image)
-  if (!raster.width || !raster.height) throw new Error('Не удалось прочитать выделенную область')
+  if (!raster.width || !raster.height) throw new Error(tr('imaging.readRegionFailed'))
 
   const layout = computeFrameLayout(raster.width, raster.height, options.frameWidth, options.cornerRadius)
   return composeWithLayout(image, layout, options, encode)
@@ -286,7 +287,7 @@ export async function makePreview(png: Buffer, width = 720): Promise<string> {
  */
 export async function composePreview(image: ImageSource, options: ComposeOptions, width = 960): Promise<string> {
   const raster = await toRaster(image)
-  if (!raster.width || !raster.height) throw new Error('Не удалось прочитать изображение для превью')
+  if (!raster.width || !raster.height) throw new Error(tr('imaging.readPreviewFailed'))
   const layout = computeFrameLayout(raster.width, raster.height, options.frameWidth, options.cornerRadius)
   const canvas = await buildCanvas(image, { x: 0, y: 0, width: raster.width, height: raster.height }, layout, options)
   return previewFromRaster(canvas, width)

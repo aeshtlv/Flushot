@@ -24,20 +24,18 @@ const ts = require('typescript')
 const ROOT = path.join(__dirname, '..')
 const PORT = 9355
 
-/** Compile the scene module and get the SVG string out of it. */
-async function loadScene() {
-  const source = await fs.readFile(path.join(ROOT, 'src', 'renderer', 'overlay', 'demoScene.ts'), 'utf8')
-  const compiled = ts.transpileModule(source, {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 }
-  }).outputText
+/** Which language to measure. English words are longer, so both are checked. */
+const LANG = process.argv.includes('--lang=en') ? 'en' : 'ru'
 
+/** Compile the scene module and get the SVG string out of it. */
+async function loadSceneSvg() {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'flushot-scene-'))
-  const file = path.join(tempDir, 'demoScene.cjs')
-  await fs.writeFile(file, compiled, 'utf8')
-  const module = require(file)
-  const svg = module.demoSceneSvg()
-  await fs.rm(tempDir, { recursive: true, force: true })
-  return svg
+  try {
+    const { loadScene } = require('./scene-loader.cjs')
+    return await loadScene(tempDir, LANG)
+  } finally {
+    await fs.rm(tempDir, { recursive: true, force: true })
+  }
 }
 
 function findEdge() {
@@ -72,7 +70,8 @@ const MEASURE = `(() => {
 })()`
 
 async function main() {
-  const svg = await loadScene()
+  const svg = await loadSceneSvg()
+  console.log(`Scene language: ${LANG}`)
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'flushot-scene-run-'))
   const svgFile = path.join(tempDir, 'scene.svg')
   await fs.writeFile(svgFile, svg, 'utf8')
@@ -214,7 +213,7 @@ async function main() {
     for (const problem of problems) console.error(`  ✗ ${problem}`)
     process.exitCode = 1
   } else {
-    console.log('\nDemo scene geometry is clean.')
+    console.log(`\nDemo scene geometry is clean (${LANG}).`)
   }
 }
 

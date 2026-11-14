@@ -32,7 +32,16 @@ const { spawn, execFileSync } = require('node:child_process')
 const sharp = require('sharp')
 
 const ROOT = path.join(__dirname, '..')
-const OUT = path.join(ROOT, 'docs')
+/**
+ * Which interface language to photograph.
+ *
+ * `--lang=en` writes to `docs/en/` and switches the page locale before anything
+ * loads, so the windows resolve their language exactly as they would on an
+ * English Windows: the saved preference stays `auto` and `navigator.language`
+ * answers `en-US`. Nothing else changes — same components, same stylesheet.
+ */
+const LANG = process.argv.includes('--lang=en') ? 'en' : 'ru'
+const OUT = LANG === 'en' ? path.join(ROOT, 'docs', 'en') : path.join(ROOT, 'docs')
 const BUILD = path.join(ROOT, '.tmp', 'imaging-build')
 const HTTP_PORT = 8131
 const CDP_PORT = 9471
@@ -79,16 +88,10 @@ function compileImaging() {
   )
 }
 
-/** The demo scene is TypeScript with no imports, so it is transpiled directly. */
-async function loadScene() {
-  const source = await fs.readFile(path.join(ROOT, 'src', 'renderer', 'overlay', 'demoScene.ts'), 'utf8')
-  const ts = require('typescript')
-  const js = ts.transpileModule(source, {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 }
-  }).outputText
-  const file = path.join(BUILD, 'demoScene.cjs')
-  await fs.writeFile(file, js, 'utf8')
-  return require(file).demoSceneSvg()
+/** The demo scene, drawn in the same language as the window around it. */
+async function loadScene(language) {
+  const { loadScene: load } = require('./scene-loader.cjs')
+  return load(BUILD, language)
 }
 
 // ----------------------------------------------------------------- static host
@@ -203,6 +206,9 @@ async function launch() {
   await send('Page.enable')
   await send('Runtime.enable')
   await send('Log.enable')
+  // After Page.enable, before the first navigate: the override applies to every
+  // document this browser opens, which is what makes both windows English.
+  if (LANG === 'en') await send('Emulation.setLocaleOverride', { locale: 'en-US' })
 
   return {
     send,
@@ -328,8 +334,11 @@ async function main() {
   const previewModule = require(path.join(BUILD, 'main', 'settings', 'preview.js'))
   const settingsModule = require(path.join(BUILD, 'shared', 'settings.js'))
 
-  const scene = await loadScene()
+  const scene = await loadScene(LANG)
   const defaults = settingsModule.defaultSettings('C:\\Users\\Пользователь\\Pictures\\Flushot')
+  // `auto` would follow the browser, which is not what the picture is meant to
+  // show: the English set photographs the window with English actually selected.
+  const settings = LANG === 'en' ? { ...defaults, language: 'en' } : defaults
   // Rasterised at twice the CSS size: the display is emulated at device pixel
   // ratio 2, so the desktop is captured at 2560×1440 and the region below is
   // cut from the same pixels the overlay would have received.
@@ -373,9 +382,9 @@ async function main() {
 
   // The card the app would hand back after "Создать": the shipping compositor,
   // shipping defaults, no overrides.
-  const composed = await compose.composeScreenshot(contentPng, compose.composeOptionsFromSettings(defaults))
+  const composed = await compose.composeScreenshot(contentPng, compose.composeOptionsFromSettings(settings))
   const composedMeta = await sharp(composed).metadata()
-  const card = await previewModule.renderPreview(defaults, 900)
+  const card = await previewModule.renderPreview(settings, 900)
 
   const capture = {
     ok: true,
@@ -394,7 +403,7 @@ async function main() {
     // window that had already left that state. The shot is of the moment the
     // region is still being adjusted, so the settings are the ones that keep it
     // there.
-    settings: { ...defaults, afterRegion: 'edit' },
+    settings: { ...settings, afterRegion: 'edit' },
     hotkey: 'CommandOrControl+Shift+S'
   }
 
@@ -413,7 +422,7 @@ async function main() {
       await browser.send('Page.addScriptToEvaluateOnNewDocument', {
         source: stubSource({
           init,
-          settings: defaults,
+          settings,
           capture,
           card,
           info: { version: '2.2.3', hotkey: 'Ctrl+Shift+S', settingsPath: '' },
@@ -508,8 +517,7 @@ async function main() {
       // two marks on it, which is exactly the state the picker is used in.
       const picked = await browser.evaluate(`(async () => {
         const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-        const button = [...document.querySelectorAll('.toolbar--actions .tb')]
-          .find((el) => /Текст/.test(el.textContent || ''));
+        const button = document.querySelector('[data-ocr-pick]');
         if (!button) return 'no text button';
         button.click();
         await wait(150);
@@ -548,6 +556,39 @@ async function main() {
       await browser.send('Page.navigate', { url: SETTINGS_URL })
       await sleep(1600)
 
+      // English renders the same rows with different word lengths: "Custom
+      // colour" is half again as wide as "Свой цвет", and a segment that does
+      // not fit is simply cut off. Anything that overflows without an ellipsis
+      // is a broken layout in one of the two languages, so it fails the run.
+      // Truncated hints are allowed on purpose — they carry a title — and are
+      // reported instead, because a hint nobody can read is worth knowing about.
+      const layout = await browser.evaluate(`(() => {
+        const root = document.documentElement;
+        const problems = [];
+        const truncated = [];
+        const targets = '.panel h2, .row__label, .row__hint, .segmented__item, .swatch__label, .reset__title, .button, kbd';
+        for (const el of document.querySelectorAll(targets)) {
+          const text = (el.textContent || '').trim();
+          if (!text) continue;
+          const style = getComputedStyle(el);
+          const overflows = el.scrollWidth > el.clientWidth + 1;
+          const wraps = el.scrollHeight > el.clientHeight + 1;
+          if (overflows && style.textOverflow === 'ellipsis') {
+            truncated.push(text.slice(0, 48) + ' ' + el.scrollWidth + '/' + el.clientWidth);
+            continue;
+          }
+          if (overflows || wraps) {
+            problems.push((el.className || el.tagName) + ' «' + text.slice(0, 48) + '» ' + el.scrollWidth + '/' + el.clientWidth);
+          }
+        }
+        return JSON.stringify({ overflow: root.scrollWidth > root.clientWidth + 1, problems, truncated });
+      })()`)
+      const { overflow, problems, truncated } = JSON.parse(layout)
+      if (overflow || problems.length > 0) {
+        throw new Error(`settings layout: page overflow=${overflow} · ${problems.join(' · ')}`)
+      }
+      for (const entry of truncated) console.log('  · truncated: ' + entry)
+
       const shot = await browser.send('Page.captureScreenshot', { format: 'png' })
       await write(shot.data, 'ui-settings.png', 260)
     }
@@ -573,7 +614,7 @@ async function main() {
           init: {
             display: {
               id: 'desktop',
-              label: 'Два монитора',
+              label: LANG === 'en' ? 'All screens (2)' : 'Все экраны (2)',
               bounds: UNION,
               scaleFactor: 1,
               imageWidth: UNION.width,
@@ -583,10 +624,10 @@ async function main() {
             // Same reason as the first shot: the picture has to show the
             // selection crossing the seam, so the release must not send the
             // overlay to the result stage.
-            settings: { ...defaults, afterRegion: 'edit' },
+            settings: { ...settings, afterRegion: 'edit' },
             hotkey: 'CommandOrControl+Shift+S'
           },
-          settings: defaults,
+          settings,
           capture,
           card,
           info: { version: '2.2.3', hotkey: 'Ctrl+Shift+S', settingsPath: '' },

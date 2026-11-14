@@ -25,6 +25,7 @@
 import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import type { OcrLine, OcrWord } from '../../shared/types'
+import { tr } from '../i18n'
 
 export type { OcrLine, OcrWord }
 
@@ -245,7 +246,7 @@ class OcrWorker {
         clearTimeout(timer)
         this.child = null
         this.ready = null
-        this.failAll('Распознавание текста недоступно на этом компьютере')
+        this.failAll(tr('ocr.unavailable'))
         finish(null)
       })
       child.on('error', () => {
@@ -296,16 +297,16 @@ class OcrWorker {
   async recognize(path: string, langs: string[]): Promise<OcrRawOutcome> {
     const available = await this.warm()
     if (!available || !this.child) {
-      return { ok: false, results: [], error: 'Распознавание текста недоступно на этом компьютере' }
+      return { ok: false, results: [], error: tr('ocr.unavailable') }
     }
     const wanted = langs.filter((tag) => available.includes(tag))
-    if (wanted.length === 0) return { ok: false, results: [], error: 'Ни одного движка распознавания нет' }
+    if (wanted.length === 0) return { ok: false, results: [], error: tr('ocr.noEngines') }
 
     const id = this.nextId++
     const answer = new Promise<OcrRawOutcome>((resolve) => {
       const timer = setTimeout(() => {
         this.pending.delete(id)
-        resolve({ ok: false, results: [], error: 'Распознавание не ответило вовремя' })
+        resolve({ ok: false, results: [], error: tr('ocr.timeout') })
       }, REQUEST_TIMEOUT_MS)
       timer.unref?.()
       this.pending.set(id, { resolve, timer })
@@ -323,7 +324,7 @@ class OcrWorker {
     this.ready = null
     const child = this.child
     this.child = null
-    this.failAll('Распознавание остановлено')
+    this.failAll(tr('ocr.stopped'))
     if (!child) return
     try {
       child.stdin.end()
@@ -337,7 +338,7 @@ class OcrWorker {
 /** Turn one worker answer into typed lines, ignoring anything malformed. */
 function toOutcome(parsed: Record<string, unknown>): OcrRawOutcome {
   if (parsed.ok !== true) {
-    return { ok: false, results: [], error: String(parsed.error ?? 'Распознать текст не удалось') }
+    return { ok: false, results: [], error: String(parsed.error ?? tr('ocr.failed')) }
   }
   const rawResults = Array.isArray(parsed.results) ? parsed.results : parsed.results ? [parsed.results] : []
   const results: OcrRawResult[] = []
