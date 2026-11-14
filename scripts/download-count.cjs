@@ -60,6 +60,14 @@ function human(value, language) {
   return language === 'ru' ? `${thousands} тыс.` : `${thousands.replace(',', '.')}k`
 }
 
+/**
+ * Files a person downloads. The updater's own requests are excluded: it reads
+ * `latest.yml` on every check and the block map on every update, so counting
+ * them would report machines rather than people — and a single installed copy
+ * would out-count its own users within a day.
+ */
+const SERVICING = /\.(yml|blockmap)$/i
+
 async function main() {
   const releases = await api(`https://api.github.com/repos/${REPO}/releases?per_page=100`)
   if (!Array.isArray(releases) || releases.length === 0) throw new Error('no releases found')
@@ -68,6 +76,7 @@ async function main() {
   const rows = []
   for (const release of releases) {
     for (const asset of release.assets) {
+      if (SERVICING.test(asset.name)) continue
       total += asset.download_count
       rows.push({
         version: release.tag_name,
@@ -85,10 +94,15 @@ async function main() {
   console.log(`${String(total).padStart(6)}  total across ${releases.length} release(s)`)
 
   const latest = releases.find((release) => !release.prerelease && !release.draft) ?? releases[0]
-  const latestTotal = latest.assets.reduce((sum, asset) => sum + asset.download_count, 0)
-  const line = `Скачано с GitHub для **${latest.tag_name}**: ${human(latestTotal, 'ru')} — из них ${latest.assets
+  const counts = latest.assets.filter((asset) => !SERVICING.test(asset.name))
+  const latestTotal = counts.reduce((sum, asset) => sum + asset.download_count, 0)
+  const parts = counts
     .map((asset) => `${human(asset.download_count, 'ru')} ${asset.name.replace(/^Flushot-[\d.]+-/, '')}`)
-    .join(', ')}. Считаются скачивания, не установки.`
+    .join(', ')
+  const line =
+    latestTotal > 0
+      ? `Скачано с GitHub для **${latest.tag_name}**: ${human(latestTotal, 'ru')} — из них ${parts}. За всё время — ${human(total, 'ru')}. Считаются скачивания, не установки.`
+      : `**${latest.tag_name}** выпущена только что, скачиваний пока нет — за всё время ${human(total, 'ru')}. Считаются скачивания, не установки.`
 
   console.log(`\n${line}`)
 

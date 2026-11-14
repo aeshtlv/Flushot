@@ -264,6 +264,10 @@ function stubSource(config) {
     getPreview: async () => CFG.card,
     openSaveFolder: async () => undefined,
     getAppInfo: async () => CFG.info,
+    getUpdateState: async () => ({ kind: 'current', version: CFG.info.version, checkedAt: Date.now() }),
+    checkForUpdates: async () => ({ kind: 'current', version: CFG.info.version, checkedAt: Date.now() }),
+    installUpdate: () => undefined,
+    onUpdatesChanged: () => () => undefined,
     closeWindow: async () => undefined
   };
 })();`

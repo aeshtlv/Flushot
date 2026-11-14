@@ -64,7 +64,12 @@ export function SettingsApp(): JSX.Element {
   useEffect(() => {
     void window.flushot.getSettings().then(setSettings)
     void window.flushot.getAppInfo().then(setInfo)
-    void window.flushot.getUpdateState().then(setUpdate)
+    // Optional on purpose: an older preload, and the headless stubs the screenshot
+    // checks run against, have no update methods. Asking only for what exists
+    // leaves the updates panel empty instead of taking the whole window down.
+    if (typeof window.flushot.getUpdateState === 'function') {
+      void window.flushot.getUpdateState().then(setUpdate)
+    }
   }, [])
 
   useEffect(() => {
@@ -557,7 +562,7 @@ export function SettingsApp(): JSX.Element {
             <div className="update-line">
               <span className="update-line__text">{describeUpdate(update, tr, info?.version)}</span>
               {update.kind === 'ready' ? (
-                <button className="button button--primary" onClick={() => void window.flushot.installUpdate()}>
+                <button className="button button--primary" onClick={() => void window.flushot.installUpdate?.()}>
                   {tr('settings.updateInstall')}
                 </button>
               ) : (
@@ -567,7 +572,7 @@ export function SettingsApp(): JSX.Element {
                     disabled={!settings.checkUpdates || !canCheck(update)}
                     onClick={() => {
                       setUpdate({ kind: 'checking' })
-                      void window.flushot.checkForUpdates().then(setUpdate)
+                      void window.flushot.checkForUpdates?.().then(setUpdate)
                     }}
                   >
                     {tr('settings.checkNow')}

@@ -6,7 +6,7 @@ Windows 10 и 11, x64.
 
 [![CI](https://github.com/aeshtlv/Flushot/actions/workflows/ci.yml/badge.svg)](https://github.com/aeshtlv/Flushot/actions/workflows/ci.yml)
 [![Лицензия: MIT](https://img.shields.io/badge/%D0%BB%D0%B8%D1%86%D0%B5%D0%BD%D0%B7%D0%B8%D1%8F-MIT-4c8bf5)](LICENSE)
-[![Версия](https://img.shields.io/badge/%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D1%8F-2.4.0-4c8bf5)](CHANGELOG.md)
+[![Версия](https://img.shields.io/badge/%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D1%8F-2.4.1-4c8bf5)](CHANGELOG.md)
 
 <p align="center">
   <img src="logo/logo.png" alt="Flushot" width="112">
@@ -52,9 +52,9 @@ Windows 10 и 11, x64.
 
 | Файл | Описание |
 |---|---|
-| **[Flushot-2.4.0-x64.exe](../../releases/latest/download/Flushot-2.4.0-x64.exe)** | 105 МБ. Установщик: ярлыки в меню «Пуск», выбор папки, деинсталлятор. **Обновляется сам** — рекомендуемый вариант |
-| [Flushot-2.4.0-portable.zip](../../releases/latest/download/Flushot-2.4.0-portable.zip) | 94 МБ. Portable-версия одним файлом, без установки. Обновлять вручную |
-| [Flushot-2.4.0-win64.zip](../../releases/latest/download/Flushot-2.4.0-win64.zip) | 143 МБ. Распаковать в любую папку и запустить `Flushot.exe`. Обновлять вручную |
+| **[Flushot-2.4.1-x64.exe](../../releases/latest/download/Flushot-2.4.1-x64.exe)** | 105 МБ. Установщик: ярлыки в меню «Пуск», выбор папки, деинсталлятор. **Обновляется сам** — рекомендуемый вариант |
+| [Flushot-2.4.1-portable.zip](../../releases/latest/download/Flushot-2.4.1-portable.zip) | 94 МБ. Portable-версия одним файлом, без установки. Обновлять вручную |
+| [Flushot-2.4.1-win64.zip](../../releases/latest/download/Flushot-2.4.1-win64.zip) | 143 МБ. Распаковать в любую папку и запустить `Flushot.exe`. Обновлять вручную |
 
 Автообновление работает только у установщика: portable-версия при каждом запуске распаковывается во
 временную папку, а версия из архива ставится без деинсталлятора — replace-механизм не может их
@@ -65,7 +65,7 @@ Windows 10 и 11, x64.
 исполняемого файла.
 
 <!-- downloads:begin -->
-Скачано с GitHub для **v2.3.0**: 0 — из них 0 installer.zip, 0 portable.zip, 0 win64.zip. Считаются скачивания, не установки.
+**v2.4.0** выпущена только что, скачиваний пока нет — за всё время 37. Считаются скачивания, не установки.
 <!-- downloads:end -->
 
 Страница программы с описанием и кнопками скачивания: **https://flushot.ink**

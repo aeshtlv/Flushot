@@ -267,7 +267,8 @@ async function inspectWindow(
             return button.disabled ? 'disabled' : 'enabled';
           })()
         ),
-        // The autostart switch must exist and must be off in a fresh profile.
+        // The autostart switch must exist and must show what is saved. Comparing it
+        // with "off" made the check depend on the profile it ran against.
         autostartRow: String(
           (() => {
             const rows = Array.from(document.querySelectorAll('.row'));
@@ -2350,13 +2351,14 @@ export async function runSelfTest(session?: CaptureSession, settingsStore?: Sett
         settingsPage.facts.updateButton === 'no-button' &&
         either('settings.updateManual').includes(settingsPage.facts.updateText)
 
+    const liveAutostart = settingsStore ? (await settingsStore.load()).launchAtLogin : false
     const settingsOk =
       settingsPage.facts.panels === '7' &&
       settingsPage.facts.overflowX === 'false' &&
       settingsPage.facts.versionCentered === 'true' &&
       settingsPage.facts.resetLast === 'true' &&
       settingsPage.facts.folderClickable === '1' &&
-      settingsPage.facts.autostartRow === 'off' &&
+      settingsPage.facts.autostartRow === (liveAutostart ? 'on' : 'off') &&
       settingsPage.facts.previewSticky === 'false' &&
       // The default format is PNG, so the caption must say so and not "JPEG".
       settingsPage.facts.formatLabel === 'PNG' &&
@@ -2478,7 +2480,7 @@ export async function runSelfTest(session?: CaptureSession, settingsStore?: Sett
       report.errors.push(
         `ui check failed: overlay=${overlayOk} overlayCopy=${overlayCopyOk} globalCopy=${globalCopyOk} annotate=${annotateOk}(${annotatePage.facts.annotateTools} tools, ${annotatePage.facts.annotateSwatches} swatches, count ${annotatePage.facts.annotateCount}, painted ${annotatePage.facts.annotatePainted}, size ${annotatePage.facts.annotateSize}) annotateCopy=${annotateCopy.ok}(${annotateCopy.note ?? annotateCopy.magenta + ' px, ' + annotateCopy.size}) shortcut=${globalShortcutOk} realCopy=${realCopy.ok}(${realCopy.note ?? realCopy.clipboard}) fullscreen=${report.fullscreen?.ok ?? 'нет'}(${report.fullscreen?.note || report.fullscreen?.size || ''}) rebind=${report.hotkeyRebind?.ok ?? 'нет'}(${report.hotkeyRebind?.note || report.hotkeyRebind?.saved || ''}) preview=${report.previewResize?.ok ?? 'нет'}(${report.previewResize?.note || report.previewResize?.wide || ''}) accelerators=${report.accelerators?.ok ?? 'нет'}(${report.accelerators?.rejected?.join(' | ') || report.accelerators?.checked}) settings=${settingsOk} compact=${compactOk} hotkey=${hotkeyOk} perf=${report.perf.ok}(${report.perf.note || report.perf.composeMs + ' ms'}) (stored ${stored.hotkey})`,
         // The rest of the verdict, so no condition can fail without being named.
-        `settings detail: panels=${settingsPage.facts.panels}/7 overflowX=${settingsPage.facts.overflowX} versionCentered=${settingsPage.facts.versionCentered} resetLast=${settingsPage.facts.resetLast} folder=${settingsPage.facts.folderClickable}/1 autostart=${settingsPage.facts.autostartRow}/off sticky=${settingsPage.facts.previewSticky}/false format="${settingsPage.facts.formatLabel}" first="${settingsPage.facts.firstPanel}" swatches=${settingsPage.facts.swatchAligned} folderChange=${settingsPage.labels.includes(tr('settings.folderChange'))}`,
+        `settings detail: panels=${settingsPage.facts.panels}/7 overflowX=${settingsPage.facts.overflowX} versionCentered=${settingsPage.facts.versionCentered} resetLast=${settingsPage.facts.resetLast} folder=${settingsPage.facts.folderClickable}/1 autostart=${settingsPage.facts.autostartRow}/expected ${liveAutostart ? 'on' : 'off'} sticky=${settingsPage.facts.previewSticky}/false format="${settingsPage.facts.formatLabel}" first="${settingsPage.facts.firstPanel}" swatches=${settingsPage.facts.swatchAligned} folderChange=${settingsPage.labels.includes(tr('settings.folderChange'))}`,
         `also: updates=${updatesOk}(kind ${installKind()}, state ${updateState().kind}, panel "${settingsPage.facts.updatePanel}", switch ${settingsPage.facts.updateSwitch}, button ${settingsPage.facts.updateButton}) canvas=${report.canvas?.width}×${report.canvas?.height} (expected ${report.canvas?.expectedWidth}×${report.canvas?.expectedHeight}) clipboard=${report.clipboard} files=${report.files.length} formats=${report.formats?.ok}(${report.formats?.note ?? ''}) virtual=${report.virtual?.ok}(${report.virtual?.note ?? ''}) seam=${report.seam?.ok}(${report.seam?.note ?? ''}) ocr=${report.ocr?.ok}(${report.ocr?.note ?? ''}) pixels=${rawMatchesPng}(${report.rawCompare?.maxDiff ?? '?'} max diff) color=${colorOk}(${bitmapPixel}) prewarm=${prewarmOk}(${strayOverlays} shown) warm=${warmFast}(${warmVisible} ms, limit 550) imaging=${report.warmImaging.ok}`
       )
     }

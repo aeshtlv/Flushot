@@ -21,7 +21,7 @@ npm run dev          # запуск с горячей перезагрузкой
 
 ```bash
 npm run typecheck    # tsc для main + renderer
-npm test             # Vitest: 380 тестов в 25 файлах
+npm test             # Vitest: 389 тестов в 26 файлах
 npm run build        # production-сборка в out/
 npm start            # запуск собранной версии
 npm run self-test    # сквозная проверка: захват, рамка, PNG/JPEG/WebP, пометки, буфер, UI
@@ -216,7 +216,7 @@ npm run verify:docs    # node scripts/verify-docs.cjs
 
 ## Тесты
 
-`npm test` — 380 тестов в двадцати пяти файлах:
+`npm test` — 389 тестов в двадцати шести файлах:
 
 | Файл | Что проверяет |
 |---|---|
