@@ -32,7 +32,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=980e5cca">
 <link rel="manifest" href="site.webmanifest?v=06f0995b">
 <link rel="stylesheet" href="fonts.css?v=0b21389f">
-<link rel="stylesheet" href="styles.css?v=0c4232c3">
+<link rel="stylesheet" href="styles.css?v=f6328172">
 <link rel="preload" as="image" href="assets/hero.webp?v=127812f4" type="image/webp">
 
 <script>
@@ -126,8 +126,8 @@
         <a class="btn btn--ghost btn--lg" href="#features">Что внутри</a>
       </div>
       <p class="hero__note" data-rise style="--d: 0.26s">
-        <span>Без рекламы и интернета ·</span>
-        <a href="#download">есть portable и архив без установки</a>
+        <span>Без рекламы и телеметрии ·</span>
+        <a href="#download">установщик обновляется сам</a>
       </p>
 
       <figure class="hero__preview" data-rise style="--d: 0.3s">
@@ -307,9 +307,9 @@
           <div class="feature__mark" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7z"/><path d="M9 12l2 2 4-4"/></svg>
           </div>
-          <h3 class="feature__name">Без интернета</h3>
-          <p class="feature__text">Ни проверки обновлений, ни телеметрии, ни входа в аккаунт. Работает офлайн сколько угодно.</p>
-          <p class="feature__tag">0 запросов</p>
+          <h3 class="feature__name">Без телеметрии</h3>
+          <p class="feature__text">Ни аналитики, ни входа в аккаунт, ни отправки снимков. Раз в сутки программа спрашивает у GitHub про новую версию — это отключается переключателем.</p>
+          <p class="feature__tag">один запрос в сутки</p>
         </article>
 
         <article class="feature">
@@ -631,39 +631,41 @@
     <div class="wrap">
       <div class="section-head">
         <p class="eyebrow">Скачать</p>
-        <h2 class="section-title" id="download-title">Версия 2.3.0 для Windows</h2>
-        <p class="section-lead">Три варианта одной и той же сборки. Программа внутри одинаковая — выбирайте по способу установки.</p>
+        <h2 class="section-title" id="download-title">Версия 2.4.0 для Windows</h2>
+        <p class="section-lead">Три варианта одной и той же сборки. Программа внутри одинаковая; отличается способ установки и то, обновляется ли она сама.</p>
       </div>
 
       <div class="dl-grid">
         <article class="dl-card dl-card--main">
           <div class="dl-card__top">
-            <h3 class="dl-card__name">Папка с программой</h3>
+            <h3 class="dl-card__name">Установщик</h3>
             <span class="dl-card__badge">Рекомендуем</span>
           </div>
-          <p class="dl-card__text">Распаковать в любую папку и запустить <code>Flushot.exe</code>. Ничего не устанавливается, временная папка Windows не нужна.</p>
-          <p class="dl-card__meta"><span>143 МБ</span><span>ZIP</span><span>без установки</span></p>
-          <a class="btn btn--primary" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.3.0-win64.zip">Скачать ZIP</a>
-        </article>
-
-        <article class="dl-card">
-          <div class="dl-card__top">
-            <h3 class="dl-card__name">Установщик</h3>
-          </div>
-          <p class="dl-card__text">Внутри <code>Flushot-2.3.0-x64.exe</code>. Двойной клик, «Установить» — появятся ярлыки в меню «Пуск» и строка удаления.</p>
-          <p class="dl-card__meta"><span>94 МБ</span><span>ZIP</span><span>NSIS</span></p>
-          <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.3.0-installer.zip">Скачать ZIP</a>
+          <p class="dl-card__text">Двойной клик, «Установить» — появятся ярлыки в меню «Пуск» и строка удаления. <strong>Обновляется сам:</strong> раз в сутки проверяет новую версию и ставит её при выходе.</p>
+          <p class="dl-card__meta"><span>105 МБ</span><span>EXE</span><span>автообновление</span></p>
+          <a class="btn btn--primary" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.4.0-x64.exe">Скачать EXE</a>
         </article>
 
         <article class="dl-card">
           <div class="dl-card__top">
             <h3 class="dl-card__name">Portable</h3>
           </div>
-          <p class="dl-card__text">Один файл без установки. При первом запуске распаковывается во временную папку, поэтому нужен рабочий <code>%TEMP%</code>.</p>
+          <p class="dl-card__text">Один файл без установки. При первом запуске распаковывается во временную папку, поэтому нужен рабочий <code>%TEMP%</code>. Новую версию нужно скачивать вручную.</p>
           <p class="dl-card__meta"><span>94 МБ</span><span>ZIP</span><span>один файл</span></p>
-          <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.3.0-portable.zip">Скачать ZIP</a>
+          <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.4.0-portable.zip">Скачать ZIP</a>
+        </article>
+
+        <article class="dl-card">
+          <div class="dl-card__top">
+            <h3 class="dl-card__name">Папка с программой</h3>
+          </div>
+          <p class="dl-card__text">Распаковать в любую папку и запустить <code>Flushot.exe</code>. Временная папка Windows не нужна. Новую версию нужно скачивать вручную.</p>
+          <p class="dl-card__meta"><span>143 МБ</span><span>ZIP</span><span>без установки</span></p>
+          <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.4.0-win64.zip">Скачать ZIP</a>
         </article>
       </div>
+
+      <p class="dl-count"><b data-downloads>0</b> скачиваний с GitHub · считаются скачивания, а не установки</p>
 
       <div class="dl-note">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 9v5"/><path d="M12 17h.01"/><path d="M10.3 3.9L2.4 18a1.9 1.9 0 0 0 1.7 2.9h15.8a1.9 1.9 0 0 0 1.7-2.9L13.7 3.9a1.9 1.9 0 0 0-3.4 0z"/></svg>
@@ -719,7 +721,14 @@
 
         <details>
           <summary>Нужен ли интернет?</summary>
-          <p>Нет. Программа не делает сетевых запросов вообще: ни проверки обновлений, ни телеметрии, ни входа в аккаунт. Скачали один раз — работает офлайн сколько угодно.</p>
+          <p>Для работы — нет: снимок, оформление, сохранение и распознавание текста происходят на вашем компьютере, и снимок никуда не отправляется.</p>
+          <p>Один запрос в сутки программа делает сама: спрашивает у GitHub, не вышла ли новая версия, и если вышла — скачивает её в фоне и ставит при выходе. Ничего другого она не отправляет: ни статистики, ни идентификатора, ни адресов. Проверку можно выключить в настройках, и тогда запросов не будет совсем.</p>
+        </details>
+
+        <details>
+          <summary>Как приходят обновления?</summary>
+          <p>Установленная версия раз в сутки спрашивает у GitHub, не вышла ли новая, скачивает её в фоне и ставит при выходе — поэтому ничего не закрывается посреди работы. Проверить вручную можно там же, где всё остальное: настройки → «Обновления» → «Проверить сейчас».</p>
+          <p>Обновляется только установщик. Portable-версия и архив для ручной распаковки заменять себя не могут: portable при каждом запуске распаковывается во временную папку, а у архива нет деинсталлятора. Им новую версию нужно скачивать с сайта.</p>
         </details>
 
         <details>
@@ -729,7 +738,7 @@
 
         <details>
           <summary>Есть английский язык?</summary>
-          <p>Нет, интерфейс только на русском. Это одна из честных границ: перевода пока не сделали.</p>
+          <p>Да, с версии 2.3.0: настройки → «Язык» → English. Значение «Как в системе» берёт язык Windows — русская система показывает русский, любая другая английский. У программы есть и английская страница.</p>
         </details>
 
         <details>
@@ -799,11 +808,11 @@
           <svg class="btn__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>
           </svg>
-          Скачать Flushot 2.3.0
+          Скачать Flushot 2.4.0
         </a>
         <a class="btn btn--ghost btn--lg" href="#faq">Сначала вопросы</a>
       </div>
-      <p class="cta__meta">143 МБ · без регистрации · без интернета</p>
+      <p class="cta__meta">105 МБ · без регистрации · без телеметрии</p>
     </div>
   </section>
 </main>
@@ -812,7 +821,7 @@
   <div class="footer__inner">
     <div class="footer__brand">
       <img class="brand__mark" src="favicon.svg?v=a7643679" width="200" height="200" alt="" aria-hidden="true">
-      <span>Версия 2.3.0 · © 2026 Flushot</span>
+      <span>Версия 2.4.0 · © 2026 Flushot</span>
     </div>
     <nav class="footer__links" aria-label="Навигация в подвале">
       <a href="#features">Возможности</a>
@@ -832,7 +841,7 @@
   "name": "Flushot",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Windows 10, Windows 11",
-  "softwareVersion": "2.3.0",
+  "softwareVersion": "2.4.0",
   "description": "Бесплатная программа для скриншотов на Windows: выделение области, рамка с тенью, ровная линия для подчёркивания, снимок всего экрана одной клавишей.",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "RUB" },
   "inLanguage": "ru"

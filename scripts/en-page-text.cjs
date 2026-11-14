@@ -47,8 +47,8 @@ module.exports = [
   ],
   ['Скачать для Windows', 'Download for Windows'],
   ['>Что внутри<', '>What’s inside<'],
-  ['Без рекламы и интернета ·', 'No ads, no internet ·'],
-  ['есть portable и архив без установки', 'a portable build and a no-install archive are available'],
+  ['Без рекламы и телеметрии ·', 'No ads and no telemetry ·'],
+  ['установщик обновляется сам', 'the installer updates itself'],
   [
     'Снимок окна программы, оформленный Flushot: белая рамка, скруглённые углы и мягкая тень.',
     'A screenshot of the program window styled by Flushot: white frame, rounded corners and a soft shadow.',
@@ -130,12 +130,12 @@ module.exports = [
     'Размер в пикселях обновляется, пока тянете рамку. Рамку можно двигать целиком, менять за любой край — и панель никогда не уезжает за экран.',
     'The size in pixels updates as you drag the frame. You can move the whole frame, resize it from any edge, and the panel never slides off the screen.',
   ],
-  ['>Без интернета<', '>No internet<'],
+  ['>Без телеметрии<', '>No telemetry<'],
   [
-    'Ни проверки обновлений, ни телеметрии, ни входа в аккаунт. Работает офлайн сколько угодно.',
-    'No update checks, no telemetry, no account sign-in. It works offline for as long as you like.',
+    'Ни аналитики, ни входа в аккаунт, ни отправки снимков. Раз в сутки программа спрашивает у GitHub про новую версию — это отключается переключателем.',
+    'No analytics, no account, no screenshots sent anywhere. Once a day the program asks GitHub about a new version, and one switch turns that off.',
   ],
-  ['>0 запросов<', '>0 requests<'],
+  ['>один запрос в сутки<', '>one request a day<'],
   ['>Текст со снимка<', '>Text from a screenshot<'],
   [
     'Обведите на снимке фрагмент — «Текст» прочитает его встроенными движками Windows: без загрузки языков, без интернета и без отправки снимка куда-либо.',
@@ -332,29 +332,29 @@ module.exports = [
   ],
 
   // Download
-  ['>Версия 2.3.0 для Windows<', '>Version 2.3.0 for Windows<'],
+  ['>Версия 2.4.0 для Windows<', '>Version 2.4.0 for Windows<'],
   [
-    'Три варианта одной и той же сборки. Программа внутри одинаковая — выбирайте по способу установки.',
-    'Three variants of the same build. The program inside is identical — pick one by how you want to install it.',
+    'Три варианта одной и той же сборки. Программа внутри одинаковая; отличается способ установки и то, обновляется ли она сама.',
+    'Three variants of the same build. The program inside is identical; what differs is how it is installed and whether it updates itself.',
   ],
   ['>Папка с программой<', '>Folder with the program<'],
   ['>Рекомендуем<', '>Recommended<'],
   [
-    'Распаковать в любую папку и запустить <code>Flushot.exe</code>. Ничего не устанавливается, временная папка Windows не нужна.',
-    'Unpack into any folder and run <code>Flushot.exe</code>. Nothing gets installed and Windows temp space is not needed.',
+    'Распаковать в любую папку и запустить <code>Flushot.exe</code>. Временная папка Windows не нужна. Новую версию нужно скачивать вручную.',
+    'Unpack into any folder and run <code>Flushot.exe</code>. Windows temp space is not needed. New versions have to be downloaded by hand.',
   ],
   ['<span>143 МБ</span>', '<span>143 MB</span>'],
   ['>без установки<', '>no installation<'],
   ['>Скачать ZIP<', '>Download ZIP<'],
   ['>Установщик<', '>Installer<'],
   [
-    'Внутри <code>Flushot-2.3.0-x64.exe</code>. Двойной клик, «Установить» — появятся ярлыки в меню «Пуск» и строка удаления.',
-    'It contains <code>Flushot-2.3.0-x64.exe</code>. Double-click, “Install” — shortcuts appear in the Start menu along with an uninstall entry.',
+    'Двойной клик, «Установить» — появятся ярлыки в меню «Пуск» и строка удаления. <strong>Обновляется сам:</strong> раз в сутки проверяет новую версию и ставит её при выходе.',
+    'Double-click, “Install” — shortcuts appear in the Start menu along with an uninstall entry. <strong>Updates itself:</strong> once a day it looks for a new version and installs it on quit.',
   ],
   ['<span>94 МБ</span>', '<span>94 MB</span>'],
   [
-    'Один файл без установки. При первом запуске распаковывается во временную папку, поэтому нужен рабочий <code>%TEMP%</code>.',
-    'A single file with no installation. On first launch it unpacks into a temporary folder, so a working <code>%TEMP%</code> is needed.',
+    'Один файл без установки. При первом запуске распаковывается во временную папку, поэтому нужен рабочий <code>%TEMP%</code>. Новую версию нужно скачивать вручную.',
+    'A single file with no installation. On the first launch it unpacks into the temp folder, so a working <code>%TEMP%</code> is required. New versions have to be downloaded by hand.',
   ],
   ['>один файл<', '>single file<'],
   [
@@ -430,8 +430,8 @@ module.exports = [
   ],
   ['>Нужен ли интернет?<', '>Is an internet connection needed?<'],
   [
-    'Нет. Программа не делает сетевых запросов вообще: ни проверки обновлений, ни телеметрии, ни входа в аккаунт. Скачали один раз — работает офлайн сколько угодно.',
-    'No. The program makes no network requests at all: no update checks, no telemetry, no account sign-in. Download it once and it works offline for as long as you like.',
+    'Для работы — нет: снимок, оформление, сохранение и распознавание текста происходят на вашем компьютере, и снимок никуда не отправляется.',
+    'Not for using it: the capture, the framing, saving and text recognition all happen on your computer, and the screenshot is never sent anywhere.',
   ],
   ['>Что с качеством картинки?<', '>What about picture quality?<'],
   [
@@ -440,8 +440,8 @@ module.exports = [
   ],
   ['>Есть английский язык?<', '>Is there an English version?<'],
   [
-    'Нет, интерфейс только на русском. Это одна из честных границ: перевода пока не сделали.',
-    'No, the interface is Russian only. That is one of the honest limits: the translation has not been made yet.',
+    'Да, с версии 2.3.0: настройки → «Язык» → English. Значение «Как в системе» берёт язык Windows — русская система показывает русский, любая другая английский. У программы есть и английская страница.',
+    'Yes, since 2.3.0: settings → “Language” → English. “Same as the system” follows the Windows language — a Russian system shows Russian, anything else shows English. The program also has an English page.',
   ],
   ['>Можно ли удалить одну пометку из нескольких?<', '>Can I delete one annotation out of several?<'],
   [
@@ -500,17 +500,44 @@ module.exports = [
     'Если не понравится — удалить так же просто, как распаковать.',
     'If you do not like it, deleting it takes as little effort as unpacking did.',
   ],
-  ['Скачать Flushot 2.3.0', 'Download Flushot 2.3.0'],
+  ['Скачать Flushot 2.4.0', 'Download Flushot 2.4.0'],
   ['>Сначала вопросы<', '>Questions first<'],
-  ['143 МБ · без регистрации · без интернета', '143 MB · no sign-up · no internet'],
+  ['105 МБ · без регистрации · без телеметрии', '105 MB · no sign-up · no telemetry'],
 
   // Footer
-  ['>Версия 2.3.0 · © 2026 Flushot<', '>Version 2.3.0 · © 2026 Flushot<'],
+  ['>Версия 2.4.0 · © 2026 Flushot<', '>Version 2.4.0 · © 2026 Flushot<'],
   ['aria-label="Навигация в подвале"', 'aria-label="Footer navigation"'],
 
   // JSON-LD
   [
     'Бесплатная программа для скриншотов на Windows: выделение области, рамка с тенью, ровная линия для подчёркивания, снимок всего экрана одной клавишей.',
     'A free screenshot program for Windows: region selection, a frame with a shadow, a straight line for underlining, and a full-screen screenshot with one key.',
+  ],
+
+  // Updates and the download section as of 2.4.0
+  [
+    '>Скачать EXE<',
+    '>Download EXE<'
+  ],
+  ['<span>105 МБ</span><span>EXE</span><span>автообновление</span>', '<span>110 MB</span><span>EXE</span><span>auto-updates</span>'],
+  [
+    ' скачиваний с GitHub · считаются скачивания, а не установки',
+    ' downloads from GitHub · downloads, not installs'
+  ],
+  [
+    '>Как приходят обновления?<',
+    '>How do updates arrive?<'
+  ],
+  [
+    'Установленная версия раз в сутки спрашивает у GitHub, не вышла ли новая, скачивает её в фоне и ставит при выходе — поэтому ничего не закрывается посреди работы. Проверить вручную можно там же, где всё остальное: настройки → «Обновления» → «Проверить сейчас».',
+    'An installed copy asks GitHub once a day whether a new version exists, downloads it in the background and installs it on quit, so nothing closes in the middle of your work. To ask by hand: settings → “Updates” → “Check now”.'
+  ],
+  [
+    'Обновляется только установщик. Portable-версия и архив для ручной распаковки заменять себя не могут: portable при каждом запуске распаковывается во временную папку, а у архива нет деинсталлятора. Им новую версию нужно скачивать с сайта.',
+    'Only the installer updates itself. The portable build and the unpack-it-yourself archive cannot replace themselves: portable unpacks into the temp folder on every launch, and the archive has no uninstaller. For those, download the new version from the site.'
+  ],
+  [
+    'Один запрос в сутки программа делает сама: спрашивает у GitHub, не вышла ли новая версия, и если вышла — скачивает её в фоне и ставит при выходе. Ничего другого она не отправляет: ни статистики, ни идентификатора, ни адресов. Проверку можно выключить в настройках, и тогда запросов не будет совсем.',
+    'The program makes one request a day on its own: it asks GitHub whether a new version exists and, if one does, downloads it in the background and installs it on quit. It sends nothing else — no statistics, no identifier, no addresses. The check can be switched off in the settings, and then there are no requests at all.'
   ],
 ]

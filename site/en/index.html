@@ -32,7 +32,7 @@
 <link rel="apple-touch-icon" href="../apple-touch-icon.png?v=980e5cca">
 <link rel="manifest" href="../site.webmanifest?v=06f0995b">
 <link rel="stylesheet" href="../fonts.css?v=0b21389f">
-<link rel="stylesheet" href="../styles.css?v=0c4232c3">
+<link rel="stylesheet" href="../styles.css?v=f6328172">
 <link rel="preload" as="image" href="../assets/en/hero.webp?v=bfd76a00" type="image/webp">
 
 <script>
@@ -124,8 +124,8 @@
         <a class="btn btn--ghost btn--lg" href="#features">What’s inside</a>
       </div>
       <p class="hero__note" data-rise style="--d: 0.26s">
-        <span>No ads, no internet ·</span>
-        <a href="#download">a portable build and a no-install archive are available</a>
+        <span>No ads and no telemetry ·</span>
+        <a href="#download">the installer updates itself</a>
       </p>
 
       <figure class="hero__preview" data-rise style="--d: 0.3s">
@@ -302,9 +302,9 @@
           <div class="feature__mark" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7z"/><path d="M9 12l2 2 4-4"/></svg>
           </div>
-          <h3 class="feature__name">No internet</h3>
-          <p class="feature__text">No update checks, no telemetry, no account sign-in. It works offline for as long as you like.</p>
-          <p class="feature__tag">0 requests</p>
+          <h3 class="feature__name">No telemetry</h3>
+          <p class="feature__text">No analytics, no account, no screenshots sent anywhere. Once a day the program asks GitHub about a new version, and one switch turns that off.</p>
+          <p class="feature__tag">one request a day</p>
         </article>
 
         <article class="feature">
@@ -625,39 +625,41 @@
     <div class="wrap">
       <div class="section-head">
         <p class="eyebrow">Download</p>
-        <h2 class="section-title" id="download-title">Version 2.3.0 for Windows</h2>
-        <p class="section-lead">Three variants of the same build. The program inside is identical — pick one by how you want to install it.</p>
+        <h2 class="section-title" id="download-title">Version 2.4.0 for Windows</h2>
+        <p class="section-lead">Three variants of the same build. The program inside is identical; what differs is how it is installed and whether it updates itself.</p>
       </div>
 
       <div class="dl-grid">
         <article class="dl-card dl-card--main">
           <div class="dl-card__top">
-            <h3 class="dl-card__name">Folder with the program</h3>
+            <h3 class="dl-card__name">Installer</h3>
             <span class="dl-card__badge">Recommended</span>
           </div>
-          <p class="dl-card__text">Unpack into any folder and run <code>Flushot.exe</code>. Nothing gets installed and Windows temp space is not needed.</p>
-          <p class="dl-card__meta"><span>143 MB</span><span>ZIP</span><span>no installation</span></p>
-          <a class="btn btn--primary" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.3.0-win64.zip">Download ZIP</a>
-        </article>
-
-        <article class="dl-card">
-          <div class="dl-card__top">
-            <h3 class="dl-card__name">Installer</h3>
-          </div>
-          <p class="dl-card__text">It contains <code>Flushot-2.3.0-x64.exe</code>. Double-click, “Install” — shortcuts appear in the Start menu along with an uninstall entry.</p>
-          <p class="dl-card__meta"><span>94 MB</span><span>ZIP</span><span>NSIS</span></p>
-          <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.3.0-installer.zip">Download ZIP</a>
+          <p class="dl-card__text">Double-click, “Install” — shortcuts appear in the Start menu along with an uninstall entry. <strong>Updates itself:</strong> once a day it looks for a new version and installs it on quit.</p>
+          <p class="dl-card__meta"><span>110 MB</span><span>EXE</span><span>auto-updates</span></p>
+          <a class="btn btn--primary" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.4.0-x64.exe">Download EXE</a>
         </article>
 
         <article class="dl-card">
           <div class="dl-card__top">
             <h3 class="dl-card__name">Portable</h3>
           </div>
-          <p class="dl-card__text">A single file with no installation. On first launch it unpacks into a temporary folder, so a working <code>%TEMP%</code> is needed.</p>
+          <p class="dl-card__text">A single file with no installation. On the first launch it unpacks into the temp folder, so a working <code>%TEMP%</code> is required. New versions have to be downloaded by hand.</p>
           <p class="dl-card__meta"><span>94 MB</span><span>ZIP</span><span>single file</span></p>
-          <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.3.0-portable.zip">Download ZIP</a>
+          <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.4.0-portable.zip">Download ZIP</a>
+        </article>
+
+        <article class="dl-card">
+          <div class="dl-card__top">
+            <h3 class="dl-card__name">Folder with the program</h3>
+          </div>
+          <p class="dl-card__text">Unpack into any folder and run <code>Flushot.exe</code>. Windows temp space is not needed. New versions have to be downloaded by hand.</p>
+          <p class="dl-card__meta"><span>143 MB</span><span>ZIP</span><span>no installation</span></p>
+          <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.4.0-win64.zip">Download ZIP</a>
         </article>
       </div>
+
+      <p class="dl-count"><b data-downloads>0</b> downloads from GitHub · downloads, not installs</p>
 
       <div class="dl-note">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 9v5"/><path d="M12 17h.01"/><path d="M10.3 3.9L2.4 18a1.9 1.9 0 0 0 1.7 2.9h15.8a1.9 1.9 0 0 0 1.7-2.9L13.7 3.9a1.9 1.9 0 0 0-3.4 0z"/></svg>
@@ -713,7 +715,14 @@
 
         <details>
           <summary>Is an internet connection needed?</summary>
-          <p>No. The program makes no network requests at all: no update checks, no telemetry, no account sign-in. Download it once and it works offline for as long as you like.</p>
+          <p>Not for using it: the capture, the framing, saving and text recognition all happen on your computer, and the screenshot is never sent anywhere.</p>
+          <p>The program makes one request a day on its own: it asks GitHub whether a new version exists and, if one does, downloads it in the background and installs it on quit. It sends nothing else — no statistics, no identifier, no addresses. The check can be switched off in the settings, and then there are no requests at all.</p>
+        </details>
+
+        <details>
+          <summary>How do updates arrive?</summary>
+          <p>An installed copy asks GitHub once a day whether a new version exists, downloads it in the background and installs it on quit, so nothing closes in the middle of your work. To ask by hand: settings → “Updates” → “Check now”.</p>
+          <p>Only the installer updates itself. The portable build and the unpack-it-yourself archive cannot replace themselves: portable unpacks into the temp folder on every launch, and the archive has no uninstaller. For those, download the new version from the site.</p>
         </details>
 
         <details>
@@ -723,7 +732,7 @@
 
         <details>
           <summary>Is there an English version?</summary>
-          <p>No, the interface is Russian only. That is one of the honest limits: the translation has not been made yet.</p>
+          <p>Yes, since 2.3.0: settings → “Language” → English. “Same as the system” follows the Windows language — a Russian system shows Russian, anything else shows English. The program also has an English page.</p>
         </details>
 
         <details>
@@ -793,11 +802,11 @@
           <svg class="btn__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>
           </svg>
-          Download Flushot 2.3.0
+          Download Flushot 2.4.0
         </a>
         <a class="btn btn--ghost btn--lg" href="#faq">Questions first</a>
       </div>
-      <p class="cta__meta">143 MB · no sign-up · no internet</p>
+      <p class="cta__meta">105 MB · no sign-up · no telemetry</p>
     </div>
   </section>
 </main>
@@ -806,7 +815,7 @@
   <div class="footer__inner">
     <div class="footer__brand">
       <img class="brand__mark" src="../favicon.svg?v=a7643679" width="200" height="200" alt="" aria-hidden="true">
-      <span>Version 2.3.0 · © 2026 Flushot</span>
+      <span>Version 2.4.0 · © 2026 Flushot</span>
     </div>
     <nav class="footer__links" aria-label="Footer navigation">
       <a href="#features">Features</a>
@@ -826,7 +835,7 @@
   "name": "Flushot",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Windows 10, Windows 11",
-  "softwareVersion": "2.3.0",
+  "softwareVersion": "2.4.0",
   "description": "A free screenshot program for Windows: region selection, a frame with a shadow, a straight line for underlining, and a full-screen screenshot with one key.",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "RUB" },
   "inLanguage": "en"

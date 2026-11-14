@@ -2002,6 +2002,22 @@ code {
   margin-top: auto;
 }
 
+/* One line under the three cards: how many times the release was downloaded.
+   Set apart from the cards on purpose — it is a fact about the release, not a
+   reason to pick one of them. */
+.dl-count {
+  margin-top: 18px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--fg-dim);
+}
+
+.dl-count b {
+  color: var(--fg-muted);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
 .dl-note {
   display: flex;
   align-items: flex-start;
