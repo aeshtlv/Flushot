@@ -69,6 +69,10 @@ That is standard behaviour for an unsigned executable.
 Downloaded from GitHub for **v2.4.2**: 1 — 0 portable.zip, 0 win64.zip, 1 x64.exe. 45 in total. These are downloads, not installs.
 <!-- downloads:end -->
 
+That number updates itself: once a day the `Download counter` workflow copies it from GitHub into
+the README and the landing page. It counts downloads from GitHub, not installs — the program
+reports nothing about itself.
+
 Landing page: **https://flushot.ink**
 
 ## Build from source

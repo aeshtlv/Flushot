@@ -1,0 +1,116 @@
+name: Download counter
+
+# Keeps the download counter current without anyone remembering to run it.
+#
+# The number lives in two places that never meet: the README on `main` and the
+# landing page on `site`. Both are static text, so before this workflow they only
+# changed when somebody ran `npm run stats` by hand, rebuilt the English page,
+# committed twice and redeployed — which meant the page could honestly say "45
+# downloads" for weeks.
+#
+# GitHub's own `download_count` updates by itself; this only copies it into the
+# files. Nothing about the program or its release changes here.
+on:
+  schedule:
+    # Every day at 03:17 UTC. Not on the hour: GitHub queues a great many jobs at
+    # :00 and the run can be delayed by ten minutes or more.
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: download-counter
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    name: Copy the count into the README and the page
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      # The branches are independent, so they are checked out side by side: `main`
+      # holds the script and the README, `site` holds the page it writes into.
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          path: main
+
+      - name: Checkout site branch
+        uses: actions/checkout@v4
+        with:
+          ref: site
+          path: site-work
+
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # No `npm ci`: the counter reads the GitHub API with the built-in `fetch` and
+      # touches nothing else, so installing ninety megabytes of dependencies to run
+      # one file would be wasteful and slower than the job itself.
+      - name: Count and write
+        working-directory: main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/download-count.cjs --write --site ../site-work
+
+      # The English page is generated from the Russian one, so it has to be rebuilt
+      # or it keeps the previous number. Its script lives in the site checkout.
+      - name: Regenerate the English page
+        run: node site-work/scripts/build-en-page.cjs
+
+      # The number is then read back from the page, not from a sentence: the Russian
+      # README says "за всё время — 45", and extracting digits from Cyrillic prose in
+      # a shell is how this job silently died the first time. `data-downloads` holds
+      # nothing but the number.
+      - name: Read the count back
+        id: count
+        run: |
+          set -eu
+          ru=$(grep -o 'data-downloads>[0-9]*' site-work/site/index.html | head -1 | sed 's/.*>//')
+          en=$(grep -o 'data-downloads>[0-9]*' site-work/site/en/index.html | head -1 | sed 's/.*>//')
+          echo "Russian page: $ru"
+          echo "English page: $en"
+          [ -n "$ru" ] || { echo "the landing page has no counter"; exit 1; }
+          [ "$ru" = "$en" ] || { echo "the two pages disagree on the counter"; exit 1; }
+          grep -q "$ru" main/README.md || { echo "the Russian README did not take the number"; exit 1; }
+          grep -q "$ru" main/README.en.md || { echo "the English README did not take the number"; exit 1; }
+          echo "total=$ru" >> "$GITHUB_OUTPUT"
+
+      - name: Commit main
+        working-directory: main
+        env:
+          TOTAL: ${{ steps.count.outputs.total }}
+        run: |
+          set -eu
+          git config user.name "Flushot counter"
+          git config user.email "noreply@flushot.ink"
+          if git diff --quiet -- README.md README.en.md; then
+            echo "the README already carries $TOTAL"
+          else
+            git add README.md README.en.md
+            git commit -m "Счётчик скачиваний: $TOTAL"
+            git push origin HEAD:main
+            echo "main updated to $TOTAL"
+          fi
+
+      - name: Commit the site branch
+        working-directory: site-work
+        env:
+          TOTAL: ${{ steps.count.outputs.total }}
+        run: |
+          set -eu
+          git config user.name "Flushot counter"
+          git config user.email "noreply@flushot.ink"
+          if git diff --quiet -- site/index.html site/en/index.html; then
+            echo "the page already carries $TOTAL"
+          else
+            git add site/index.html site/en/index.html
+            git commit -m "Счётчик: $TOTAL скачиваний"
+            git push origin HEAD:site
+            echo "site updated to $TOTAL — the server redeploys itself within the hour"
+          fi
