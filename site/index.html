@@ -587,6 +587,10 @@
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
                 <span>Обе горячие клавиши и автозапуск</span>
               </li>
+              <li>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+                <span>Язык интерфейса: русский или английский</span>
+              </li>
             </ul>
           </div>
         </div>
@@ -737,11 +741,6 @@
         </details>
 
         <details>
-          <summary>Есть английский язык?</summary>
-          <p>Да, с версии 2.3.0: настройки → «Язык» → English. Значение «Как в системе» берёт язык Windows — русская система показывает русский, любая другая английский. У программы есть и английская страница.</p>
-        </details>
-
-        <details>
           <summary>Можно ли удалить одну пометку из нескольких?</summary>
           <p><kbd>Ctrl</kbd>+<kbd>Z</kbd> отменяет последнее действие. Отдельный нумерованный шаг из середины убрать нельзя — нумерация пересчитывается автоматически, и выборочное удаление сломало бы её.</p>
         </details>
@@ -765,19 +764,11 @@
       <ul class="limits">
         <li class="limit">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
-          <span><strong>Только русский.</strong> Английского перевода интерфейса нет.</span>
-        </li>
-        <li class="limit">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
           <span><strong>Файлы не подписаны.</strong> SmartScreen предупреждает при первом запуске. Исходный код при этом открыт на <a href="https://github.com/aeshtlv/Flushot">GitHub</a> — его можно прочитать до запуска.</span>
         </li>
         <li class="limit">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
           <span><strong>Пометки вшиваются при сохранении.</strong> До этого их можно двигать, после — уже нет.</span>
-        </li>
-        <li class="limit">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
-          <span><strong>Размытие в предпросмотре грубее</strong>, чем в готовом файле.</span>
         </li>
         <li class="limit">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
@@ -789,11 +780,15 @@
         </li>
         <li class="limit">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
-          <span><strong><kbd>Esc</kbd> назначить нельзя</strong>: Windows не отдаёт её программам.</span>
+          <span><strong><kbd>Esc</kbd> назначить нельзя</strong>: ею отменяется запись сочетания.</span>
         </li>
         <li class="limit">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
           <span><strong>Только Windows 10 и 11.</strong> Версий для macOS и Linux нет.</span>
+        </li>
+        <li class="limit">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
+          <span><strong>Защищённый контент выйдет чёрным.</strong> DRM-видео и часть игр в полноэкранном режиме система не отдаёт на снимок.</span>
         </li>
       </ul>
     </div>

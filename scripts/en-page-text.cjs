@@ -302,6 +302,7 @@ module.exports = [
   ],
   ['>Формат: PNG без потерь, JPEG или WebP<', '>Format: lossless PNG, JPEG or WebP<'],
   ['>Обе горячие клавиши и автозапуск<', '>Both hotkeys and autostart<'],
+  ['>Язык интерфейса: русский или английский<', '>Interface language: Russian or English<'],
 
   // Multiple monitors
   ['>Несколько экранов<', '>Multiple screens<'],
@@ -438,11 +439,6 @@ module.exports = [
     'Снимок делается в физических пикселях монитора, поэтому на масштабе 125 % или 150 % он не мыльный. PNG сохраняется без потерь. Если нужен файл полегче — есть JPEG с настраиваемым качеством и WebP.',
     'The screenshot is taken in the monitor’s physical pixels, so at 125 % or 150 % scaling it is not blurry. PNG is saved losslessly. If you need a lighter file, JPEG with adjustable quality and WebP are available.',
   ],
-  ['>Есть английский язык?<', '>Is there an English version?<'],
-  [
-    'Да, с версии 2.3.0: настройки → «Язык» → English. Значение «Как в системе» берёт язык Windows — русская система показывает русский, любая другая английский. У программы есть и английская страница.',
-    'Yes, since 2.3.0: settings → “Language” → English. “Same as the system” follows the Windows language — a Russian system shows Russian, anything else shows English. The program also has an English page.',
-  ],
   ['>Можно ли удалить одну пометку из нескольких?<', '>Can I delete one annotation out of several?<'],
   [
     '<kbd>Ctrl</kbd>+<kbd>Z</kbd> отменяет последнее действие. Отдельный нумерованный шаг из середины убрать нельзя — нумерация пересчитывается автоматически, и выборочное удаление сломало бы её.',
@@ -462,20 +458,12 @@ module.exports = [
     'Better to find out here than after the download.',
   ],
   [
-    '<strong>Только русский.</strong> Английского перевода интерфейса нет.',
-    '<strong>Russian only.</strong> There is no English translation of the interface.',
-  ],
-  [
     '<strong>Файлы не подписаны.</strong> SmartScreen предупреждает при первом запуске. Исходный код при этом открыт на <a href="https://github.com/aeshtlv/Flushot">GitHub</a> — его можно прочитать до запуска.',
     '<strong>The files are not signed.</strong> SmartScreen warns on first launch. The source code is open on <a href="https://github.com/aeshtlv/Flushot">GitHub</a>, so you can read it before running anything.',
   ],
   [
     '<strong>Пометки вшиваются при сохранении.</strong> До этого их можно двигать, после — уже нет.',
     '<strong>Annotations are baked in when you save.</strong> Before that you can move them; afterwards you cannot.',
-  ],
-  [
-    '<strong>Размытие в предпросмотре грубее</strong>, чем в готовом файле.',
-    '<strong>Blur in the preview is coarser</strong> than in the finished file.',
   ],
   [
     '<strong>Отдельную пометку удалить нельзя</strong> — только последнее действие.',
@@ -486,12 +474,16 @@ module.exports = [
     '<strong>“Full screen” means the primary monitor</strong>, not all monitors in one picture.',
   ],
   [
-    '<strong><kbd>Esc</kbd> назначить нельзя</strong>: Windows не отдаёт её программам.',
-    '<strong><kbd>Esc</kbd> cannot be assigned</strong>: Windows does not give it to programs.',
+    '<strong><kbd>Esc</kbd> назначить нельзя</strong>: ею отменяется запись сочетания.',
+    '<strong><kbd>Esc</kbd> cannot be assigned</strong>: it cancels the recording.',
   ],
   [
     '<strong>Только Windows 10 и 11.</strong> Версий для macOS и Linux нет.',
     '<strong>Windows 10 and 11 only.</strong> There are no macOS or Linux versions.',
+  ],
+  [
+    '<strong>Защищённый контент выйдет чёрным.</strong> DRM-видео и часть игр в полноэкранном режиме система не отдаёт на снимок.',
+    '<strong>Protected content comes out black.</strong> The system refuses to hand DRM video and some full-screen games to a capture.',
   ],
 
   // Closing call to action

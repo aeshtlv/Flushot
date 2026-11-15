@@ -581,6 +581,10 @@
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
                 <span>Both hotkeys and autostart</span>
               </li>
+              <li>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+                <span>Interface language: Russian or English</span>
+              </li>
             </ul>
           </div>
         </div>
@@ -731,11 +735,6 @@
         </details>
 
         <details>
-          <summary>Is there an English version?</summary>
-          <p>Yes, since 2.3.0: settings → “Language” → English. “Same as the system” follows the Windows language — a Russian system shows Russian, anything else shows English. The program also has an English page.</p>
-        </details>
-
-        <details>
           <summary>Can I delete one annotation out of several?</summary>
           <p><kbd>Ctrl</kbd>+<kbd>Z</kbd> undoes the last action. A single numbered step cannot be removed from the middle — the numbering is recalculated automatically, and removing one selectively would break it.</p>
         </details>
@@ -759,19 +758,11 @@
       <ul class="limits">
         <li class="limit">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
-          <span><strong>Russian only.</strong> There is no English translation of the interface.</span>
-        </li>
-        <li class="limit">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
           <span><strong>The files are not signed.</strong> SmartScreen warns on first launch. The source code is open on <a href="https://github.com/aeshtlv/Flushot">GitHub</a>, so you can read it before running anything.</span>
         </li>
         <li class="limit">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
           <span><strong>Annotations are baked in when you save.</strong> Before that you can move them; afterwards you cannot.</span>
-        </li>
-        <li class="limit">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
-          <span><strong>Blur in the preview is coarser</strong> than in the finished file.</span>
         </li>
         <li class="limit">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
@@ -783,11 +774,15 @@
         </li>
         <li class="limit">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
-          <span><strong><kbd>Esc</kbd> cannot be assigned</strong>: Windows does not give it to programs.</span>
+          <span><strong><kbd>Esc</kbd> cannot be assigned</strong>: it cancels the recording.</span>
         </li>
         <li class="limit">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
           <span><strong>Windows 10 and 11 only.</strong> There are no macOS or Linux versions.</span>
+        </li>
+        <li class="limit">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
+          <span><strong>Protected content comes out black.</strong> The system refuses to hand DRM video and some full-screen games to a capture.</span>
         </li>
       </ul>
     </div>
