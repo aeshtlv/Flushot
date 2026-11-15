@@ -485,6 +485,10 @@ module.exports = [
     '<strong>Защищённый контент выйдет чёрным.</strong> DRM-видео и часть игр в полноэкранном режиме система не отдаёт на снимок.',
     '<strong>Protected content comes out black.</strong> The system refuses to hand DRM video and some full-screen games to a capture.',
   ],
+  [
+    '<strong>Кадр замирает в момент нажатия клавиши.</strong> Меню, подсказка или анимация, появившиеся позже, в снимок не попадут — задержки съёмки нет.',
+    '<strong>The frame freezes when you press the key.</strong> A menu, tooltip or animation that appears afterwards is not in the picture — there is no capture delay.',
+  ],
 
   // Closing call to action
   ['>Попробуйте на одном скриншоте<', '>Try it on one screenshot<'],

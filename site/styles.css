@@ -2126,6 +2126,12 @@ code {
   border-right: 1px solid var(--rule);
 }
 
+/* The last row carries no line under it. The two-column layout puts two cells in
+   it, so this rule needs an even number of limits: with seven the final row holds
+   one, the cell above it loses its line, and the border check in
+   `node scripts/shot-site.cjs` fails. It reports the count as "GRID GAPS", which is
+   the only thing that catches this — nothing visual or textual does. Keep the list
+   even, or make this rule depend on parity. */
 .limit:nth-last-child(-n + 2) {
   border-bottom: 0;
 }
