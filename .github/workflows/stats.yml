@@ -2,11 +2,11 @@ name: Download counter
 
 # Keeps the download counter current without anyone remembering to run it.
 #
-# The number lives in two places that never meet: the README on `main` and the
-# landing page on `site`. Both are static text, so before this workflow they only
-# changed when somebody ran `npm run stats` by hand, rebuilt the English page,
-# committed twice and redeployed — which meant the page could honestly say "45
-# downloads" for weeks.
+# The number lives in three places that never meet: the README on `main`, the
+# landing page on `site`, and the copy of that page that GitHub Pages serves. All
+# three are static text, so before this workflow they only changed when somebody ran
+# `npm run stats` by hand, rebuilt the English page, committed twice and redeployed —
+# which meant the page could honestly say "45 downloads" for weeks.
 #
 # GitHub's own `download_count` updates by itself; this only copies it into the
 # files. Nothing about the program or its release changes here.
@@ -19,6 +19,8 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 concurrency:
   group: download-counter
@@ -112,5 +114,21 @@ jobs:
             git add site/index.html site/en/index.html
             git commit -m "Счётчик: $TOTAL скачиваний"
             git push origin HEAD:site
-            echo "site updated to $TOTAL — the server redeploys itself within the hour"
+            echo "site updated to $TOTAL"
           fi
+
+      # A push made with the built-in token does not start other workflows — GitHub
+      # blocks that to prevent loops — so the `Pages` workflow never fires for these
+      # commits and the mirror at aeshtlv.github.io/Flushot kept an old number while
+      # flushot.ink had the new one. Publishing from here is what closes that gap.
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site-work/site
+
+      - name: Deploy to GitHub Pages
+        id: pages
+        uses: actions/deploy-pages@v4
