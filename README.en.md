@@ -66,7 +66,7 @@ The binaries are not code-signed, so SmartScreen warns on first launch: **More i
 That is standard behaviour for an unsigned executable.
 
 <!-- downloads:begin -->
-Downloaded from GitHub for **v2.4.2**: 11 — 1 portable.zip, 0 win64.zip, 10 x64.exe. 55 in total. These are downloads, not installs.
+Downloaded from GitHub for **v2.4.2**: 14 — 3 portable.zip, 0 win64.zip, 11 x64.exe. 58 in total. These are downloads, not installs.
 <!-- downloads:end -->
 
 That number updates itself: once a day the `Download counter` workflow copies it from GitHub into
