@@ -23,7 +23,9 @@ const path = require('node:path')
 // Both languages by default: the English page is generated, and generated pages
 // fail in ways only a server shows — a path that resolved on disk and 404s when
 // served, a font that only the English copy asks for.
-const PAGES = process.argv[2] ? [process.argv[2]] : ['https://flushot.ink/', 'https://flushot.ink/en/']
+const PAGES = process.argv[2]
+  ? [process.argv[2]]
+  : ['https://flushot.ink/', 'https://flushot.ink/en/', 'https://flushot.ink/privacy.html', 'https://flushot.ink/en/privacy.html']
 
 const BROWSER_CANDIDATES = [
   path.join(process.env['ProgramFiles'] || '', 'Microsoft', 'Edge', 'Application', 'msedge.exe'),

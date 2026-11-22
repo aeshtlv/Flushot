@@ -35,6 +35,7 @@ module.exports = [
   ['>Скриншоты<', '>Screenshots<'],
   ['>Вопросы<', '>Questions<'],
   ['>Скачать<', '>Download<'],
+  ['>Приватность<', '>Privacy<'],
   ['aria-label="Переключить на светлую тему"', 'aria-label="Switch to light theme"'],
 
   // Hero

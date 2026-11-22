@@ -127,15 +127,45 @@ async function main() {
   // The section fades up when it enters the viewport, and a block in the middle
   // of its reveal is a few pixels above where it will settle. Measuring before
   // the movement ends puts the whole drag off by whatever is left of it, which
-  // surfaces as a crop a couple of pixels off the drag — a failure that only
-  // happens on a loaded machine. Wait for the reveal, then measure once.
-  await sleep(900)
-  const sceneBox = await evaluate(`(() => {
-    const r = document.querySelector('[data-try-scene]').getBoundingClientRect();
-    return { x: r.x, y: r.y, w: r.width, h: r.height };
-  })()`)
+  // surfaces as a crop a couple of pixels off the drag.
+  //
+  // A fixed sleep cannot fix that: measured on 22 November 2026 the scene was still
+  // moving 22 px at 900 ms and had settled by 2400 ms, while on a faster machine it
+  // settles sooner. So the box is polled until two consecutive reads agree, and only
+  // then used. That is the actual precondition for the drag, rather than a guess at
+  // how long the animation takes.
+  const sceneBox = await (async () => {
+    let previous = null
+    for (let attempt = 0; attempt < 40; attempt++) {
+      const box = await evaluate(`(() => {
+        const r = document.querySelector('[data-try-scene]').getBoundingClientRect();
+        return { x: r.x, y: r.y, w: r.width, h: r.height };
+      })()`)
+      if (
+        previous &&
+        Math.abs(previous.x - box.x) < 0.5 &&
+        Math.abs(previous.y - box.y) < 0.5 &&
+        Math.abs(previous.w - box.w) < 0.5 &&
+        Math.abs(previous.h - box.h) < 0.5
+      ) {
+        return box
+      }
+      previous = box
+      await sleep(120)
+    }
+    throw new Error('the demo scene never stopped moving, so the drag coordinates would be stale')
+  })()
   truthy('scene is on screen', sceneBox.w > 200 && sceneBox.h > 200)
-  await sleep(250)
+
+  // And once more immediately before the first mouse event: an image that finished
+  // loading between the poll above and the drag would move everything again.
+  const settle = async () => {
+    const before = await evaluate(`window.scrollY + ':' + document.querySelector('[data-try-scene]').getBoundingClientRect().y`)
+    await sleep(150)
+    const after = await evaluate(`window.scrollY + ':' + document.querySelector('[data-try-scene]').getBoundingClientRect().y`)
+    return before === after
+  }
+  for (let attempt = 0; attempt < 20 && !(await settle()); attempt++) await sleep(100)
 
   const initial = await evaluate(`(() => {
     const demo = document.querySelector('[data-try]');

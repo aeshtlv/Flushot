@@ -137,6 +137,8 @@ const results = [
   // Generated from the Russian page by scripts/build-en-page.cjs, so it is
   // always stamped after it.
   rewrite('en/index.html', /((?:href|src|content)=")([^"]+)(")/g),
+  rewrite('privacy.html', /((?:href|src|content)=")([^"]+)(")/g),
+  rewrite('en/privacy.html', /((?:href|src|content)=")([^"]+)(")/g),
   rewrite('404.html', /((?:href|src|content)=")([^"]+)(")/g)
 ]
 

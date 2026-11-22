@@ -159,7 +159,10 @@ async function checkFiles() {
     'icon-512.png',
     'og-image.png',
     '404.html',
-    'robots.txt'
+    'robots.txt',
+    'privacy.html',
+    'en/privacy.html',
+    'metrics.js'
   ]
   for (const file of required) {
     if (!existsSync(path.join(SITE, file))) fail(`missing file: ${file}`)
@@ -287,6 +290,9 @@ async function checkEnglishPage() {
     notes.push('en/index.html has no Russian left, apart from the link back to it')
   }
 
+  // The policy page is built by the same engine, so it is checked the same way.
+  const policyEnglish = read('en/privacy.html')
+
   // And the generated file matches what the builder would produce right now.
   const { execFileSync } = require('node:child_process')
   try {
@@ -298,6 +304,11 @@ async function checkEnglishPage() {
       fail('en/index.html was out of date and has just been rebuilt — commit the regenerated file')
     } else {
       notes.push('en/index.html matches what scripts/build-en-page.cjs produces from index.html')
+    }
+    if (read('en/privacy.html') !== policyEnglish) {
+      fail('en/privacy.html was out of date and has just been rebuilt — commit the regenerated file')
+    } else {
+      notes.push('en/privacy.html matches what scripts/build-en-page.cjs produces from privacy.html')
     }
   } catch (error) {
     const output = error.stdout ? error.stdout.toString() : ''
@@ -316,6 +327,21 @@ async function checkEnglishPage() {
     const a = count(html, pattern)
     const b = count(russian, pattern)
     if (a !== b) fail(`en/index.html has ${a} ${name} elements, index.html has ${b}`)
+  }
+
+  // The policy is prose, so the only thing that can fall out silently is a whole
+  // paragraph: the counts catch that, and the Cyrillic sweep in the builder covers
+  // the rest.
+  for (const [name, pattern] of [
+    ['<p>', /<p\b/g],
+    ['<h2>', /<h2\b/g],
+    ['<a>', /<a\s/g]
+  ]) {
+    const english = count(read('en/privacy.html'), pattern)
+    const russianPolicy = count(read('privacy.html'), pattern)
+    if (english !== russianPolicy) {
+      fail(`en/privacy.html has ${english} ${name} elements, privacy.html has ${russianPolicy}`)
+    }
   }
 }
 
@@ -529,9 +555,12 @@ async function checkCss() {
  *    very thing that makes a shared link show a picture.
  */
 async function checkNoExternalRequests() {
-  const html = read('index.html')
-  const css = read('styles.css')
-  const js = read('app.js')
+  // Every document on the site, not just the landing page: a policy page that
+  // pulled in a web font from somewhere would leak exactly as much.
+  const PAGES = ['index.html', 'en/index.html', 'privacy.html', 'en/privacy.html']
+  const html = PAGES.map((page) => read(page)).join('\n')
+  const css = read('styles.css') + '\n' + read('fonts.css')
+  const js = read('app.js') + '\n' + read('metrics.js')
 
   const loadingUrls = []
   for (const match of html.matchAll(/\s(?:src|srcset)="([^"]+)"/g)) {
@@ -551,6 +580,21 @@ async function checkNoExternalRequests() {
   const external = loadingUrls.filter((url) => /^(https?:)?\/\//.test(url) && !url.startsWith('data:'))
   if (external.length > 0) fail(`the page loads from the network: ${[...new Set(external)].slice(0, 3).join(', ')}`)
 
+  // One third-party host is allowed to be *named*, and only in metrics.js: the
+  // Metrika tag, which that file inserts after the visitor presses "Accept". It is
+  // never written into the markup, which is why the check above can stay absolute.
+  const METRIKA_TAG = 'https://mc.yandex.ru/metrika/tag.js'
+  const metrics = read('metrics.js')
+  if (metrics.split(METRIKA_TAG).length - 1 !== 1) {
+    fail(`metrics.js should name ${METRIKA_TAG} exactly once`)
+  }
+  const hosts = new Set([...js.matchAll(/https?:\/\/([a-z0-9.-]+)/gi)].map((match) => match[1]))
+  const strangeHosts = [...hosts].filter((host) => host !== 'mc.yandex.ru')
+  if (strangeHosts.length > 0) fail(`a script mentions an unexpected host: ${strangeHosts.join(', ')}`)
+  for (const page of PAGES) {
+    if (read(page).includes('mc.yandex.ru')) fail(`${page} names the Metrika host in its own markup`)
+  }
+
   // The links that deliberately leave the page all lead to the project's own
   // repository: the download buttons, the release notes, the source. The list
   // stays closed on purpose — anything else would point a reader at a page this
@@ -565,10 +609,16 @@ async function checkNoExternalRequests() {
 
   const buttons = [...html.matchAll(/<a\s[^>]*href="(https?:\/\/[^"]+)"/g)].map((m) => m[1])
   const own = new RegExp(`^https://github\\.com/${slug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(/|$)`, 'i')
-  const unexpected = buttons.filter((url) => !own.test(url))
+  // The policy cites Yandex's own terms, which is the one place a reader is sent
+  // somewhere this project does not control — deliberately, because the point of
+  // citing them is that the reader can check them.
+  const LEGAL = /^https:\/\/yandex\.ru\/legal\//
+  const unexpected = buttons.filter((url) => !own.test(url) && !LEGAL.test(url))
   if (unexpected.length > 0) fail(`unexpected external link: ${[...new Set(unexpected)].slice(0, 3).join(', ')}`)
 
-  notes.push(`no external resources; ${new Set(buttons).size} outbound links, all into ${slug}`)
+  notes.push(
+    `no external resources; ${new Set(buttons).size} outbound links, into ${slug} and Yandex's legal pages`
+  )
 }
 
 /**
@@ -848,6 +898,77 @@ function checkDownloadSizes() {
 }
 
 /**
+ * The visit counter, and the consent that gates it.
+ *
+ * Three states are possible and only one of them is the default. With an empty
+ * counter number the pages make no third-party request and set no cookie, and the
+ * absence of a banner in the markup is part of that promise: a banner written into
+ * the HTML would show even when counting is off, asking permission for nothing.
+ *
+ * With a number configured, everything must still be behind an explicit click. The
+ * checks below cannot prove that by reading the script, so `scripts/test-metrics.cjs`
+ * drives the page in a real browser and watches the network instead.
+ */
+function checkMetrics() {
+  const js = read('metrics.js')
+  const config = /var METRIKA_ID = '([^']*)';/.exec(js)
+  if (!config) {
+    fail('metrics.js has no METRIKA_ID line to configure')
+    return
+  }
+  const id = config[1]
+  const counting = id !== ''
+  if (counting && !/^[0-9]{8}$/.test(id)) {
+    fail(`METRIKA_ID is "${id}", which is not an eight-digit counter number`)
+  }
+
+  for (const page of ['index.html', 'en/index.html', 'privacy.html', 'en/privacy.html']) {
+    if (read(page).includes('data-consent="banner"')) {
+      fail(`${page} carries the consent banner in its markup`)
+    }
+  }
+  if (!js.includes('flushot-analytics')) fail('metrics.js has no consent storage key')
+  if (!js.includes('if (!METRIKA_ID) return;')) {
+    fail('metrics.js does not bail out when no counter is configured, so it would ask for nothing')
+  }
+  // Two separate exits before the banner: no number, and a stored refusal. A file
+  // that lost either of them would start asking on every visit, or never load.
+  const bails = js.split('var consent = readConsent();').length - 1
+  if (bails !== 1) fail('metrics.js no longer reads the stored answer before deciding')
+
+  for (const page of ['index.html', 'en/index.html']) {
+    if (!/src="(?:\.\.\/)?metrics\.js/.test(read(page))) fail(`${page} does not load metrics.js`)
+  }
+
+  // The policy has to exist in both languages and answer the questions the banner
+  // raises: what is collected, who sees it, and how to say no afterwards.
+  for (const [file, needles] of [
+    ['privacy.html', ['Метрика', 'cookie', 'IP-адрес', 'data-consent-reset', 'Журналы сервера']],
+    ['en/privacy.html', ['Metrika', 'cookie', 'IP address', 'data-consent-reset', 'Server logs']]
+  ]) {
+    const html = read(file)
+    for (const needle of needles) if (!html.includes(needle)) fail(`${file} does not mention ${needle}`)
+  }
+
+  const sitemap = read('sitemap.xml')
+  for (const loc of ['https://flushot.ink/privacy.html', 'https://flushot.ink/en/privacy.html']) {
+    if (!sitemap.includes(loc)) fail(`sitemap.xml does not list ${loc}`)
+  }
+
+  for (const page of ['index.html', 'en/index.html']) {
+    if (!/href="(?:\.\.\/)?privacy\.html"/.test(read(page))) {
+      fail(`${page} has no footer link to the privacy policy`)
+    }
+  }
+
+  notes.push(
+    counting
+      ? `Metrika counter ${id} configured; the tag loads only after "Accept"`
+      : 'no Metrika counter configured: no third-party request, no cookie, no banner'
+  )
+}
+
+/**
  * Every version stamp the page shows must be the version in package.json.
  *
  * The badge in the site header read "2.3.0" for two releases while the hero line,
@@ -905,6 +1026,19 @@ function checkVersionStamps() {
     }
   }
 
+  // The policy pages state the version in their footer too, and nothing else would
+  // catch them going stale: no badge, no download links, no structured data.
+  for (const file of ['privacy.html', 'en/privacy.html']) {
+    const match = /<div class="footer__brand">[\s\S]*?<span>([^<]*)<\/span>/.exec(read(file))
+    if (!match) {
+      fail(`${file}: the footer version is missing`)
+      continue
+    }
+    const shown = /\d+\.\d+\.\d+/.exec(match[1])
+    if (!shown) fail(`${file}: the footer shows no version number`)
+    else if (shown[0] !== version) fail(`${file}: the footer says ${shown[0]}, but package.json says ${version}`)
+  }
+
   notes.push(`every version stamp on both pages is ${version}`)
 }
 
@@ -920,7 +1054,7 @@ async function checkAssetStamps() {
   const ASSET = /\.(css|js|mjs|png|webp|jpg|jpeg|avif|svg|ico|woff2|webmanifest)$/
   const UNSTAMPED = new Set(['robots.txt', 'sitemap.xml', 'index.html', '404.html'])
 
-  for (const page of ['index.html', 'en/index.html', '404.html']) {
+  for (const page of ['index.html', 'en/index.html', 'privacy.html', 'en/privacy.html', '404.html']) {
     const html = read(page)
     const pattern = /(?:href|src|content)="([^"]+)"/g
     let match
@@ -990,6 +1124,7 @@ async function main() {
   await checkMarkup()
   await checkCss()
   await checkNoExternalRequests()
+  checkMetrics()
   await checkFonts()
   await checkSocialPreview()
   await checkBrandMark()

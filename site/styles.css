@@ -2728,6 +2728,157 @@ code {
   }
 }
 
+/* ======================================================== privacy & consent */
+
+/* The privacy page is a document, not a landing page: one narrow column, no
+   hero, no sections fighting for attention. Same tokens as everything else so the
+   two pages cannot drift apart in colour or rhythm. */
+.legal {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 72px 24px 96px;
+}
+
+.legal__title {
+  margin: 0 0 18px;
+  font-size: clamp(32px, 5vw, 44px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.legal__lead {
+  margin: 0 0 10px;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--fg-muted);
+}
+
+.legal__updated {
+  margin: 0 0 44px;
+  font-size: 13px;
+  color: var(--fg-dim);
+}
+
+.legal__h2 {
+  margin: 40px 0 12px;
+  font-size: 20px;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.legal p {
+  margin: 0 0 14px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--fg-muted);
+}
+
+.legal strong {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.legal a {
+  color: var(--fg);
+  text-decoration: underline;
+  text-decoration-color: var(--rule);
+  text-underline-offset: 3px;
+}
+
+.legal a:hover {
+  text-decoration-color: currentColor;
+}
+
+.legal code {
+  padding: 1px 5px;
+  font-size: 0.92em;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+}
+
+.legal__status {
+  margin-left: 12px;
+  font-size: 13px;
+  color: var(--fg-dim);
+}
+
+.legal__back {
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--rule);
+}
+
+/* The consent banner. It is built by site/metrics.js and only ever exists when a
+   counter number is configured, so its absence in the HTML is the normal state. */
+.consent {
+  position: fixed;
+  left: 24px;
+  right: 24px;
+  bottom: 24px;
+  z-index: 60;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 20px 22px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+}
+
+.consent__title {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.consent__text {
+  margin: 0 0 10px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--fg-muted);
+}
+
+.consent__link {
+  display: inline-block;
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: var(--fg);
+  text-decoration: underline;
+  text-decoration-color: var(--rule);
+  text-underline-offset: 3px;
+}
+
+.consent__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn--sm {
+  padding: 7px 14px;
+  font-size: 13px;
+}
+
+@media (max-width: 560px) {
+  .legal {
+    padding: 48px 20px 72px;
+  }
+
+  .consent {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    padding: 16px 16px;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  .consent__actions .btn {
+    flex: 1 1 auto;
+  }
+}
+
 @media (prefers-contrast: more) {
   :root {
     --fg-muted: #d4d4d8;

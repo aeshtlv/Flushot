@@ -16,6 +16,7 @@
     "check:demo": "node scripts/test-try-demo.cjs",
     "check:hotkeys": "node scripts/test-hotkey-demo.cjs",
     "check:live": "node scripts/check-live.cjs",
+    "check:metrics": "node scripts/test-metrics.cjs",
     "shots": "node scripts/shot-site.cjs",
     "serve": "node scripts/serve-site.cjs"
   },

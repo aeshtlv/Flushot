@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Приватность — Flushot</title>
+<meta name="description" content="Что Flushot отправляет в сеть, что собирает этот сайт и как отказаться от статистики.">
+<meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="dark light">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://flushot.ink/privacy.html">
+<link rel="alternate" hreflang="ru" href="https://flushot.ink/privacy.html">
+<link rel="alternate" hreflang="en" href="https://flushot.ink/en/privacy.html">
+<link rel="alternate" hreflang="x-default" href="https://flushot.ink/privacy.html">
+
+<link rel="icon" href="favicon.svg?v=a7643679" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png?v=67a7ece7" sizes="32x32" type="image/png">
+<link rel="stylesheet" href="fonts.css?v=0b21389f">
+<link rel="stylesheet" href="styles.css?v=e0b8ec59">
+
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('flushot-theme');
+      document.documentElement.dataset.theme =
+        saved === 'dark' || saved === 'light' ? saved : 'dark';
+    } catch (error) {
+      document.documentElement.dataset.theme = 'dark';
+    }
+  })();
+</script>
+</head>
+<body class="legal-page">
+<a class="skip" href="#main">Перейти к содержимому</a>
+
+<header class="header">
+  <div class="nav-inner">
+    <a class="brand" href="index.html" aria-label="Flushot — на главную">
+      <img class="brand__mark" src="favicon.svg?v=a7643679" width="200" height="200" alt="" aria-hidden="true">
+      <span class="brand__name">Flushot</span>
+    </a>
+    <a class="lang-switch" href="en/privacy.html" hreflang="en" lang="en" data-lang-switch
+       aria-label="English version">EN</a>
+  </div>
+</header>
+
+<main id="main" class="legal">
+  <p class="eyebrow">Документ</p>
+  <h1 class="legal__title">Приватность</h1>
+  <p class="legal__lead">Коротко: программа ничего о вас не отправляет, а сайт считает посещения только
+    с вашего согласия. Ниже — подробно, без формулировок «мы можем передавать данные партнёрам».</p>
+  <p class="legal__updated">Обновлено 22 ноября 2026 года.</p>
+
+  <h2 class="legal__h2">Программа Flushot</h2>
+  <p>Снимки, оформление рамки, пометки и распознавание текста происходят на вашем компьютере. Ни
+    снимок, ни его содержимое, ни имена файлов никуда не отправляются — в программе нет ни аккаунта,
+    ни аналитики, ни идентификатора установки.</p>
+  <p>Один запрос в сутки программа делает сама: спрашивает у GitHub, не вышла ли новая версия, и если
+    вышла — скачивает её в фоне. Других обращений нет, и этот запрос выключается переключателем
+    «Обновления» в настройках, после чего сеть не используется совсем. Владелец адреса
+    <code>api.github.com</code> видит IP-адрес вашего компьютера и версию программы — как при любом
+    обращении к любому сайту.</p>
+  <p>Скачивание файла с GitHub идёт через <code>github.com</code> и учитывается в счётчике скачиваний
+    на странице релиза. Это счётчик скачиваний, а не установок, и он не связан с конкретным
+    человеком.</p>
+
+  <h2 class="legal__h2">Этот сайт</h2>
+  <p>Сайт — статическая страница. Форм, регистрации и комментариев на нём нет, поэтому нет и данных,
+    которые можно было бы сохранить о вас как о пользователе.</p>
+  <p><strong>Статистика посещений.</strong> Чтобы знать, сколько людей заходит на сайт и откуда они
+    приходят, используется Яндекс.Метрика. Она включается только после нажатия «Принять» в
+    уведомлении о cookie. Если вы нажали «Отклонить», скрипт Метрики не загружается вообще: ни
+    cookie, ни запроса на серверы Яндекса.</p>
+  <p>Когда статистика включена, Яндекс получает: адрес страницы, IP-адрес и регион, определённый по
+    нему, тип браузера и операционной системы, размер окна, адрес страницы, с которой вы перешли,
+    и сведения о прокрутке и кликах по этой странице (карта кликов). Cookie Метрики хранятся до
+    одного года. Мы видим только сведённые отчёты: сколько было визитов, из каких поисковых систем,
+    какие кнопки нажимали. Мы не сопоставляем эти данные с вами и не передаём их никому, кроме
+    Яндекса, который эти данные и собирает.</p>
+  <p>Обработка данных в Метрике описана в документах Яндекса: <a href="https://yandex.ru/legal/metrica_termsofuse/">условия
+    использования сервиса</a> и <a href="https://yandex.ru/legal/confidential/">политика
+    конфиденциальности</a>.</p>
+
+  <h2 class="legal__h2">Журналы сервера</h2>
+  <p>Сервер, на котором стоит страница, записывает обращения обычным журналом nginx: IP-адрес, дату,
+    адрес страницы и имя браузера. Это нужно, чтобы находить ошибки и отсекать мусорный трафик.
+    Журналы хранятся десять дней и затем удаляются автоматически.</p>
+
+  <h2 class="legal__h2">Как отказаться</h2>
+  <p>Кнопка ниже стирает сохранённый ответ, так что при следующем заходе уведомление спросит снова —
+    и можно ответить «Отклонить». Если статистика уже была включена, отказ отключает загрузку скрипта
+    на будущее; ранее поставленные cookie Метрики удаляются средствами браузера.</p>
+  <p><button class="btn btn--ghost btn--sm" type="button" data-consent-reset>Сбросить согласие на статистику</button>
+    <span class="legal__status" data-consent-status aria-live="polite"></span></p>
+
+  <h2 class="legal__h2">Что менялось</h2>
+  <p>Эта страница появилась 22 ноября 2026 года вместе со счётчиком посещений. До неё сайт не ставил
+    cookie и не подключал сторонних скриптов — и до появления счётчика это было видно по исходному
+    коду страницы.</p>
+
+  <p class="legal__back"><a href="index.html">← Вернуться на сайт</a></p>
+</main>
+
+<footer class="footer">
+  <div class="footer__inner">
+    <div class="footer__brand">
+      <img class="brand__mark" src="favicon.svg?v=a7643679" width="200" height="200" alt="" aria-hidden="true">
+      <span>Версия 2.4.2 · © 2026 Flushot</span>
+    </div>
+    <nav class="footer__links" aria-label="Навигация в подвале">
+      <a href="index.html">Главная</a>
+      <a href="index.html#download">Скачать</a>
+      <a href="index.html#faq">Вопросы</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+  // The reset works without any other script on the page: it only touches the one
+  // storage key the banner uses, so it cannot get out of step with it.
+  (function () {
+    var button = document.querySelector('[data-consent-reset]');
+    if (!button) return;
+    var status = document.querySelector('[data-consent-status]');
+    button.addEventListener('click', function () {
+      var cleared = false;
+      try {
+        localStorage.removeItem('flushot-analytics');
+        cleared = true;
+      } catch (error) {
+        cleared = false;
+      }
+      if (status) {
+        status.textContent = cleared
+          ? 'Готово. Ответ стёрт — при следующем заходе уведомление спросит снова.'
+          : 'Браузер не даёт сохранять настройки сайта, поэтому ответ и не был записан.';
+      }
+    });
+  })();
+</script>
+</body>
+</html>
