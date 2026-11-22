@@ -5,19 +5,22 @@
  * one file names the Metrika host. It cannot check the thing that actually matters:
  * that no request goes to Yandex until the visitor presses "Accept".
  *
- * So this loads the real page in a real browser three times and records every
- * request the browser makes:
+ * So this loads the real page in a real browser and records every request the
+ * browser makes. Two copies of `site/` are built for it, both with a counter number
+ * forced in place of whatever the file currently holds:
  *
- *   1. As shipped, with no counter configured — the page must behave as if
- *      Metrika did not exist: no banner, no request, nothing stored.
- *   2. Configured, first visit — the banner appears and *still* nothing is
- *      requested; "Decline" is remembered and the next visit does not ask again.
- *   3. Configured, "Accept" — only then is the tag requested, and the answer is
- *      remembered, so the next visit loads it without asking.
+ *   `off` — the number is emptied. This must behave as if Metrika did not exist:
+ *           no banner, no request, nothing stored.
+ *   `on`  — a made-up number is set, never the site's real one. The banner must
+ *           appear and *still* nothing may be requested; "Decline" must be
+ *           remembered; only "Accept" may load the tag.
  *
- * The request is intercepted and failed on purpose: the point is to observe the
- * attempt without ever contacting Yandex, so running this test cannot create a
- * visit in someone's statistics.
+ * The fake number is deliberate. If the interception below ever stopped working,
+ * the worst case would be a hit against a counter that does not exist, not a fake
+ * visit in the statistics of the real site.
+ *
+ * Requests to the tag host are intercepted and failed on purpose, for the same
+ * reason: the point is to observe the attempt without contacting Yandex at all.
  *
  * Usage: node scripts/test-metrics.cjs
  */
@@ -33,6 +36,7 @@ const SITE = path.join(ROOT, 'site')
 const PORT = 9387
 const FAKE_ID = '12345678'
 const TAG_HOST = 'mc.yandex.ru'
+const TAG_URL = `https://${TAG_HOST}/metrika/tag.js`
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -76,25 +80,45 @@ function serve(directory) {
   })
 }
 
+/** A copy of the site whose metrics.js carries `id`. */
+async function copyWithId(root, name, id) {
+  const directory = path.join(root, name)
+  await fs.cp(SITE, directory, { recursive: true })
+  const file = path.join(directory, 'metrics.js')
+  const original = await fs.readFile(file, 'utf8')
+  const pattern = /var METRIKA_ID = '[^']*';/
+  if (!pattern.test(original)) throw new Error('metrics.js no longer has the METRIKA_ID line to replace')
+  await fs.writeFile(file, original.replace(pattern, `var METRIKA_ID = '${id}';`), 'utf8')
+  return directory
+}
+
 async function main() {
   const edgePath = findEdge()
   if (!edgePath) throw new Error('Microsoft Edge is not installed')
 
-  // Two copies of the site: one exactly as committed, one with a counter number.
+  // What the committed file actually configures, checked separately from the two
+  // synthetic copies: turning counting off is done by emptying this string, and
+  // anything else in it is a typo the tag would silently ignore.
+  const committed = await fs.readFile(path.join(SITE, 'metrics.js'), 'utf8')
+  const configured = /var METRIKA_ID = '([^']*)';/.exec(committed)
+  if (!configured) throw new Error('metrics.js has no METRIKA_ID line to configure')
+  const liveId = configured[1]
+  const problems = []
+  if (liveId !== '' && !/^[0-9]{6,9}$/.test(liveId)) {
+    problems.push(`the committed counter number is "${liveId}", which Yandex would never issue`)
+  }
+  console.log(
+    liveId === ''
+      ? 'counting is off in the committed file: no third-party request, no cookie, no banner'
+      : `counting is on in the committed file, counter ${liveId}`
+  )
+
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'flushot-metrics-'))
-  const shipped = path.join(root, 'shipped')
-  const configured = path.join(root, 'configured')
-  await fs.cp(SITE, shipped, { recursive: true })
-  await fs.cp(SITE, configured, { recursive: true })
+  const offDirectory = await copyWithId(root, 'off', '')
+  const onDirectory = await copyWithId(root, 'on', FAKE_ID)
 
-  const metricsPath = path.join(configured, 'metrics.js')
-  const original = await fs.readFile(metricsPath, 'utf8')
-  const patched = original.replace("var METRIKA_ID = '';", `var METRIKA_ID = '${FAKE_ID}';`)
-  if (patched === original) throw new Error('metrics.js no longer has the METRIKA_ID line to replace')
-  await fs.writeFile(metricsPath, patched, 'utf8')
-
-  const asShipped = await serve(shipped)
-  const withCounter = await serve(configured)
+  const off = await serve(offDirectory)
+  const on = await serve(onDirectory)
 
   const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'flushot-metrics-profile-'))
   const edge = spawn(
@@ -179,7 +203,6 @@ async function main() {
     return result.result.value
   }
 
-  const problems = []
   const record = (label, actual, expected) => {
     const pass = JSON.stringify(actual) === JSON.stringify(expected)
     console.log(`  ${pass ? 'ok  ' : 'FAIL'}  ${label}: ${JSON.stringify(actual)}`)
@@ -208,23 +231,47 @@ async function main() {
       };
     })()`)
 
-  console.log(`\n[1] as shipped, no counter configured — ${asShipped.port}`)
-  await reset(`http://127.0.0.1:${asShipped.port}/`)
+  console.log(`\n[1] number emptied, as if counting were off — ${off.port}`)
+  await reset(`http://127.0.0.1:${off.port}/`)
   let current = await state()
   record('no banner', current.banner, false)
   record('nothing stored', current.consent, null)
   record('counter id is empty', current.id, '')
   record('no request to the tag host', tagRequests().length, 0)
-  // The gate has to be the reason, not luck: the same page with a number must ask.
-  record('the tag host never appears in any request', requests.filter((u) => u.includes(TAG_HOST)).length, 0)
 
-  console.log(`\n[2] configured, first visit — ${withCounter.port}`)
-  await reset(`http://127.0.0.1:${withCounter.port}/`)
+  console.log(`\n[2] number set, first visit — ${on.port}`)
+  await reset(`http://127.0.0.1:${on.port}/`)
   current = await state()
   record('the banner asks', current.banner, true)
   record('the counter is configured', current.id, FAKE_ID)
   record('still nothing requested before a click', tagRequests().length, 0)
   record('nothing stored before an answer', current.consent, null)
+
+  // The banner is the only thing a visitor sees before deciding, so it has to be
+  // readable and clickable rather than merely present.
+  const layout = await evaluate(`(() => {
+    const banner = document.querySelector('[data-consent="banner"]');
+    const box = banner.getBoundingClientRect();
+    const buttons = [...banner.querySelectorAll('button')].map((button) => {
+      const r = button.getBoundingClientRect();
+      return { text: button.textContent.trim().slice(0, 20), w: Math.round(r.width), h: Math.round(r.height), inView: r.top >= 0 && r.bottom <= innerHeight };
+    });
+    return {
+      inside: box.top >= 0 && box.left >= 0 && box.bottom <= innerHeight && box.right <= innerWidth,
+      w: Math.round(box.width),
+      h: Math.round(box.height),
+      buttons,
+      pageScrollsSideways: document.documentElement.scrollWidth > innerWidth + 1
+    };
+  })()`)
+  record('the banner fits on screen', layout.inside, true)
+  record('it does not widen the page', layout.pageScrollsSideways, false)
+  record('it offers exactly two answers', layout.buttons.length, 2)
+  record(
+    'both answers are comfortably clickable',
+    layout.buttons.every((button) => button.h >= 28 && button.w >= 60 && button.inView),
+    true
+  )
 
   console.log('  ... visitor presses Decline')
   await evaluate(`document.querySelector('[data-consent-decline]').click()`)
@@ -236,32 +283,32 @@ async function main() {
   record('no request to the tag host', tagRequests().length, 0)
 
   console.log('  ... next visit')
-  await reset(`http://127.0.0.1:${withCounter.port}/`)
+  await reset(`http://127.0.0.1:${on.port}/`)
   current = await state()
   record('it does not ask again', current.banner, false)
   record('and still requests nothing', tagRequests().length, 0)
 
   console.log('  ... visitor clears the answer and presses Accept')
   await evaluate(`localStorage.removeItem('flushot-analytics')`)
-  await reset(`http://127.0.0.1:${withCounter.port}/`)
+  await reset(`http://127.0.0.1:${on.port}/`)
   await evaluate(`document.querySelector('[data-consent-accept]').click()`)
   await sleep(700)
   current = await state()
   record('the answer is remembered', current.consent, 'yes')
   record('the tag is requested only after the click', tagRequests().length > 0, true)
-  record('and it is the configured counter\'s script', tagRequests()[0] || '', `https://${TAG_HOST}/metrika/tag.js`)
+  record('and it is the configured counter\u2019s script', tagRequests()[0] || '', TAG_URL)
 
   console.log('  ... next visit')
-  await reset(`http://127.0.0.1:${withCounter.port}/`)
+  await reset(`http://127.0.0.1:${on.port}/`)
   current = await state()
   record('no banner when the answer is stored', current.banner, false)
   record('the tag loads on its own', tagRequests().length > 0, true)
 
-  console.log('\n[3] the policy page admits it counts')
-  await reset(`http://127.0.0.1:${withCounter.port}/privacy.html`)
+  console.log('\n[3] the policy page admits it counts and lets you change your mind')
+  await reset(`http://127.0.0.1:${on.port}/privacy.html`)
   requests.length = 0
   const policy = await evaluate(`(() => ({
-    counter: /Яндекс\\.Метрика/.test(document.body.textContent),
+    counter: /\u042f\u043d\u0434\u0435\u043a\u0441\\.\u041c\u0435\u0442\u0440\u0438\u043a\u0430/.test(document.body.textContent),
     reset: Boolean(document.querySelector('[data-consent-reset]'))
   }))()`)
   record('the policy names Metrika', policy.counter, true)
@@ -269,14 +316,14 @@ async function main() {
 
   ws.close()
   edge.kill()
-  asShipped.server.close()
-  withCounter.server.close()
+  off.server.close()
+  on.server.close()
   await fs.rm(root, { recursive: true, force: true }).catch(() => {})
   await fs.rm(profile, { recursive: true, force: true }).catch(() => {})
 
   if (problems.length > 0) {
     console.error(`\n${problems.length} problem(s):`)
-    for (const problem of problems) console.error(`  ✗ ${problem}`)
+    for (const problem of problems) console.error(`  \u2717 ${problem}`)
     process.exit(1)
   }
   console.log('\nThe counter never runs without an explicit "Accept".')

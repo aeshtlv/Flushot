@@ -32,8 +32,14 @@
 (function () {
   'use strict';
 
-  /** Counter number, or '' to keep the page free of third-party requests. */
-  var METRIKA_ID = '';
+  /**
+   * Counter number, or '' to keep the page free of third-party requests.
+   *
+   * 114491353 is the counter for flushot.ink. It is not a secret: the number is in
+   * the page source of every site that has one. What matters is that the tag stays
+   * behind the consent gate below — a number in the file is not a visit.
+   */
+  var METRIKA_ID = '114491353';
 
   var TAG = 'https://mc.yandex.ru/metrika/tag.js';
   var CONSENT_KEY = 'flushot-analytics';

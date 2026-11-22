@@ -918,8 +918,11 @@ function checkMetrics() {
   }
   const id = config[1]
   const counting = id !== ''
-  if (counting && !/^[0-9]{8}$/.test(id)) {
-    fail(`METRIKA_ID is "${id}", which is not an eight-digit counter number`)
+  // Yandex issues six- to nine-digit numbers; this site's counter is 114491353.
+  // Anything that is not a plain number there is a typo, a pasted URL or a leftover
+  // quote, and the tag would silently fail to initialise.
+  if (counting && !/^[0-9]{6,9}$/.test(id)) {
+    fail(`METRIKA_ID is "${id}", which is not a plain counter number from Yandex`)
   }
 
   for (const page of ['index.html', 'en/index.html', 'privacy.html', 'en/privacy.html']) {
@@ -963,7 +966,7 @@ function checkMetrics() {
 
   notes.push(
     counting
-      ? `Metrika counter ${id} configured; the tag loads only after "Accept"`
+      ? `Metrika counter ${id}: the tag loads only after "Accept", never before`
       : 'no Metrika counter configured: no third-party request, no cookie, no banner'
   )
 }
