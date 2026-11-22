@@ -25,3 +25,7 @@ share/latest.yml
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Python bytecode from the upload server and its tests
+__pycache__/
+*.pyc
