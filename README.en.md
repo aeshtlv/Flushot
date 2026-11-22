@@ -5,7 +5,7 @@ paste, in a neat frame with a soft shadow and rounded corners, at full resolutio
 
 [![CI](https://github.com/aeshtlv/Flushot/actions/workflows/ci.yml/badge.svg)](https://github.com/aeshtlv/Flushot/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-4c8bf5)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.4.2-4c8bf5)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.5.0-4c8bf5)](CHANGELOG.md)
 
 <p align="center">
   <img src="logo/logo.png" alt="Flushot" width="112">
@@ -54,9 +54,9 @@ all three; what differs is how it is installed and whether it updates itself.
 
 | File | Description |
 |---|---|
-| **[Flushot-2.4.2-x64.exe](../../releases/latest/download/Flushot-2.4.2-x64.exe)** | 105 MB. Installer: Start menu shortcuts, install location, uninstaller. **Updates itself** — recommended |
-| [Flushot-2.4.2-portable.zip](../../releases/latest/download/Flushot-2.4.2-portable.zip) | 94 MB. Portable single file, no installation. Updated by hand |
-| [Flushot-2.4.2-win64.zip](../../releases/latest/download/Flushot-2.4.2-win64.zip) | 143 MB. Unpack anywhere and run `Flushot.exe`. Updated by hand |
+| **[Flushot-2.5.0-x64.exe](../../releases/latest/download/Flushot-2.5.0-x64.exe)** | 105 MB. Installer: Start menu shortcuts, install location, uninstaller. **Updates itself** — recommended |
+| [Flushot-2.5.0-portable.zip](../../releases/latest/download/Flushot-2.5.0-portable.zip) | 94 MB. Portable single file, no installation. Updated by hand |
+| [Flushot-2.5.0-win64.zip](../../releases/latest/download/Flushot-2.5.0-win64.zip) | 148 MB. Unpack anywhere and run `Flushot.exe`. Updated by hand |
 
 Only the installer can update itself: the portable build unpacks into a temporary folder on every
 launch, and the archive has no uninstaller for the updater to run. Those two are told about a new
@@ -157,6 +157,18 @@ To see what a particular copy thinks, from a terminal:
 It prints the state as JSON and exits: `ok` plus the reason in `state`. That is also how a machine that
 never gets updates is diagnosed — usually a proxy, a blocked `github.com`, or a build that cannot
 replace itself.
+
+Uploads are checked the same way:
+
+```bash
+"%LOCALAPPDATA%\Programs\Flushot\Flushot.exe" --upload-check
+"%LOCALAPPDATA%\Programs\Flushot\Flushot.exe" --upload-check --format=webp
+```
+
+It builds a card from a synthetic picture, encodes it in the chosen format, uploads it,
+fetches it back and compares the bytes, then deletes the link so nothing is left on the
+server. The answer carries `ok`, `url`, `ttl`, `roundTrip` and, when something is wrong,
+`error` with the underlying cause in `detail`. No screen is needed.
 
 ## Limitations
 

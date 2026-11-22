@@ -36,6 +36,14 @@ export interface UploadFailure {
    * uses this to decide whether to offer a retry.
    */
   retryable: boolean
+  /**
+   * The underlying cause, when there is one.
+   *
+   * Never shown in a notification: it is a stack-level detail. It exists for the log
+   * and for `--upload-check`, where "could not reach the server" alone would send
+   * someone looking at the wrong thing.
+   */
+  detail?: string
 }
 
 export type UploadOutcome = UploadSuccess | UploadFailure
@@ -84,10 +92,13 @@ export async function uploadShot(buffer: Buffer, format: string): Promise<Upload
       method: 'POST',
       headers: {
         'Content-Type': contentType,
-        'Content-Length': String(buffer.byteLength),
         // Names the caller, so a request in a log is attributable to the program and
         // not to a browser extension that copied the address.
         'User-Agent': 'Flushot-upload'
+        // No Content-Length: it is a forbidden header name in the fetch standard and
+        // Chromium fails the whole request with net::ERR_INVALID_ARGUMENT instead of
+        // ignoring it. The length is taken from the body, which is a Uint8Array and
+        // therefore a valid body for both this and the browser's own fetch.
       },
       body: buffer,
       signal: controller.signal
@@ -126,7 +137,11 @@ export async function uploadShot(buffer: Buffer, format: string): Promise<Upload
     if (error instanceof Error && error.name === 'AbortError') {
       return { ok: false, message: tr('upload.timeout'), retryable: true }
     }
-    return { ok: false, message: tr('upload.offline'), retryable: true }
+    // The user gets the readable sentence, and the cause is kept for the log and for
+    // `--upload-check`: "could not reach the server" is not a diagnosis.
+    const detail = error instanceof Error ? `${error.name}: ${error.message}` : String(error)
+    console.warn(tr('upload.offline'), detail)
+    return { ok: false, message: tr('upload.offline'), retryable: true, detail }
   } finally {
     clearTimeout(timer)
   }

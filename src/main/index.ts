@@ -88,6 +88,13 @@ if (!app.requestSingleInstanceLock()) {
         app.exit(await runSelfTest(session, settingsStore))
         return
       }
+      // One-shot upload check from a terminal; see `upload/uploadCheck.ts`.
+      if (process.argv.includes('--upload-check')) {
+        const { runUploadCheck } = await import('./upload/uploadCheck')
+        await initCore()
+        app.exit(await runUploadCheck(process.argv))
+        return
+      }
       // One-shot update check from a terminal; see `update/updateCheck.ts`.
       if (process.argv.includes('--update-check')) {
         const { runUpdateCheck } = await import('./update/updateCheck')

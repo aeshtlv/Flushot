@@ -1,6 +1,6 @@
 {
   "name": "flushot",
-  "version": "2.4.2",
+  "version": "2.5.0",
   "description": "Screenshot tool for Windows: select a region and get a finished picture with a frame, annotations and text recognition",
   "main": "./out/main/index.js",
   "author": "Flushot",
@@ -38,6 +38,7 @@
     "dist:dir": "npm run build && electron-builder --dir --win",
     "self-test": "npm run build && electron . --self-test",
     "stats": "node scripts/download-count.cjs --write",
+    "upload-check": "electron . --upload-check",
     "test:server": "python deploy/shots/test-shot-server.py"
   },
   "dependencies": {
