@@ -310,7 +310,7 @@ async function main() {
   const wide = await measure()
   record('no separate heading above the question', wide.hasTitle, false)
   record('the text is a sentence, not a paragraph', wide.chars <= 90, true)
-  record('it takes at most two lines on a laptop', wide.lines <= 2, true)
+  record('it is a single line on a laptop', wide.lines <= 1, true)
   record('it covers under a tenth of a laptop screen', wide.areaShare < 10, true)
   record('it is a slim bar, not a panel', wide.h <= 80, true)
 
@@ -319,7 +319,7 @@ async function main() {
   const narrow = await measure()
   record('on a phone it stays a small corner card', narrow.areaShare < 18, true)
   record('on a phone the text is still short', narrow.chars <= 90, true)
-  record('on a phone it stays under three lines', narrow.lines <= 3, true)
+  record('on a phone it stays on one line', narrow.lines <= 1, true)
   await send('Emulation.clearDeviceMetricsOverride', {})
   await send('Page.navigate', { url: `http://127.0.0.1:${on.port}/` })
   await sleep(600)

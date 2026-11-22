@@ -51,27 +51,23 @@
   // Both pages sit one level below the site root (index.html at the root, the
   // English one in en/), so the privacy page is one directory away in each case.
   //
-  // One short sentence, not a paragraph. The first version explained the whole
-  // policy in the banner — 262 characters, four lines on a desktop and seven on a
-  // phone, a fifth of the screen on a laptop and a third on a phone — to ask a
-  // question whose answer is two buttons. The detail belongs on the privacy page,
-  // which the link opens; the banner only has to say what is being asked and what
-  // it costs. What it must NOT do is answer "yes" by being ignored, which is why the
-  // buttons stay and the tag stays behind them.
+  // The wording is the conventional one on purpose. Two earlier versions were worse:
+  // a paragraph explaining the whole policy (262 characters, a third of a phone
+  // screen, to ask a question whose answer is two buttons), and then "Count visits?"
+  // — a phrase nobody has ever seen on a website, so it made a reader stop and work
+  // out what was being asked. "Uses cookies" is what every other site says, which is
+  // exactly why it needs no interpretation: it names the mechanism, the buttons name
+  // the answer, and the link holds the detail.
   var TEXT = {
     ru: {
-      title: 'Считать посещения?',
-      question: 'Считать посещения?',
-      detail: 'Яндекс.Метрика ставит cookie.',
+      title: 'Сайт использует cookie',
       more: 'Подробнее',
       accept: 'Принять',
       decline: 'Отклонить',
       privacy: 'privacy.html'
     },
     en: {
-      title: 'Count visits?',
-      question: 'Count visits?',
-      detail: 'Yandex.Metrika sets a cookie.',
+      title: 'This site uses cookies',
       more: 'Details',
       accept: 'Accept',
       decline: 'Decline',
@@ -166,17 +162,14 @@
 
     var ask = document.createElement('strong');
     ask.className = 'consent__ask';
-    ask.textContent = text.question + ' ';
-
-    var detail = document.createElement('span');
-    detail.textContent = text.detail + ' ';
+    ask.textContent = text.title + '. ';
 
     var link = document.createElement('a');
     link.className = 'consent__link';
     link.href = text.privacy;
     link.textContent = text.more;
 
-    line.append(ask, detail, link);
+    line.append(ask, link);
 
     var actions = document.createElement('div');
     actions.className = 'consent__actions';
