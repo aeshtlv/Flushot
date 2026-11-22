@@ -44,6 +44,7 @@ import {
   CheckIcon,
   CloseIcon,
   CopyIcon,
+  LinkIcon,
   FitIcon,
   LineIcon,
   MoveIcon,
@@ -136,6 +137,7 @@ const DEMO_INIT: OverlayInit = {
     jpegQuality: 94,
     hotkey: 'CommandOrControl+Shift+S',
     hotkeyFullscreen: 'CommandOrControl+Shift+3',
+    hotkeyUpload: 'CommandOrControl+Shift+U',
     launchAtLogin: false,
     afterRegion: 'copy',
     language: 'auto',
@@ -561,60 +563,69 @@ export function OverlayApp(): JSX.Element {
    * window on screen for a moment, and on this path the window is hidden by the
    * main process before the card even exists.
    */
-  const copySelection = useCallback(async (region?: Rect) => {
-    if (!init) return
-    const rect = region ?? rectRef.current
-    if (!rect) return
-    if (rect.width < 8 || rect.height < 8) {
-      showToast(tr('capture.tooSmall'), 'error')
-      return
-    }
-
-    if (DEMO) {
-      showToast(tr('overlay.demoNoClipboard'), 'ok')
-      return
-    }
-
-    // One copy at a time. Releasing the mouse already starts a copy, and the global
-    // Ctrl+C arrives in the same few milliseconds if the user presses it out of habit
-    // — the second request would land on a session that has already been torn down and
-    // put a "capture is stale" error on screen right after a successful copy.
-    if (copyingRef.current) return
-    copyingRef.current = true
-
-    setStage('busy')
-    setBlanked(true)
-    await afterPaint()
-    try {
-      const result = await window.flushot.captureSelection({
-        displayId: init.display.id,
-        rect,
-        viewport: { width: viewport.width, height: viewport.height },
-        intent: 'copy'
-      })
-
-      if (!result.ok) {
-        // The main process put the overlay back, because there is nothing else to
-        // show: the user has to see why the picture did not arrive. The guard is
-        // released, so the next Ctrl+C or release can try again.
-        copyingRef.current = false
-        setBlanked(false)
-        setStage('selecting')
-        showToast(result.message, 'error')
+  const finishSelection = useCallback(
+    async (intent: 'copy' | 'upload', region?: Rect) => {
+      if (!init) return
+      const rect = region ?? rectRef.current
+      if (!rect) return
+      if (rect.width < 8 || rect.height < 8) {
+        showToast(tr('capture.tooSmall'), 'error')
         return
       }
 
-      // Success needs no confirmation here: the overlay is gone and the next
-      // keystroke is Ctrl+V, which is the confirmation. The note below is only
-      // reached when the window is still alive (the self-test and demo runs).
-      showToast(result.message, 'ok')
-    } catch (error) {
-      copyingRef.current = false
-      setBlanked(false)
-      setStage('selecting')
-      showToast(error instanceof Error ? error.message : tr('overlay.copyFailed'), 'error')
-    }
-  }, [afterPaint, init, showToast, tr, viewport])
+      if (DEMO) {
+        showToast(tr(intent === 'upload' ? 'overlay.demoNoUpload' : 'overlay.demoNoClipboard'), 'ok')
+        return
+      }
+
+      // One finish at a time. Releasing the mouse already starts the action, and the
+      // global Ctrl+C arrives in the same few milliseconds if the user presses it out
+      // of habit — the second request would land on a session that has already been
+      // torn down and put a "capture is stale" error on screen right after success.
+      if (copyingRef.current) return
+      copyingRef.current = true
+
+      setStage('busy')
+      setBlanked(true)
+      await afterPaint()
+      try {
+        const result = await window.flushot.captureSelection({
+          displayId: init.display.id,
+          rect,
+          viewport: { width: viewport.width, height: viewport.height },
+          intent
+        })
+
+        if (!result.ok) {
+          // The main process put the overlay back, because there is nothing else to
+          // show: the user has to see why nothing arrived. The guard is released, so
+          // the next Ctrl+C or release can try again.
+          copyingRef.current = false
+          setBlanked(false)
+          setStage('selecting')
+          showToast(result.message, 'error')
+          return
+        }
+
+        // Success needs no confirmation here: the overlay is gone and the next
+        // keystroke is Ctrl+V, which is the confirmation. The note below is only
+        // reached when the window is still alive (the self-test and demo runs).
+        showToast(result.message, 'ok')
+      } catch (error) {
+        copyingRef.current = false
+        setBlanked(false)
+        setStage('selecting')
+        showToast(
+          error instanceof Error ? error.message : tr(intent === 'upload' ? 'overlay.uploadFailed' : 'overlay.copyFailed'),
+          'error'
+        )
+      }
+    },
+    [afterPaint, init, showToast, tr, viewport]
+  )
+
+  const copySelection = useCallback((region?: Rect) => finishSelection('copy', region), [finishSelection])
+  const uploadSelection = useCallback((region?: Rect) => finishSelection('upload', region), [finishSelection])
 
   /**
    * The drawing as raw pixels, cropped to the area that actually has paint on it.
@@ -914,10 +925,16 @@ export function OverlayApp(): JSX.Element {
     handledRelease.current = release
 
     const decision = decideRegion(release.dragged ? release.rect : null, init.settings.afterRegion, release.shift)
-    if (decision.action === 'copy') void copySelection(release.rect)
+    if (decision.action === 'copy') {
+      // An upload round uses the same rules for what counts as a usable drag, and the
+      // same Shift override, but the destination is the server rather than the
+      // clipboard. Shift keeps its promise here too: it holds the region on screen.
+      if (init.upload) void uploadSelection(release.rect)
+      else void copySelection(release.rect)
+    }
     // 'hold' and 'ignore' both leave the overlay exactly as it is: the confirm bar is
     // already on screen and the user drives from there.
-  }, [copySelection, init, selection.release, stage])
+  }, [copySelection, init, selection.release, stage, uploadSelection])
 
   /**
    * The size the file will really have.
@@ -1141,7 +1158,12 @@ export function OverlayApp(): JSX.Element {
               is the clipboard, and holding Shift is the only way to reach the editor
               from there — so both are stated before the user starts dragging, not in a
               tooltip nobody opens. */}
-          {init.settings.afterRegion === 'edit' ? (
+          {init.upload ? (
+            <p className="hint__subtitle">
+              {tr('overlay.hintReleaseUpload')} · <kbd>Shift</kbd> {tr('overlay.hintShiftCopy')} ·{' '}
+              <kbd>Esc</kbd> — {tr('overlay.hintCancel')}
+            </p>
+          ) : init.settings.afterRegion === 'edit' ? (
             <p className="hint__subtitle">
               {tr('overlay.hintDrag')} · <kbd>Enter</kbd> — {tr('overlay.hintDone')} · <kbd>Ctrl</kbd>+
               <kbd>C</kbd> — {tr('overlay.hintCopy')} · <kbd>Esc</kbd> — {tr('overlay.hintCancel')}
@@ -1176,6 +1198,15 @@ export function OverlayApp(): JSX.Element {
             <CopyIcon />
             <span>{tr('overlay.copyShort')}</span>
             <kbd className="tb__key">Ctrl+C</kbd>
+          </button>
+          <button
+            className="tb tb--with-key"
+            onClick={() => void uploadSelection()}
+            title={tr('overlay.uploadLink')}
+            data-upload
+          >
+            <LinkIcon />
+            <span>{tr('overlay.upload')}</span>
           </button>
           <span className="tb-divider" />
           <button className="tb" onClick={resetSelection} title={tr('overlay.resetSelection')}>

@@ -1,0 +1,16 @@
+[Unit]
+Description=Run the Flushot screenshot sweep every minute
+
+[Timer]
+# `OnUnitActiveSec` rather than `OnCalendar=*:0/1`: the calendar form needs systemd
+# 235 or newer for a sub-hour step and this server runs 239 where the behaviour is
+# not worth risking. Sixty seconds after the previous run is exactly what the one-hour
+# lifetime needs, and `Persistent` catches up after a reboot.
+OnBootSec=30
+OnUnitActiveSec=60
+AccuracySec=5s
+Persistent=true
+Unit=flushot-shots-sweep.service
+
+[Install]
+WantedBy=timers.target

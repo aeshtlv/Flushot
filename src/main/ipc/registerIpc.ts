@@ -25,15 +25,17 @@ export interface IpcContext {
   getHotkey: () => string
   /** Effective full-screen accelerator, or '' when nothing could be bound. */
   getFullscreenHotkey: () => string
+  /** Effective capture-and-upload accelerator, or '' when nothing could be bound. */
+  getUploadHotkey: () => string
   defaultDirectory: string
   /**
-   * Called after either shortcut was saved, with no arguments on purpose.
+   * Called after any shortcut was saved, with no arguments on purpose.
    *
-   * The two keys are bound together — the second one cannot be registered
-   * without knowing which combination the first one took — so the handler has to
-   * re-register both and then read back what really happened. Passing only the
-   * region accelerator made a change to the full-screen key look like "nothing
-   * changed", and the new combination was never bound at all.
+   * The keys are bound together — the second one cannot be registered without
+   * knowing which combination the first one took — so the handler has to re-register
+   * all of them and then read back what really happened. Passing only the region
+   * accelerator made a change to the full-screen key look like "nothing changed", and
+   * the new combination was never bound at all.
    */
   onHotkeysChanged?: () => void
   /**
@@ -87,6 +89,8 @@ export function registerIpc(context: IpcContext): void {
   ipcMain.handle('app:info', () => ({
     version: app.getVersion(),
     hotkey: context.getHotkey(),
+    hotkeyFullscreen: context.getFullscreenHotkey(),
+    hotkeyUpload: context.getUploadHotkey(),
     settingsPath: settings.path
   }))
 
@@ -117,6 +121,10 @@ export function registerIpc(context: IpcContext): void {
   ipcMain.handle(
     'result:copy',
     guard((_event, annotations?: AnnotationLayerPayload) => session.copy(annotations))
+  )
+  ipcMain.handle(
+    'result:upload',
+    guard((_event, annotations?: AnnotationLayerPayload) => session.upload(annotations))
   )
   ipcMain.handle('capture:cancel', () => {
     session.cancel()

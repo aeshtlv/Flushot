@@ -254,6 +254,17 @@ body {
   margin-left: auto;
 }
 
+/* A sentence that belongs to the control above it rather than being a control of its
+   own. Used for the one line in the window that says a screenshot can leave the
+   computer; it has to be readable, so it wraps instead of being truncated like a
+   row hint. */
+.row-note {
+  margin: 2px 0 6px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
 .segmented {
   display: inline-flex;
   padding: 2px;

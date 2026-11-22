@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type JSX } from 'rea
 import { BACKGROUND_PRESETS, PALETTE_LIMIT, SETTINGS_LIMITS } from '../../shared/settings'
 import {
   DEFAULT_FULLSCREEN_HOTKEY,
+  DEFAULT_UPLOAD_HOTKEY,
   DEFAULT_HOTKEY,
   acceleratorFromKeyboardEvent,
   conflictingField,
@@ -181,7 +182,7 @@ export function SettingsApp(): JSX.Element {
   }, [lang, showError])
 
   const saveHotkey = useCallback(
-    async (field: 'hotkey' | 'hotkeyFullscreen', hotkey: string) => {
+    async (field: 'hotkey' | 'hotkeyFullscreen' | 'hotkeyUpload', hotkey: string) => {
       if (!isValidAccelerator(hotkey)) {
         showError(tr('settings.hotkeyNeedsModifier'))
         return
@@ -195,13 +196,20 @@ export function SettingsApp(): JSX.Element {
       // turn into the fallback combination.
       const clash = conflictingField(field, normalized, {
         hotkey: settings?.hotkey ?? '',
-        hotkeyFullscreen: settings?.hotkeyFullscreen ?? ''
+        hotkeyFullscreen: settings?.hotkeyFullscreen ?? '',
+        hotkeyUpload: settings?.hotkeyUpload ?? ''
       })
       if (clash) {
         showError(
           tr('settings.hotkeyClash', {
             combo,
-            action: tr(clash === 'hotkey' ? 'settings.actionRegion' : 'settings.actionFullscreen')
+            action: tr(
+              clash === 'hotkey'
+                ? 'settings.actionRegion'
+                : clash === 'hotkeyUpload'
+                  ? 'settings.actionUpload'
+                  : 'settings.actionFullscreen'
+            )
           })
         )
         return
@@ -416,6 +424,21 @@ export function SettingsApp(): JSX.Element {
                 onCommit={(hotkey) => void saveHotkey('hotkeyFullscreen', hotkey)}
               />
             </Row>
+
+            {/* The note under this row is the only place in the interface that says a
+                screenshot can leave the computer, so it is part of the control and not
+                a footnote somewhere else. */}
+            <Row label={tr('settings.upload')} hint={tr('settings.uploadHint')}>
+              <HotkeyRecorder
+                lang={lang}
+                value={settings.hotkeyUpload}
+                fallback={DEFAULT_UPLOAD_HOTKEY}
+                fallbackLabel={formatAccelerator(DEFAULT_UPLOAD_HOTKEY)}
+                onCommit={(hotkey) => void saveHotkey('hotkeyUpload', hotkey)}
+              />
+            </Row>
+
+            <p className="row-note">{tr('settings.uploadPrivacy')}</p>
 
             <Row
               label={tr('settings.afterRegion')}

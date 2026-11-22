@@ -27,7 +27,14 @@ import { preloadPath, rendererUrl } from '../windows/paths'
 import { composeOptionsFromSettings, composeRawCard } from '../imaging/compose'
 import type { Raster } from '../imaging/raster'
 import type { FrameLayout } from '../imaging/layout'
-import { copyResult, saveResult, saveToFolder, type ResultContext } from '../export/resultActions'
+import {
+  copyResult,
+  saveResult,
+  saveToFolder,
+  uploadResult,
+  type CopyOutcome,
+  type ResultContext
+} from '../export/resultActions'
 import { encodeRaster } from '../export/imageExport'
 import { captureDisplays, toRgbaBitmap, type CaptureTimings, type NativeSnapshot } from './screenCapture'
 import { cropFromMonitors, type MonitorSource } from './nativeCrop'
@@ -37,9 +44,32 @@ import { recognizeCardPicture } from '../ocr/recognize'
 import { warmOcr } from '../ocr/worker'
 import { tr } from '../i18n'
 
+/**
+ * The clock time at which an upload stops working, as HH:MM.
+ *
+ * Deliberately not "in an hour": the server counts its hour from the moment it stored
+ * the file, and the user compares that against their own clock. A relative phrase
+ * drifts from the truth the longer the message stays on screen.
+ */
+export function expiryLabel(expiresAt: number | undefined): string {
+  if (!expiresAt) return ''
+  const date = new Date(expiresAt * 1000)
+  if (Number.isNaN(date.getTime())) return ''
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  return `${hours}:${minutes}`
+}
+
 export interface CaptureSessionDeps {
   settings: SettingsStore
   onError: (message: string) => void
+  /**
+   * A message worth interrupting for, on a path where no window is left to show it.
+   *
+   * The upload finishes after the overlay has gone, so the link and its expiry would
+   * otherwise reach nobody: the toast lives on a window that no longer exists.
+   */
+  onNotice: (message: string) => void
   onStateChange: () => void
 }
 
@@ -108,6 +138,14 @@ export class CaptureSession {
   private focusDisplayId: string | null = null
   /** True when this round was started by the full-screen hotkey. */
   private fullscreen = false
+  /**
+   * True when this round was started by the upload key.
+   *
+   * It does not change how the region is drawn, only what releasing the mouse means:
+   * the picture goes to the server and a link comes back instead of the picture
+   * landing on the clipboard.
+   */
+  private uploadMode = false
 
   constructor(private readonly deps: CaptureSessionDeps) {}
 
@@ -124,11 +162,12 @@ export class CaptureSession {
     return this.result !== null
   }
 
-  async start(options: { fullscreen?: boolean } = {}): Promise<void> {
+  async start(options: { fullscreen?: boolean; upload?: boolean } = {}): Promise<void> {
     if (this.active || this.starting) return
     this.starting = true
     this.active = true
     this.fullscreen = Boolean(options.fullscreen)
+    this.uploadMode = Boolean(options.upload)
     this.startCount += 1
     this.lastError = ''
     const timings: Record<string, number> = {}
@@ -185,6 +224,7 @@ export class CaptureSession {
               display: this.virtualDescriptor,
               shot: virtual,
               fullscreen: this.fullscreen,
+              upload: this.uploadMode,
               settings: liveSettings
             })
           }
@@ -422,7 +462,13 @@ export class CaptureSession {
     const display = this.virtualDescriptor
     if (!display) throw new Error(tr('capture.displayMissing'))
 
-    return { display, settings, hotkey: settings.hotkey, fullscreen: this.fullscreen }
+    return {
+      display,
+      settings,
+      hotkey: settings.hotkey,
+      fullscreen: this.fullscreen,
+      upload: this.uploadMode
+    }
   }
 
   /** The frozen virtual desktop; waits for the capture to finish. */
@@ -536,15 +582,19 @@ export class CaptureSession {
       // never watches a frozen picture while sharp works — the desktop is back one
       // frame after the button comes up, and Ctrl+V works a few dozen milliseconds
       // later.
-      if (selection.intent === 'copy') {
+      if (selection.intent === 'copy' || selection.intent === 'upload') {
+        // Both actions end the round on release and leave nothing on screen. They
+        // differ in what reaches the clipboard: the picture, or a link to it.
+        const uploading = selection.intent === 'upload'
         this.hideOverlays()
         markCopy('hide')
         const { raster } = await this.cropSelection(selection, descriptor)
         markCopy('crop')
         const card = await composeRawCard(raster, { x: 0, y: 0, width: raster.width, height: raster.height }, composeOptionsFromSettings(settings), selection.previewWidth)
         markCopy('compose')
-        const copied = await copyResult({ raster: card.raster, layout: card.layout, settings, window: null })
-        markCopy('clipboard')
+        const context = { raster: card.raster, layout: card.layout, settings, window: null }
+        const copied = uploading ? await uploadResult(context) : await copyResult(context)
+        markCopy(uploading ? 'upload' : 'clipboard')
         this.lastCopyTimings = copyTimings
         this.result = null
         this.pendingPng = null
@@ -555,7 +605,10 @@ export class CaptureSession {
         // is not awaited: pasting must never wait for the disk.
         if (copied.ok && settings.saveMode === 'folder') {
           const directory = settings.saveDirectory
-          void saveToFolder({ raster: card.raster, layout: card.layout, settings, window: null, png: copied.png })
+          // An upload never had a clipboard image, so there is no pre-encoded PNG
+          // to reuse and the file is encoded from the card instead.
+          const png: Buffer | undefined = uploading ? undefined : (copied as CopyOutcome).png
+          void saveToFolder({ raster: card.raster, layout: card.layout, settings, window: null, png })
             .then((saved) => {
               if (saved.ok) return
               console.warn(tr('capture.copiedNotSaved', { detail: saved.message }))
@@ -571,14 +624,25 @@ export class CaptureSession {
         }
 
         this.cancel()
-        return copied.ok
-          ? {
-            ok: true,
-            message: tr('capture.copied', { width: card.raster.width, height: card.raster.height }),
-            width: card.raster.width,
-            height: card.raster.height
-          }
-          : { ok: false, message: copied.message }
+        if (!copied.ok) return { ok: false, message: copied.message }
+
+        if (uploading) {
+          // The overlay is already hidden, so the notification is the only place the
+          // link and its lifetime can be seen. The clipboard has it too, which is the
+          // point — but "where did it go" must not be something the user has to guess.
+          this.deps.onNotice(tr('upload.notice', { url: copied.url ?? '', expires: expiryLabel(copied.expiresAt) }))
+        }
+
+        return {
+          ok: true,
+          message: uploading
+            ? (copied.message ?? tr('upload.uploaded', { url: copied.url ?? '' }))
+            : tr('capture.copied', { width: card.raster.width, height: card.raster.height }),
+          width: card.raster.width,
+          height: card.raster.height,
+          url: copied.url,
+          expiresAt: copied.expiresAt
+        }
       }
 
       // The overlay stays visible, because the result is shown in it.
@@ -751,6 +815,21 @@ export class CaptureSession {
     const context = await this.resultContext(annotations)
     if (!context) return { ok: false, message: tr(this.result ? 'capture.settingsUnavailable' : 'capture.captureFirst') }
     return this.settle(await copyResult(context, annotations))
+  }
+
+  /**
+   * Upload the picture and hand back a link.
+   *
+   * The overlay is concealed first, for the same reason as the other actions: the
+   * upload takes a moment on a real connection, and leaving the frozen screen on
+   * display over a picture that has already been taken is worse than showing the
+   * desktop again.
+   */
+  async upload(annotations?: AnnotationLayerPayload): Promise<ActionResult> {
+    this.conceal()
+    const context = await this.resultContext(annotations)
+    if (!context) return { ok: false, message: tr(this.result ? 'capture.settingsUnavailable' : 'capture.captureFirst') }
+    return this.settle(await uploadResult(context, annotations))
   }
 
   /**

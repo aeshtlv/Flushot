@@ -1,0 +1,15 @@
+[Unit]
+Description=Delete expired Flushot screenshots
+Documentation=https://github.com/aeshtlv/Flushot
+
+[Service]
+Type=oneshot
+User=nginx
+Group=nginx
+ExecStart=/usr/bin/python3 /usr/local/lib/flushot/shot-server.py --sweep
+Environment=FLUSHOT_SHOTS_DIR=/var/lib/flushot-shots
+ReadWritePaths=/var/lib/flushot-shots
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true

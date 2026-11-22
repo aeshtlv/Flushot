@@ -2,7 +2,7 @@ import { Notification, app, dialog, globalShortcut, shell } from 'electron'
 import { mkdirSync, unlinkSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { HOTKEY } from '../shared/settings'
-import { DEFAULT_FULLSCREEN_HOTKEY, FALLBACK_FULLSCREEN_HOTKEY, FALLBACK_HOTKEY, formatAccelerator } from '../shared/hotkey'
+import { DEFAULT_FULLSCREEN_HOTKEY, DEFAULT_UPLOAD_HOTKEY, FALLBACK_FULLSCREEN_HOTKEY, FALLBACK_HOTKEY, FALLBACK_UPLOAD_HOTKEY, formatAccelerator } from '../shared/hotkey'
 import { CaptureSession } from './capture/CaptureSession'
 import { stopOcr } from './ocr/worker'
 import { warmImaging } from './imaging/compose'
@@ -71,6 +71,8 @@ let session: CaptureSession
 let activeHotkey = HOTKEY
 /** Combination actually bound to the full-screen capture, '' when none worked. */
 let activeFullscreenHotkey = ''
+/** Combination actually bound to capture-and-upload, '' when none worked. */
+let activeUploadHotkey = ''
 
 if (!app.requestSingleInstanceLock()) {
   app.quit()
@@ -118,12 +120,14 @@ function trayActions(): Parameters<typeof rebuildMenu>[0] {
   return {
     capture: () => void startCapture(),
     captureFullscreen: () => void startCapture({ fullscreen: true }),
+    captureUpload: () => void startCapture({ upload: true }),
     openSettings: () => openSettingsWindow({ closeCapture: () => session.cancel() }),
     openFolder: () => {
       void settingsStore.load().then((current) => shell.openPath(current.saveDirectory))
     },
     hotkey: activeHotkey,
     hotkeyFullscreen: activeFullscreenHotkey,
+    hotkeyUpload: activeUploadHotkey,
     update: trayUpdate(),
     quit: () => app.quit()
   }
@@ -161,6 +165,7 @@ async function initCore(): Promise<void> {
   session = new CaptureSession({
     settings: settingsStore,
     onError: (message) => notify(message, tr('app.notifyTitle')),
+    onNotice: (message) => notify(message, tr('upload.noticeTitle')),
     onStateChange: () => rebuildMenu(trayActions())
   })
 
@@ -169,6 +174,7 @@ async function initCore(): Promise<void> {
     settings: settingsStore,
     getHotkey: () => activeHotkey,
     getFullscreenHotkey: () => activeFullscreenHotkey,
+    getUploadHotkey: () => activeUploadHotkey,
     defaultDirectory,
     onHotkeysChanged: () => applyHotkeyChange(),
     // Language lives in the settings file like everything else, so a change has
@@ -291,18 +297,19 @@ function bindShortcut(accelerator: string, handler: () => void): boolean {
 }
 
 /**
- * Bind both global shortcuts from scratch.
+ * Bind all three global shortcuts from scratch.
  *
- * They are bound as a pair and always together: Windows hands a combination to
- * one handler only, so the second key must be registered knowing which
- * combination the first one actually took. A key that cannot be bound is
- * reported as `''` rather than as the value the user asked for — otherwise the
- * settings window would show a combination that does nothing.
+ * They are bound as a set and always together: Windows hands a combination to one
+ * handler only, so each key must be registered knowing which combinations the ones
+ * before it actually took. A key that cannot be bound is reported as `''` rather than
+ * as the value the user asked for — otherwise the settings window would show a
+ * combination that does nothing.
  */
 function registerGlobalHotkey(): void {
   const settings = settingsStore.peek()
   const preferred = settings?.hotkey || HOTKEY
   const preferredFull = settings?.hotkeyFullscreen || DEFAULT_FULLSCREEN_HOTKEY
+  const preferredUpload = settings?.hotkeyUpload || DEFAULT_UPLOAD_HOTKEY
 
   try {
     globalShortcut.unregisterAll()
@@ -311,6 +318,7 @@ function registerGlobalHotkey(): void {
   }
   activeHotkey = ''
   activeFullscreenHotkey = ''
+  activeUploadHotkey = ''
 
   // Region key first: it is the one the product is built around.
   for (const candidate of [preferred, FALLBACK_HOTKEY]) {
@@ -348,24 +356,43 @@ function registerGlobalHotkey(): void {
       })
     )
   }
+
+  // And the upload key, skipping both of the above.
+  for (const candidate of [preferredUpload, FALLBACK_UPLOAD_HOTKEY]) {
+    if (candidate === activeHotkey || candidate === activeFullscreenHotkey) continue
+    if (bindShortcut(candidate, () => void startCapture({ upload: true }))) {
+      activeUploadHotkey = candidate
+      break
+    }
+  }
+
+  if (!activeUploadHotkey) {
+    notify(tr('app.uploadHotkeyUnavailable', { combo: formatAccelerator(preferredUpload) }), 'Flushot')
+  } else if (activeUploadHotkey !== preferredUpload) {
+    notify(
+      tr('app.uploadHotkeyTaken', {
+        combo: formatAccelerator(preferredUpload),
+        active: formatAccelerator(activeUploadHotkey)
+      })
+    )
+  }
 }
 
 /**
- * Re-bind both global shortcuts after the user saved a new combination.
+ * Re-bind all global shortcuts after the user saved a new combination.
  *
- * Deliberately unconditional: the two keys are bound as a pair, because a
- * full-screen combination equal to the region one cannot be registered twice.
- * An earlier version returned early when the *region* accelerator had not
- * changed, which is exactly what happens when the user edits only the
- * full-screen key — the new key was never bound, and the window then reported it
- * as "taken".
+ * Deliberately unconditional: the keys are bound as a set, because a full-screen
+ * combination equal to the region one cannot be registered twice. An earlier version
+ * returned early when the *region* accelerator had not changed, which is exactly what
+ * happens when the user edits only the full-screen key — the new key was never bound,
+ * and the window then reported it as "taken".
  */
 function applyHotkeyChange(): void {
   registerGlobalHotkey()
   rebuildMenu(trayActions())
 }
 
-async function startCapture(options: { fullscreen?: boolean } = {}): Promise<void> {
+async function startCapture(options: { fullscreen?: boolean; upload?: boolean } = {}): Promise<void> {
   if (!session || session.isActive) return
   getSettingsWindow()?.hide()
   try {

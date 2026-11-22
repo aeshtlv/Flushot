@@ -100,6 +100,7 @@ npm run self-test    # end-to-end check on a live system
 |---|---|
 | `Ctrl+Shift+S` | start selecting a region |
 | `Ctrl+Shift+3` | capture the whole screen |
+| `Ctrl+Shift+U` | capture, upload, and put a link on the clipboard |
 | release the mouse | the picture is already on the clipboard |
 | `Shift` on release | open the picture for annotating instead of copying |
 | `Enter` | confirm the selection and open the picture |
@@ -109,10 +110,30 @@ npm run self-test    # end-to-end check on a live system
 | `Esc` | reset the selection or close the overlay |
 | `Shift` while drawing a line | snap to 0°, 45° or 90° |
 
-Both capture hotkeys are configurable, including a single key without modifiers.
+All three capture hotkeys are configurable, including a single key without modifiers. None of
+them can be triggered twice: a combination taken by one action is refused by the others, and the
+settings window names the action that holds it.
 
 Copying on release can be turned off: settings → "Снимок" → "После выделения" → "Открывать".
 Releasing the mouse then shows the annotation bar and `Ctrl+C` copies, as it did before.
+
+### Capture with a link
+
+The third key, `Ctrl+Shift+U`, captures a region and uploads the finished picture, putting a link
+such as `https://flushot.ink/s/xxxxxxxxxxxxxxxx.png` on the clipboard. The extension is `.png` or
+`.webp` depending on the format chosen in the settings; the server decides by looking at the first
+bytes of the file rather than trusting the extension.
+
+The link works for one hour. After that the file is deleted and the link shows a "Link expired"
+page.
+
+This is the only feature that sends a picture over the network. The other two keys work on your
+computer alone, and nobody has to press this one. What exactly is stored, and how to cancel a link
+early, is on the [privacy page](https://flushot.ink/en/privacy.html).
+
+The server side lives in `deploy/shots/`: a Python endpoint (standard library, 3.6), the nginx
+configuration, systemd units and an installer. The quota is 2 GB; when it fills, the oldest files
+go first, and uploads are refused below 1.5 GB of free disk so the system itself cannot be filled.
 
 ## Updates
 

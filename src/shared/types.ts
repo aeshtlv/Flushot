@@ -48,6 +48,15 @@ export interface ScreenshotSettings {
    * already selected — one key press, no dragging.
    */
   hotkeyFullscreen: string
+  /**
+   * Global accelerator that captures a region and uploads it straight away, putting
+   * the resulting link on the clipboard instead of the picture.
+   *
+   * The link works for one hour: the picture is deleted from the server after that.
+   * This is the one key that sends a screenshot anywhere, which is why it is not the
+   * default action of the other two and why the settings window says so plainly.
+   */
+  hotkeyUpload: string
   /** Start Flushot in the tray when the user logs in to Windows. */
   launchAtLogin: boolean
   /**
@@ -253,8 +262,10 @@ export interface CaptureSelection {
    * `preview` composes the card, shows it and saves it (default).
    * `copy` composes it and puts it straight into the clipboard, then closes the
    * overlay — this is what Ctrl+C does while the region is being selected.
+   * `upload` composes it, sends it to the server and puts the returned link on the
+   * clipboard — this is what releasing the mouse does in an upload round.
    */
-  intent?: 'preview' | 'copy'
+  intent?: 'preview' | 'copy' | 'upload'
   /**
    * Pixel width the result preview will be displayed at, multiplied by the
    * display's device pixel ratio. The preview is rendered at exactly this size,
@@ -300,6 +311,14 @@ export interface OverlayInit {
    * confirm, copy or annotate.
    */
   fullscreen?: boolean
+  /**
+   * True when the round was started by the upload key: releasing the mouse uploads
+   * the picture and puts the link on the clipboard instead of the picture itself.
+   *
+   * It changes what the release means, not how the region is drawn, so the overlay
+   * looks and behaves the same until the mouse comes up.
+   */
+  upload?: boolean
 }
 
 /**
@@ -337,6 +356,16 @@ export interface ActionResult {
   /** Pixel size of the composed result, so the UI can show the real numbers. */
   width?: number
   height?: number
+  /**
+   * The link returned by an upload.
+   *
+   * Set only by the upload action. It is on `ActionResult` rather than in a separate
+   * type because the overlay treats every action the same way, and the link is just
+   * one more thing that action produced.
+   */
+  url?: string
+  /** Unix seconds at which the uploaded link stops working. */
+  expiresAt?: number
 }
 
 export interface DisplayCaptureSnapshot {

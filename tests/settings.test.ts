@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_FULLSCREEN_HOTKEY, FALLBACK_FULLSCREEN_HOTKEY } from '../src/shared/hotkey'
+import {
+  DEFAULT_FULLSCREEN_HOTKEY,
+  DEFAULT_UPLOAD_HOTKEY,
+  FALLBACK_FULLSCREEN_HOTKEY,
+  FALLBACK_UPLOAD_HOTKEY
+} from '../src/shared/hotkey'
 import {
   BACKGROUND_PRESETS,
   defaultSettings,
@@ -186,6 +191,58 @@ describe('full-screen shortcut', () => {
     expect(sanitizeSettings({ hotkeyFullscreen: 'CommandOrControl+Escape' }, PICTURES).hotkeyFullscreen).toBe(
       DEFAULT_FULLSCREEN_HOTKEY
     )
+  })
+})
+
+describe('upload shortcut', () => {
+  it('has a default that differs from both other shortcuts', () => {
+    const settings = defaultSettings(PICTURES)
+    expect(settings.hotkeyUpload).toBe(DEFAULT_UPLOAD_HOTKEY)
+    expect(settings.hotkeyUpload).not.toBe(settings.hotkey)
+    expect(settings.hotkeyUpload).not.toBe(settings.hotkeyFullscreen)
+  })
+
+  it('keeps a valid combination', () => {
+    expect(sanitizeSettings({ hotkeyUpload: 'CommandOrControl+Alt+U' }, PICTURES).hotkeyUpload).toBe(
+      'CommandOrControl+Alt+U'
+    )
+  })
+
+  it('gives the upload key a different combination when it duplicates the region key', () => {
+    // A saved file can ask for two actions on one combination, and Windows binds each
+    // combination once: the second action would silently never fire.
+    const settings = sanitizeSettings(
+      { hotkey: 'CommandOrControl+Shift+S', hotkeyUpload: 'Ctrl+Shift+S' },
+      PICTURES
+    )
+    expect(settings.hotkeyUpload).toBe(FALLBACK_UPLOAD_HOTKEY)
+    expect(settings.hotkeyUpload).not.toBe(settings.hotkey)
+  })
+
+  it('gives the upload key a different combination when it duplicates the full-screen key', () => {
+    const settings = sanitizeSettings(
+      { hotkeyFullscreen: 'CommandOrControl+Shift+3', hotkeyUpload: 'CommandOrControl+Shift+3' },
+      PICTURES
+    )
+    expect(settings.hotkeyUpload).toBe(FALLBACK_UPLOAD_HOTKEY)
+  })
+
+  it('leaves the other two alone when only the upload key is unusable', () => {
+    const settings = sanitizeSettings({ hotkeyUpload: 'нет такой' }, PICTURES)
+    expect(settings.hotkeyUpload).toBe(DEFAULT_UPLOAD_HOTKEY)
+    expect(settings.hotkey).toBe(defaultSettings(PICTURES).hotkey)
+    expect(settings.hotkeyFullscreen).toBe(DEFAULT_FULLSCREEN_HOTKEY)
+  })
+
+  it('uses the alternate default when the default itself is taken', () => {
+    // The user moved the region key onto the upload default, so the upload key cannot
+    // keep it: falling back to the default would fall back into a clash.
+    const settings = sanitizeSettings(
+      { hotkey: DEFAULT_UPLOAD_HOTKEY, hotkeyUpload: 'нет такой' },
+      PICTURES
+    )
+    expect(settings.hotkeyUpload).toBe(FALLBACK_UPLOAD_HOTKEY)
+    expect(settings.hotkeyUpload).not.toBe(settings.hotkey)
   })
 })
 

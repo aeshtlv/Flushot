@@ -53,7 +53,47 @@ scp deploy/deploy-site.sh root@78.17.32.87:/root/deploy-site.sh
 если найденный SHA совпадает с прошлой выкладкой, он ждёт до 20 секунд, пока голова сдвинется,
 и только потом решает, что нового действительно нет.
 
-### Подтверждение прав для Яндекс.Вебмастера
+### Подтверждение прав для Яндекс.Вебмастера### Снимки со ссылкой
+
+Эндпоинт загрузки установлен из `deploy/shots/`: `bash install.sh` на сервере, от root.
+Скрипт можно запускать повторно — он ничего не ломает, если всё уже стоит.
+
+Что где лежит:
+
+| Путь | Что это |
+|---|---|
+| `/usr/local/lib/flushot/shot-server.py` | сам эндпоинт, Python 3.6, без зависимостей |
+| `/var/lib/flushot-shots/` | снимки, владелец `nginx`, права 0750 |
+| `/var/www/flushot-shots/expired.html` | страница «Ссылка истекла» |
+| `/etc/nginx/flushot-shots-locations.conf` | `location` для `/api/shot` и `/s/` |
+| `/etc/nginx/conf.d/00-flushot-shots-zones.conf` | зона `limit_req` (объявлена до сервера) |
+| `/etc/systemd/system/flushot-shots.service` | процесс |
+| `/etc/systemd/system/flushot-shots-sweep.timer` | уборка раз в минуту |
+
+Установщик сам добавляет одну строку `include` в `/etc/nginx/conf.d/flushot.ink.conf` — в server
+блок, перед `access_log`. Резервная копия остаётся рядом как `.bak-shots`.
+
+**Почему отдельно от `deploy-site.sh`.** Тот публикует страницу из git, этот ставит серверное
+программное обеспечение. Если бы правила nginx лежали на ветке `site`, любая выкладка могла бы
+их снести — а эталона, с которым можно сверить, не было бы вовсе.
+
+**Что проверять после переустановки** (`bash test-shots-live.sh` на сервере — или руками):
+
+```bash
+curl -s https://flushot.ink/api/shot/health            # 200 и JSON
+curl -sI https://flushot.ink/s/aaaaaaaaaaaaaaaa.png    # 410 и страница «истекла»
+systemctl is-active flushot-shots.service flushot-shots-sweep.timer
+python3 /usr/local/lib/flushot/shot-server.py --sweep  # печатает сводку
+```
+
+**Как это защищено.** Тело ограничено 3 МБ (`client_max_body_size`), десять загрузок в минуту с
+адреса (`limit_req`), файл называется по первым байтам, а не по заголовку, квота 2 ГБ со стороны
+эндпоинта и такой же потолок со стороны уборки, и отказ ниже 1,5 ГБ свободного места. Последние
+две защиты важны: заполненный диск роняет не загрузку, а весь сервер вместе с nginx и журналами.
+
+**Выключить:** `systemctl disable --now flushot-shots.service flushot-shots-sweep.timer`, затем
+убрать строку `include` из конфигурации сайта и `nginx -s reload`. Сайт продолжит работать, ссылки
+перестанут отвечать.
 
 В корне сайта лежит `yandex_bd3d96e39d2caf28.html` — файл, которым Яндекс проверяет, что сайт
 принадлежит владельцу. Хеш в имени файла и хеш в теле документа обязаны совпадать; если совпадения

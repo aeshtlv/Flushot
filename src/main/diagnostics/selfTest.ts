@@ -1569,7 +1569,11 @@ async function runSettingsLiveChecks(
  * Registration can legitimately fail because another app owns a combination, so
  * only a *throw* counts as a mapping bug — a `false` return is merely "taken".
  */
-function runAcceleratorCheck(stored: { hotkey: string; hotkeyFullscreen: string }): NonNullable<
+function runAcceleratorCheck(stored: {
+  hotkey: string
+  hotkeyFullscreen: string
+  hotkeyUpload: string
+}): NonNullable<
   SelfTestReport['accelerators']
 > {
   const probes = [
@@ -1621,7 +1625,7 @@ function runAcceleratorCheck(stored: { hotkey: string; hotkeyFullscreen: string 
   }
 
   // The combinations actually in use must survive the same treatment.
-  for (const accelerator of [stored.hotkey, stored.hotkeyFullscreen]) {
+  for (const accelerator of [stored.hotkey, stored.hotkeyFullscreen, stored.hotkeyUpload]) {
     if (!accelerator) continue
     try {
       if (globalShortcut.register(accelerator, () => undefined)) {
@@ -1634,9 +1638,9 @@ function runAcceleratorCheck(stored: { hotkey: string; hotkeyFullscreen: string 
 
   return {
     ok: rejected.length === 0,
-    checked: probes.length + 2,
+    checked: probes.length + 3,
     rejected,
-    stored: `${stored.hotkey} / ${stored.hotkeyFullscreen}`,
+    stored: `${stored.hotkey} / ${stored.hotkeyFullscreen} / ${stored.hotkeyUpload}`,
     note: rejected.length === 0 ? '' : `${rejected.length} сочетаний не принимаются системой`
   }
 }
@@ -2261,10 +2265,11 @@ export async function runSelfTest(session?: CaptureSession, settingsStore?: Sett
     // probe has to see the same values the app is really using.
     const liveSettings = settingsStore
       ? await settingsStore.load()
-      : { hotkey: '', hotkeyFullscreen: '' }
+      : { hotkey: '', hotkeyFullscreen: '', hotkeyUpload: '' }
     report.accelerators = runAcceleratorCheck({
       hotkey: liveSettings.hotkey,
-      hotkeyFullscreen: liveSettings.hotkeyFullscreen
+      hotkeyFullscreen: liveSettings.hotkeyFullscreen,
+      hotkeyUpload: liveSettings.hotkeyUpload
     })
     report.seam = await runSeamCheck(session, frameWidth, outputDir)
     report.perf = runPerfCheck(session, realCopy.warm ?? {}, report.seam)

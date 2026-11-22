@@ -186,7 +186,8 @@ describe('settings sanitizing of the capture shortcut', () => {
 describe('conflictingField', () => {
   const current = {
     hotkey: 'CommandOrControl+Shift+S',
-    hotkeyFullscreen: 'CommandOrControl+Shift+3'
+    hotkeyFullscreen: 'CommandOrControl+Shift+3',
+    hotkeyUpload: 'CommandOrControl+Shift+U'
   }
 
   it('reports the other action when the combination is already taken', () => {
@@ -206,9 +207,25 @@ describe('conflictingField', () => {
     expect(conflictingField('hotkey', 'CommandOrControl+Shift+3', current)).toBe('hotkeyFullscreen')
   })
 
+  it('knows about the third action, not just the one counterpart', () => {
+    // The check used to compare against exactly one other field. With three actions
+    // that is wrong: the upload key could take the region combination and the window
+    // reported it as free, leaving it bound to whichever handler won.
+    expect(conflictingField('hotkeyUpload', 'CommandOrControl+Shift+S', current)).toBe('hotkey')
+    expect(conflictingField('hotkeyUpload', 'CommandOrControl+Shift+3', current)).toBe('hotkeyFullscreen')
+    expect(conflictingField('hotkey', 'CommandOrControl+Shift+U', current)).toBe('hotkeyUpload')
+    expect(conflictingField('hotkeyFullscreen', 'CommandOrControl+Shift+U', current)).toBe('hotkeyUpload')
+  })
+
   it('treats an unbound other action as no conflict', () => {
     // '' means the combination could not be registered at all, so it owns nothing.
-    expect(conflictingField('hotkey', 'CommandOrControl+Shift+3', { hotkey: '', hotkeyFullscreen: '' })).toBeNull()
+    expect(
+      conflictingField('hotkey', 'CommandOrControl+Shift+3', {
+        hotkey: '',
+        hotkeyFullscreen: '',
+        hotkeyUpload: ''
+      })
+    ).toBeNull()
   })
 })
 

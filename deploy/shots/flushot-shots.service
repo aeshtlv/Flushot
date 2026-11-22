@@ -1,0 +1,38 @@
+[Unit]
+Description=Flushot screenshot upload endpoint
+Documentation=https://github.com/aeshtlv/Flushot
+After=network.target nginx.service
+
+[Service]
+Type=simple
+# Runs as the same user nginx serves files as, so a written file is readable without
+# a chmod step and the whole directory can be owned by one account.
+User=nginx
+Group=nginx
+ExecStart=/usr/bin/python3 /usr/local/lib/flushot/shot-server.py
+Restart=always
+RestartSec=3
+
+# The directory is the only thing this process may write. Everything else is
+# read-only to it, so a bug here cannot rewrite the site or the system.
+Environment=FLUSHOT_SHOTS_DIR=/var/lib/flushot-shots
+ReadWritePaths=/var/lib/flushot-shots
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+
+# The endpoint answers in milliseconds; a process that sits above this is stuck and
+# should be restarted rather than left holding connections.
+MemoryMax=192M
+TasksMax=64
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

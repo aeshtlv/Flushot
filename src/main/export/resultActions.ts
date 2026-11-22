@@ -7,6 +7,7 @@ import { pasteAnnotationLayer } from '../imaging/annotations'
 import type { Raster } from '../imaging/raster'
 import { encodeRaster, writeImageFile } from './imageExport'
 import { buildScreenshotFilename, uniqueFilename } from './filename'
+import { uploadShot } from '../upload/uploadShot'
 import { tr } from '../i18n'
 
 export interface ResultContext {
@@ -137,8 +138,7 @@ export interface CopyOutcome extends ActionResult {
   png?: Buffer
 }
 
-export async function copyResult(result: ResultContext, annotations?: AnnotationLayerPayload): Promise<CopyOutcome> {
-  const raster = finish(result, annotations)
+export async function copyResult(result: ResultContext, annotations?: AnnotationLayerPayload): Promise<CopyOutcome> {  const raster = finish(result, annotations)
   if (raster.width === 0 || raster.height === 0) {
     return { ok: false, message: tr('export.prepareClipboardFailed') }
   }
@@ -153,4 +153,41 @@ export async function copyResult(result: ResultContext, annotations?: Annotation
   const blob = new Blob([png], { type: 'image/png' })
   await clipboard.write([new ClipboardItem({ 'image/png': blob })])
   return { ok: true, message: tr('export.copied'), png }
+}
+
+/**
+ * Upload the card and put the resulting link on the clipboard instead of the picture.
+ *
+ * The picture is encoded in the format the user chose for saving, because the link
+ * has to end in the same extension the file would have had. The server names the
+ * file from the bytes, so `.png` is a PNG and `.webp` is a WebP — the extension is a
+ * statement about the content, not a preference.
+ *
+ * The clipboard receives the link as text. That is the whole point of this action: it
+ * is for pasting into a chat where the picture is not wanted, and it means the
+ * screenshot itself never lands on the clipboard at all.
+ */
+export async function uploadResult(result: ResultContext, annotations?: AnnotationLayerPayload): Promise<ActionResult> {
+  let buffer: Buffer
+  try {
+    buffer = await encodeCard(result, annotations)
+  } catch (error) {
+    console.error(tr('export.encodeFailed'), error)
+    return { ok: false, message: tr('upload.encodeFailed') }
+  }
+
+  const outcome = await uploadShot(buffer, result.settings.format)
+  if (!outcome.ok) return { ok: false, message: outcome.message }
+
+  try {
+    await clipboard.writeText(outcome.url)
+  } catch (error) {
+    // The link exists and is worth showing even if the clipboard refused it: the
+    // notification is the fallback, so the user is not left with a picture that has
+    // been uploaded and a link they cannot see.
+    console.error(tr('export.clipboardFailed'), error)
+    return { ok: true, message: tr('upload.uploadedNoClipboard', { url: outcome.url }), url: outcome.url, expiresAt: outcome.expiresAt }
+  }
+
+  return { ok: true, message: tr('upload.uploaded', { url: outcome.url }), url: outcome.url, expiresAt: outcome.expiresAt }
 }

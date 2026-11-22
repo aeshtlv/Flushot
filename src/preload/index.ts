@@ -31,6 +31,14 @@ const api = {
   copyScreenshot: (annotations?: AnnotationLayerPayload): Promise<ActionResult> =>
     ipcRenderer.invoke('result:copy', annotations),
   /**
+   * Upload the picture and get a link back.
+   *
+   * The link is put on the clipboard by the main process, and it stops working after
+   * an hour. This is the only call in this file that sends a screenshot anywhere.
+   */
+  uploadScreenshot: (annotations?: AnnotationLayerPayload): Promise<ActionResult> =>
+    ipcRenderer.invoke('result:upload', annotations),
+  /**
    * Take the overlay off the screen right now, before measuring the drawing.
    *
    * Deliberately not awaited and not an `invoke`: the point is that the hide is
@@ -87,8 +95,13 @@ const api = {
    */
   getPreview: (width?: number): Promise<string> => ipcRenderer.invoke('settings:preview', width),
   openSaveFolder: (): Promise<void> => ipcRenderer.invoke('shell:open-folder'),
-  getAppInfo: (): Promise<{ version: string; hotkey: string; settingsPath: string }> =>
-    ipcRenderer.invoke('app:info'),
+  getAppInfo: (): Promise<{
+    version: string
+    hotkey: string
+    hotkeyFullscreen: string
+    hotkeyUpload: string
+    settingsPath: string
+  }> => ipcRenderer.invoke('app:info'),
   /** What the updater is doing right now. */
   getUpdateState: (): Promise<UpdateState> => ipcRenderer.invoke('update:state'),
   /** Ask GitHub for a newer release; resolves with the state it ended in. */

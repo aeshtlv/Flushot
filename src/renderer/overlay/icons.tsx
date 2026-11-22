@@ -45,6 +45,15 @@ export function CopyIcon(): JSX.Element {
   )
 }
 
+export function LinkIcon(): JSX.Element {
+  return (
+    <svg {...base}>
+      <path d="M10 13.5a4 4 0 0 0 5.7 0l2.8-2.8a4 4 0 0 0-5.7-5.7L11.4 6.4" />
+      <path d="M14 10.5a4 4 0 0 0-5.7 0l-2.8 2.8a4 4 0 0 0 5.7 5.7l1.4-1.4" />
+    </svg>
+  )
+}
+
 export function RepeatIcon(): JSX.Element {
   return (
     <svg {...base}>

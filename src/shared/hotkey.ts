@@ -20,6 +20,17 @@ export const FALLBACK_HOTKEY = 'CommandOrControl+Alt+S'
 export const DEFAULT_FULLSCREEN_HOTKEY = 'CommandOrControl+Shift+3'
 export const FALLBACK_FULLSCREEN_HOTKEY = 'CommandOrControl+Alt+3'
 
+/**
+ * Default for "capture and upload".
+ *
+ * `U` for upload, in the same family as the other two so the set reads as one group
+ * of three. The fallback exists for the same reason as the others: Windows hands a
+ * combination to one program only, and a key that silently does nothing is worse
+ * than a different key that works.
+ */
+export const DEFAULT_UPLOAD_HOTKEY = 'CommandOrControl+Shift+U'
+export const FALLBACK_UPLOAD_HOTKEY = 'CommandOrControl+Alt+U'
+
 const MODIFIER_ALIASES: Record<string, string> = {
   commandorcontrol: 'CommandOrControl',
   cmdorctrl: 'CommandOrControl',
@@ -232,7 +243,7 @@ export function acceleratorFromKeyboardEvent(event: KeyboardLike): string | null
 }
 
 /** The two actions a global shortcut can be assigned to. */
-export type HotkeyField = 'hotkey' | 'hotkeyFullscreen'
+export type HotkeyField = 'hotkey' | 'hotkeyFullscreen' | 'hotkeyUpload'
 
 /**
  * Combinations Windows itself claims before any application sees them.
@@ -291,10 +302,19 @@ export function reservedByWindows(
 export function conflictingField(
   field: HotkeyField,
   value: string,
-  current: { hotkey: string; hotkeyFullscreen: string }
+  current: { hotkey: string; hotkeyFullscreen: string; hotkeyUpload: string }
 ): HotkeyField | null {
-  const other: HotkeyField = field === 'hotkey' ? 'hotkeyFullscreen' : 'hotkey'
-  const otherValue = current[other]
-  if (!otherValue) return null
-  return normalizeAccelerator(otherValue) === normalizeAccelerator(value) ? other : null
+  const wanted = normalizeAccelerator(value)
+  // Every other action, in a fixed order so the message names the same conflict every
+  // time. The previous version knew about exactly one counterpart, which was true for
+  // two shortcuts and silently wrong for three: the upload key could be given the
+  // region combination and the clash went unreported.
+  const all: HotkeyField[] = ['hotkey', 'hotkeyFullscreen', 'hotkeyUpload']
+  const others = all.filter((candidate) => candidate !== field)
+  for (const other of others) {
+    const otherValue = current[other]
+    if (!otherValue) continue
+    if (normalizeAccelerator(otherValue) === wanted) return other
+  }
+  return null
 }

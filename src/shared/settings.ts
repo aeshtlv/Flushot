@@ -1,4 +1,12 @@
-import { DEFAULT_FULLSCREEN_HOTKEY, FALLBACK_FULLSCREEN_HOTKEY, DEFAULT_HOTKEY, isValidAccelerator, normalizeAccelerator } from './hotkey'
+import {
+  DEFAULT_FULLSCREEN_HOTKEY,
+  DEFAULT_HOTKEY,
+  DEFAULT_UPLOAD_HOTKEY,
+  FALLBACK_FULLSCREEN_HOTKEY,
+  FALLBACK_UPLOAD_HOTKEY,
+  isValidAccelerator,
+  normalizeAccelerator
+} from './hotkey'
 import type { LanguagePreference } from './i18n'
 import type { AfterRegion, ImageFormat, ScreenshotSettings } from './types'
 
@@ -67,6 +75,7 @@ export function defaultSettings(picturesDirectory: string): ScreenshotSettings {
     jpegQuality: 94,
     hotkey: DEFAULT_HOTKEY,
     hotkeyFullscreen: DEFAULT_FULLSCREEN_HOTKEY,
+    hotkeyUpload: DEFAULT_UPLOAD_HOTKEY,
     launchAtLogin: false,
     afterRegion: DEFAULT_AFTER_REGION,
     language: 'auto',
@@ -115,6 +124,19 @@ export function sanitizeSettings(input: unknown, picturesDirectory: string): Scr
     ? normalizeHexColor(raw.backgroundColor)
     : defaults.backgroundColor
 
+  // The three shortcuts are resolved in order, each one avoiding the ones already
+  // taken. Windows hands a combination to one action only, so a duplicate means one
+  // of the actions silently never fires — the reason this cannot be three
+  // independent lookups.
+  const region = isValidAccelerator(raw.hotkey) ? normalizeAccelerator(raw.hotkey) : defaults.hotkey
+  const fullscreen = sanitizeHotkey(
+    raw.hotkeyFullscreen,
+    [region],
+    defaults.hotkeyFullscreen,
+    FALLBACK_FULLSCREEN_HOTKEY
+  )
+  const upload = sanitizeHotkey(raw.hotkeyUpload, [region, fullscreen], defaults.hotkeyUpload, FALLBACK_UPLOAD_HOTKEY)
+
   return {
     theme: oneOf(raw.theme, ['light', 'dark'] as const, defaults.theme),
     backgroundPreset,
@@ -160,11 +182,9 @@ export function sanitizeSettings(input: unknown, picturesDirectory: string): Scr
       SETTINGS_LIMITS.jpegQuality.max,
       defaults.jpegQuality
     ),
-    hotkey: isValidAccelerator(raw.hotkey) ? normalizeAccelerator(raw.hotkey) : defaults.hotkey,
-    // A full-screen key equal to the region key would make one of the two
-    // unreachable: the first registration wins and the other silently does
-    // nothing. The second one falls back to its default instead.
-    hotkeyFullscreen: sanitizeFullscreenHotkey(raw.hotkeyFullscreen, raw.hotkey, defaults),
+    hotkey: region,
+    hotkeyFullscreen: fullscreen,
+    hotkeyUpload: upload,
     launchAtLogin: typeof raw.launchAtLogin === 'boolean' ? raw.launchAtLogin : defaults.launchAtLogin,
     afterRegion: oneOf<AfterRegion>(raw.afterRegion, ['copy', 'edit'] as const, defaults.afterRegion),
     // `auto` is deliberately the fallback and not the system language: a saved
@@ -176,16 +196,18 @@ export function sanitizeSettings(input: unknown, picturesDirectory: string): Scr
   }
 }
 
-/** Full-screen shortcut, kept distinct from the region one. */
-function sanitizeFullscreenHotkey(
-  value: unknown,
-  regionValue: unknown,
-  defaults: ScreenshotSettings
-): string {
-  const region = isValidAccelerator(regionValue) ? normalizeAccelerator(regionValue) : defaults.hotkey
-  if (!isValidAccelerator(value)) return defaults.hotkeyFullscreen === region ? FALLBACK_FULLSCREEN_HOTKEY : defaults.hotkeyFullscreen
+/**
+ * A secondary shortcut, kept distinct from the ones already taken.
+ *
+ * An unusable value falls back to the default — unless the default is itself one of
+ * the taken combinations, in which case the alternate combination is used. That is
+ * the case a saved file can reach: the user assigned the same key to two actions, and
+ * silently reusing it would leave one of them dead.
+ */
+function sanitizeHotkey(value: unknown, taken: string[], fallbackDefault: string, fallback: string): string {
+  if (!isValidAccelerator(value)) return taken.includes(fallbackDefault) ? fallback : fallbackDefault
   const normalized = normalizeAccelerator(value)
-  return normalized === region ? FALLBACK_FULLSCREEN_HOTKEY : normalized
+  return taken.includes(normalized) ? fallback : normalized
 }
 
 /** Effective background colour after resolving the preset. */

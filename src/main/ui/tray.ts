@@ -11,12 +11,16 @@ export interface TrayActions {
   capture: () => void
   /** Grab the whole screen with the region already selected. */
   captureFullscreen: () => void
+  /** Capture a region and upload it, putting the link on the clipboard. */
+  captureUpload: () => void
   openSettings: () => void
   openFolder: () => void
   /** Effective accelerator, which may differ from the configured one when it was taken. */
   hotkey?: string
   /** Effective full-screen accelerator, or '' when it could not be bound. */
   hotkeyFullscreen?: string
+  /** Effective upload accelerator, or '' when it could not be bound. */
+  hotkeyUpload?: string
   /**
    * The single update row, already worded for the current state — the tray does
    * not know what an update is, only what to show and what to run.
@@ -94,6 +98,11 @@ export function rebuildMenu(actions: TrayActions): void {
       label: tr('tray.fullscreen'),
       accelerator: actions.hotkeyFullscreen || undefined,
       click: actions.captureFullscreen
+    },
+    {
+      label: tr('tray.upload'),
+      accelerator: actions.hotkeyUpload || undefined,
+      click: actions.captureUpload
     },
     { type: 'separator' },
     { label: tr('tray.settings'), click: actions.openSettings },
