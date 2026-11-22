@@ -66,7 +66,11 @@ function serve(directory) {
   return new Promise((resolve) => {
     const server = http.createServer(async (request, response) => {
       const url = decodeURIComponent((request.url || '/').split('?')[0])
-      const file = path.join(directory, url === '/' ? 'index.html' : url)
+      // A request for a directory — `/en/` — serves that directory's index.html.
+      // Without this the English page 404s and the only symptom is "no banner",
+      // which reads as a banner defect rather than as a defect in this server.
+      const relative = url.endsWith('/') ? `${url}index.html` : url
+      const file = path.join(directory, relative.replace(/^\//, ''))
       try {
         const body = await fs.readFile(file)
         response.writeHead(200, { 'content-type': MIME[path.extname(file)] || 'application/octet-stream' })
@@ -374,6 +378,36 @@ async function main() {
   }))()`)
   record('the policy names Metrika', policy.counter, true)
   record('and offers a way to withdraw', policy.reset, true)
+
+  console.log('\n[4] both languages say it in their own words')
+  // The English page shares one metrics.js with the Russian one and picks its wording
+  // from `<html lang>`. Nothing else checks that, so a Russian banner could appear on
+  // the English page and every file-level test would still pass.
+  for (const [label, page, expected] of [
+    ['ru', '/', { text: '\u0421\u0430\u0439\u0442 \u0438\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0435\u0442 cookie', accept: '\u041f\u0440\u0438\u043d\u044f\u0442\u044c' }],
+    ['en', '/en/', { text: 'This site uses cookies', accept: 'Accept' }]
+  ]) {
+    await evaluate(`localStorage.removeItem('flushot-analytics')`)
+    await reset(`http://127.0.0.1:${on.port}${page}`)
+    for (let attempt = 0; attempt < 40; attempt++) {
+      if (await evaluate(`Boolean(document.querySelector('[data-consent="banner"]'))`)) break
+      await sleep(150)
+    }
+    const shown = await evaluate(`(() => {
+      const banner = document.querySelector('[data-consent="banner"]');
+      if (!banner) return null;
+      return {
+        lang: document.documentElement.lang,
+        text: banner.querySelector('.consent__text').textContent.replace(/\\s+/g, ' ').trim(),
+        accept: banner.querySelector('[data-consent-accept]').textContent.trim()
+      };
+    })()`)
+    record(`${label}: the banner speaks ${label}`, Boolean(shown) && shown.text.startsWith(expected.text), true)
+    record(`${label}: the accept button says "${expected.accept}"`, shown ? shown.accept : null, expected.accept)
+    if (label === 'en') {
+      record('en: not a word of Russian on the banner', shown ? /[\u0400-\u04FF]/.test(shown.text) : null, false)
+    }
+  }
 
   ws.close()
   edge.kill()
