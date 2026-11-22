@@ -62,7 +62,7 @@
            22 px, and declaring the intrinsic size keeps the aspect ratio honest. -->
       <img class="brand__mark" src="favicon.svg?v=a7643679" width="200" height="200" alt="" aria-hidden="true">
       <span class="brand__name">Flushot</span>
-      <span class="brand__ver">2.4.2</span>
+      <span class="brand__ver">2.5.0</span>
     </a>
 
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav" aria-label="Меню">
@@ -106,7 +106,7 @@
     <div class="hero__grid" aria-hidden="true"></div>
     <div class="hero__glow" aria-hidden="true"></div>
     <div class="wrap hero__inner">
-      <p class="eyebrow" data-rise style="--d: 0.05s">Windows 10 и 11 · версия 2.4.2 · бесплатно</p>
+      <p class="eyebrow" data-rise style="--d: 0.05s">Windows 10 и 11 · версия 2.5.0 · бесплатно</p>
       <h1 class="hero__title" data-rise style="--d: 0.1s">
         <span>Снимок экрана,</span>
         <span>готовый к вставке</span>
@@ -308,8 +308,8 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7z"/><path d="M9 12l2 2 4-4"/></svg>
           </div>
           <h3 class="feature__name">Без телеметрии</h3>
-          <p class="feature__text">Ни аналитики, ни входа в аккаунт, ни отправки снимков. Раз в сутки программа спрашивает у GitHub про новую версию — это отключается переключателем.</p>
-          <p class="feature__tag">один запрос в сутки</p>
+          <p class="feature__text">Ни аналитики, ни входа в аккаунт. Снимок уходит в сеть только по отдельной клавише «Со ссылкой» — обычные две работают локально. Раз в сутки программа спрашивает у GitHub про новую версию, это отключается переключателем.</p>
+          <p class="feature__tag">без аналитики</p>
         </article>
 
         <article class="feature">
@@ -635,7 +635,7 @@
     <div class="wrap">
       <div class="section-head">
         <p class="eyebrow">Скачать</p>
-        <h2 class="section-title" id="download-title">Версия 2.4.2 для Windows</h2>
+        <h2 class="section-title" id="download-title">Версия 2.5.0 для Windows</h2>
         <p class="section-lead">Три варианта одной и той же сборки. Программа внутри одинаковая; отличается способ установки и то, обновляется ли она сама.</p>
       </div>
 
@@ -647,7 +647,7 @@
           </div>
           <p class="dl-card__text">Двойной клик, «Установить» — появятся ярлыки в меню «Пуск» и строка удаления. <strong>Обновляется сам:</strong> раз в сутки проверяет новую версию и ставит её при выходе.</p>
           <p class="dl-card__meta"><span>105 МБ</span><span>EXE</span><span>автообновление</span></p>
-          <a class="btn btn--primary" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.4.2-x64.exe">Скачать EXE</a>
+          <a class="btn btn--primary" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.5.0-x64.exe">Скачать EXE</a>
         </article>
 
         <article class="dl-card">
@@ -656,7 +656,7 @@
           </div>
           <p class="dl-card__text">Один файл без установки. При первом запуске распаковывается во временную папку, поэтому нужен рабочий <code>%TEMP%</code>. Новую версию нужно скачивать вручную.</p>
           <p class="dl-card__meta"><span>94 МБ</span><span>ZIP</span><span>один файл</span></p>
-          <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.4.2-portable.zip">Скачать ZIP</a>
+          <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.5.0-portable.zip">Скачать ZIP</a>
         </article>
 
         <article class="dl-card">
@@ -664,8 +664,8 @@
             <h3 class="dl-card__name">Папка с программой</h3>
           </div>
           <p class="dl-card__text">Распаковать в любую папку и запустить <code>Flushot.exe</code>. Временная папка Windows не нужна. Новую версию нужно скачивать вручную.</p>
-          <p class="dl-card__meta"><span>143 МБ</span><span>ZIP</span><span>без установки</span></p>
-          <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.4.2-win64.zip">Скачать ZIP</a>
+          <p class="dl-card__meta"><span>148 МБ</span><span>ZIP</span><span>без установки</span></p>
+          <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.5.0-win64.zip">Скачать ZIP</a>
         </article>
       </div>
 
@@ -725,7 +725,8 @@
 
         <details>
           <summary>Нужен ли интернет?</summary>
-          <p>Для работы — нет: снимок, оформление, сохранение и распознавание текста происходят на вашем компьютере, и снимок никуда не отправляется.</p>
+          <p>Для работы — нет: снимок, оформление, сохранение и распознавание текста происходят на вашем компьютере. Сам по себе снимок никуда не отправляется: две клавиши из трёх работают только локально.</p>
+          <p>Третья клавиша — «Со ссылкой» — единственная, которая отправляет: снимок уходит на сервер, а в буфер попадает ссылка на него. Ссылка живёт час, потом снимок удаляется с сервера. Эту клавишу можно не нажимать вообще, а если она не нужна — её можно переназначить или просто не использовать.</p>
           <p>Один запрос в сутки программа делает сама: спрашивает у GitHub, не вышла ли новая версия, и если вышла — скачивает её в фоне и ставит при выходе. Ничего другого она не отправляет: ни статистики, ни идентификатора, ни адресов. Проверку можно выключить в настройках, и тогда запросов не будет совсем.</p>
         </details>
 
@@ -807,11 +808,11 @@
           <svg class="btn__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>
           </svg>
-          Скачать Flushot 2.4.2
+          Скачать Flushot 2.5.0
         </a>
         <a class="btn btn--ghost btn--lg" href="#faq">Сначала вопросы</a>
       </div>
-      <p class="cta__meta">105 МБ · без регистрации · без телеметрии</p>
+      <p class="cta__meta">105 МБ · без регистрации · без аналитики</p>
     </div>
   </section>
 </main>
@@ -820,7 +821,7 @@
   <div class="footer__inner">
     <div class="footer__brand">
       <img class="brand__mark" src="favicon.svg?v=a7643679" width="200" height="200" alt="" aria-hidden="true">
-      <span>Версия 2.4.2 · © 2026 Flushot</span>
+      <span>Версия 2.5.0 · © 2026 Flushot</span>
     </div>
     <nav class="footer__links" aria-label="Навигация в подвале">
       <a href="#features">Возможности</a>
@@ -841,7 +842,7 @@
   "name": "Flushot",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Windows 10, Windows 11",
-  "softwareVersion": "2.4.2",
+  "softwareVersion": "2.5.0",
   "description": "Бесплатная программа для скриншотов на Windows: выделение области, рамка с тенью, ровная линия для подчёркивания, снимок всего экрана одной клавишей.",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "RUB" },
   "inLanguage": "ru"

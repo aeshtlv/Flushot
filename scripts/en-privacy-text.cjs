@@ -41,6 +41,15 @@ module.exports = [
     'Downloading a file from GitHub goes through <code>github.com</code> and is counted on the release\n    page. That counter measures downloads, not installations, and it is not tied to any particular\n    person.'
   ],
 
+  // Uploaded pictures
+  ["Снимки, загруженные по ссылке", "Pictures uploaded as a link"],
+  ["Одна из трёх горячих клавиш — «Со ссылкой» — отправляет снимок на сервер и кладёт в буфер\n    обмена ссылку на него. Это единственный случай, когда снимок покидает ваш компьютер. Две другие\n    клавиши работают только локально, и нажимать эту никто не обязан.", "One of the three shortcuts, “With a link”, sends the picture to a server and puts a link to it on the clipboard. That is the only case in which a picture leaves your computer. The other two keys work locally only, and nobody has to press this one."],
+  ["<strong>Что хранится.</strong> Готовый снимок целиком — тот же файл, который вы увидели бы при\n    сохранении: рамка, тень и пометки уже впечатаны. Больше ничего: ни имени файла, ни вашего\n    имени, ни аккаунта. Имя файла на сервере — шестнадцать случайных символов, поэтому содержимое\n    ссылки не связано ни с вами, ни с другими снимками.", "<strong>What is stored.</strong> The finished picture as a whole — the same file you would get by saving it, with the frame, the shadow and the annotations already baked in. Nothing else: no file name, no name of yours, no account. The name on the server is sixteen random characters, so the link is tied neither to you nor to any other picture."],
+  ["<strong>Сколько хранится.</strong> Ровно один час с момента загрузки. Затем снимок удаляется с\n    сервера автоматически — не «может быть удалён», а удаляется: этим занимается отдельная задача,\n    которая запускается каждую минуту. После этого по ссылке открывается страница «Ссылка истекла».\n    Тот, у кого ссылка уже открыта в браузере, увидит снимок до конца часа; заранее сохранённую\n    копию, разумеется, отозвать нельзя.", "<strong>How long it is kept.</strong> Exactly one hour from the upload. After that the picture is deleted from the server automatically — not “may be deleted”, but deleted: a separate task runs every minute and does it. The link then shows a “Link expired” page. Someone who already has the picture open in a browser will see it until the hour is up; a copy saved beforehand cannot, of course, be recalled."],
+  ["<strong>Кто может увидеть.</strong> Любой, у кого есть ссылка: пароля на ней нет. Ссылка\n    трудноподбираемая, но публичная — не отправляйте её туда, где её увидят не те, кому вы её дали.\n    Поисковые системы ссылку не индексируют, и сервер прямо запрещает индексацию ответом\n    <code>X-Robots-Tag</code>.", "<strong>Who can see it.</strong> Anyone holding the link: there is no password on it. The link is hard to guess but public — do not post it anywhere the wrong people will see it. Search engines do not index it, and the server forbids indexing outright with an <code>X-Robots-Tag</code> header."],
+  ["<strong>Журналы.</strong> Сервер записывает факт загрузки: время, размер и IP-адрес, как и любой\n    веб-сервер. Журналы хранятся десять дней. Содержимое снимка в журналы не попадает.", "<strong>Logs.</strong> The server records the upload itself: time, size and IP address, as every web server does. The logs are kept for ten days. The contents of the picture never reach them."],
+  ["<strong>Если снимок загрузили без вашего согласия.</strong> Ссылку можно погасить раньше срока:\n    <code>DELETE https://flushot.ink/api/shot/&lt;часть ссылки без расширения&gt;</code> удаляет файл\n    немедленно. По этому же адресу можно написать, если что-то пошло не так.", "<strong>If a picture was uploaded without your consent.</strong> The link can be cancelled early: <code>DELETE https://flushot.ink/api/shot/&lt;the link without its extension&gt;</code> deletes the file immediately. The same address is where to write if something went wrong."],
+
   // The site
   ['Этот сайт', 'This site'],
   [
@@ -88,7 +97,7 @@ module.exports = [
   ['>Главная<', '>Home<'],
   ['>Скачать<', '>Download<'],
   ['>Вопросы<', '>Questions<'],
-  ['<span>Версия 2.4.2 · © 2026 Flushot</span>', '<span>Version 2.4.2 · © 2026 Flushot</span>'],
+  ['<span>Версия 2.5.0 · © 2026 Flushot</span>', '<span>Version 2.5.0 · © 2026 Flushot</span>'],
 
   // Strings the reset button writes at runtime
   [
