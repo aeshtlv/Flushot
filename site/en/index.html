@@ -62,7 +62,7 @@
            22 px, and declaring the intrinsic size keeps the aspect ratio honest. -->
       <img class="brand__mark" src="../favicon.svg?v=a7643679" width="200" height="200" alt="" aria-hidden="true">
       <span class="brand__name">Flushot</span>
-      <span class="brand__ver">2.4.2</span>
+      <span class="brand__ver">2.5.0</span>
     </a>
 
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav" aria-label="Menu">
@@ -106,7 +106,7 @@
     <div class="hero__grid" aria-hidden="true"></div>
     <div class="hero__glow" aria-hidden="true"></div>
     <div class="wrap hero__inner">
-      <p class="eyebrow" data-rise style="--d: 0.05s">Windows 10 and 11 · version 2.4.2 · free</p>
+      <p class="eyebrow" data-rise style="--d: 0.05s">Windows 10 and 11 · version 2.5.0 · free</p>
       <h1 class="hero__title" data-rise style="--d: 0.1s">
         <span>A screenshot</span>
         <span>ready to paste</span>
@@ -303,8 +303,8 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7z"/><path d="M9 12l2 2 4-4"/></svg>
           </div>
           <h3 class="feature__name">No telemetry</h3>
-          <p class="feature__text">No analytics, no account, no screenshots sent anywhere. Once a day the program asks GitHub about a new version, and one switch turns that off.</p>
-          <p class="feature__tag">one request a day</p>
+          <p class="feature__text">No analytics, no account. A picture only leaves the computer through a separate key, “With a link” — the other two work locally. Once a day the program asks GitHub about a new version, and one switch turns that off.</p>
+          <p class="feature__tag">no analytics</p>
         </article>
 
         <article class="feature">
@@ -629,7 +629,7 @@
     <div class="wrap">
       <div class="section-head">
         <p class="eyebrow">Download</p>
-        <h2 class="section-title" id="download-title">Version 2.4.2 for Windows</h2>
+        <h2 class="section-title" id="download-title">Version 2.5.0 for Windows</h2>
         <p class="section-lead">Three variants of the same build. The program inside is identical; what differs is how it is installed and whether it updates itself.</p>
       </div>
 
@@ -641,7 +641,7 @@
           </div>
           <p class="dl-card__text">Double-click, “Install” — shortcuts appear in the Start menu along with an uninstall entry. <strong>Updates itself:</strong> once a day it looks for a new version and installs it on quit.</p>
           <p class="dl-card__meta"><span>105 MB</span><span>EXE</span><span>auto-updates</span></p>
-          <a class="btn btn--primary" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.4.2-x64.exe">Download EXE</a>
+          <a class="btn btn--primary" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.5.0-x64.exe">Download EXE</a>
         </article>
 
         <article class="dl-card">
@@ -650,7 +650,7 @@
           </div>
           <p class="dl-card__text">A single file with no installation. On the first launch it unpacks into the temp folder, so a working <code>%TEMP%</code> is required. New versions have to be downloaded by hand.</p>
           <p class="dl-card__meta"><span>94 MB</span><span>ZIP</span><span>single file</span></p>
-          <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.4.2-portable.zip">Download ZIP</a>
+          <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.5.0-portable.zip">Download ZIP</a>
         </article>
 
         <article class="dl-card">
@@ -659,7 +659,7 @@
           </div>
           <p class="dl-card__text">Unpack into any folder and run <code>Flushot.exe</code>. Windows temp space is not needed. New versions have to be downloaded by hand.</p>
           <p class="dl-card__meta"><span>143 MB</span><span>ZIP</span><span>no installation</span></p>
-          <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.4.2-win64.zip">Download ZIP</a>
+          <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.5.0-win64.zip">Download ZIP</a>
         </article>
       </div>
 
@@ -719,7 +719,8 @@
 
         <details>
           <summary>Is an internet connection needed?</summary>
-          <p>Not for using it: the capture, the framing, saving and text recognition all happen on your computer, and the screenshot is never sent anywhere.</p>
+          <p>Not for using it: the capture, the framing, saving and text recognition all happen on your computer. The picture is not sent anywhere by itself: two of the three keys work locally only.</p>
+          <p>The third key, “With a link”, is the only one that sends anything: the picture goes to a server and the clipboard gets a link to it. The link works for an hour, after which the picture is deleted. You never have to press it, and it can be reassigned or ignored like anything else.</p>
           <p>The program makes one request a day on its own: it asks GitHub whether a new version exists and, if one does, downloads it in the background and installs it on quit. It sends nothing else — no statistics, no identifier, no addresses. The check can be switched off in the settings, and then there are no requests at all.</p>
         </details>
 
@@ -801,11 +802,11 @@
           <svg class="btn__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>
           </svg>
-          Download Flushot 2.4.2
+          Download Flushot 2.5.0
         </a>
         <a class="btn btn--ghost btn--lg" href="#faq">Questions first</a>
       </div>
-      <p class="cta__meta">105 MB · no sign-up · no telemetry</p>
+      <p class="cta__meta">105 MB · no sign-up · no analytics</p>
     </div>
   </section>
 </main>
@@ -814,7 +815,7 @@
   <div class="footer__inner">
     <div class="footer__brand">
       <img class="brand__mark" src="../favicon.svg?v=a7643679" width="200" height="200" alt="" aria-hidden="true">
-      <span>Version 2.4.2 · © 2026 Flushot</span>
+      <span>Version 2.5.0 · © 2026 Flushot</span>
     </div>
     <nav class="footer__links" aria-label="Footer navigation">
       <a href="#features">Features</a>
@@ -835,7 +836,7 @@
   "name": "Flushot",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Windows 10, Windows 11",
-  "softwareVersion": "2.4.2",
+  "softwareVersion": "2.5.0",
   "description": "A free screenshot program for Windows: region selection, a frame with a shadow, a straight line for underlining, and a full-screen screenshot with one key.",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "RUB" },
   "inLanguage": "en"

@@ -39,7 +39,7 @@ module.exports = [
   ['aria-label="Переключить на светлую тему"', 'aria-label="Switch to light theme"'],
 
   // Hero
-  ['Windows 10 и 11 · версия 2.4.2 · бесплатно', 'Windows 10 and 11 · version 2.4.2 · free'],
+  ['Windows 10 и 11 · версия 2.5.0 · бесплатно', 'Windows 10 and 11 · version 2.5.0 · free'],
   ['<span>Снимок экрана,</span>', '<span>A screenshot</span>'],
   ['<span>готовый к вставке</span>', '<span>ready to paste</span>'],
   [
@@ -133,10 +133,10 @@ module.exports = [
   ],
   ['>Без телеметрии<', '>No telemetry<'],
   [
-    'Ни аналитики, ни входа в аккаунт, ни отправки снимков. Раз в сутки программа спрашивает у GitHub про новую версию — это отключается переключателем.',
-    'No analytics, no account, no screenshots sent anywhere. Once a day the program asks GitHub about a new version, and one switch turns that off.',
+    'Ни аналитики, ни входа в аккаунт. Снимок уходит в сеть только по отдельной клавише «Со ссылкой» — обычные две работают локально. Раз в сутки программа спрашивает у GitHub про новую версию, это отключается переключателем.',
+    'No analytics, no account. A picture only leaves the computer through a separate key, “With a link” — the other two work locally. Once a day the program asks GitHub about a new version, and one switch turns that off.',
   ],
-  ['>один запрос в сутки<', '>one request a day<'],
+  ['>без аналитики<', '>no analytics<'],
   ['>Текст со снимка<', '>Text from a screenshot<'],
   [
     'Обведите на снимке фрагмент — «Текст» прочитает его встроенными движками Windows: без загрузки языков, без интернета и без отправки снимка куда-либо.',
@@ -334,7 +334,7 @@ module.exports = [
   ],
 
   // Download
-  ['>Версия 2.4.2 для Windows<', '>Version 2.4.2 for Windows<'],
+  ['>Версия 2.5.0 для Windows<', '>Version 2.5.0 for Windows<'],
   [
     'Три варианта одной и той же сборки. Программа внутри одинаковая; отличается способ установки и то, обновляется ли она сама.',
     'Three variants of the same build. The program inside is identical; what differs is how it is installed and whether it updates itself.',
@@ -432,8 +432,12 @@ module.exports = [
   ],
   ['>Нужен ли интернет?<', '>Is an internet connection needed?<'],
   [
-    'Для работы — нет: снимок, оформление, сохранение и распознавание текста происходят на вашем компьютере, и снимок никуда не отправляется.',
-    'Not for using it: the capture, the framing, saving and text recognition all happen on your computer, and the screenshot is never sent anywhere.',
+    'Для работы — нет: снимок, оформление, сохранение и распознавание текста происходят на вашем компьютере. Сам по себе снимок никуда не отправляется: две клавиши из трёх работают только локально.',
+    'Not for using it: the capture, the framing, saving and text recognition all happen on your computer. The picture is not sent anywhere by itself: two of the three keys work locally only.',
+  ],
+  [
+    'Третья клавиша — «Со ссылкой» — единственная, которая отправляет: снимок уходит на сервер, а в буфер попадает ссылка на него. Ссылка живёт час, потом снимок удаляется с сервера. Эту клавишу можно не нажимать вообще, а если она не нужна — её можно переназначить или просто не использовать.',
+    'The third key, “With a link”, is the only one that sends anything: the picture goes to a server and the clipboard gets a link to it. The link works for an hour, after which the picture is deleted. You never have to press it, and it can be reassigned or ignored like anything else.',
   ],
   ['>Что с качеством картинки?<', '>What about picture quality?<'],
   [
@@ -497,12 +501,12 @@ module.exports = [
     'Если не понравится — удалить так же просто, как распаковать.',
     'If you do not like it, deleting it takes as little effort as unpacking did.',
   ],
-  ['Скачать Flushot 2.4.2', 'Download Flushot 2.4.2'],
+  ['Скачать Flushot 2.5.0', 'Download Flushot 2.5.0'],
   ['>Сначала вопросы<', '>Questions first<'],
-  ['105 МБ · без регистрации · без телеметрии', '105 MB · no sign-up · no telemetry'],
+  ['105 МБ · без регистрации · без аналитики', '105 MB · no sign-up · no analytics'],
 
   // Footer
-  ['>Версия 2.4.2 · © 2026 Flushot<', '>Version 2.4.2 · © 2026 Flushot<'],
+  ['>Версия 2.5.0 · © 2026 Flushot<', '>Version 2.5.0 · © 2026 Flushot<'],
   ['aria-label="Навигация в подвале"', 'aria-label="Footer navigation"'],
 
   // JSON-LD
@@ -511,7 +515,7 @@ module.exports = [
     'A free screenshot program for Windows: region selection, a frame with a shadow, a straight line for underlining, and a full-screen screenshot with one key.',
   ],
 
-  // Updates and the download section as of 2.4.2
+  // Updates and the download section as of 2.5.0
   [
     '>Скачать EXE<',
     '>Download EXE<'
