@@ -16,7 +16,7 @@
 const path = require('node:path')
 const fs = require('node:fs/promises')
 const { createHash } = require('node:crypto')
-const { existsSync, readFileSync } = require('node:fs')
+const { existsSync, readFileSync, readdirSync } = require('node:fs')
 const sharp = require('sharp')
 
 const ROOT = path.join(__dirname, '..')
@@ -898,6 +898,62 @@ function checkDownloadSizes() {
 }
 
 /**
+ * Yandex.Webmaster's ownership proof, kept honest.
+ *
+ * The service asks for a file at a fixed address whose *name* contains a hash and
+ * whose *body* repeats it:
+ *
+ *     yandex_bd3d96e39d2caf28.html  ->  Verification: bd3d96e39d2caf28
+ *
+ * Either half going wrong is silent. A rename still looks like a plausible file and
+ * the site still deploys; editing the body while leaving the name alone still serves
+ * a 200. Both leave the property unverified, and the first symptom would be
+ * Webmaster quietly dropping the site days later.
+ *
+ * So the two are compared against each other rather than against a constant: whatever
+ * the hash is, the name and the body must agree. Nothing else in the site is named
+ * this way, so a second such file means someone edited by hand and left the old one
+ * behind.
+ */
+function checkWebmasterProof() {
+  const files = readdirSync(SITE).filter((name) => /^yandex_[0-9a-f]{16}\.html$/.test(name))
+  if (files.length === 0) {
+    fail('the Yandex.Webmaster verification file is missing from site/, so the property would lose its proof')
+    return
+  }
+  if (files.length > 1) {
+    fail(`there are ${files.length} verification files (${files.join(', ')}), but only one can be the current proof`)
+  }
+
+  for (const name of files) {
+    const hash = /^yandex_([0-9a-f]{16})\.html$/.exec(name)[1]
+    const body = read(name)
+
+    // The body Yandex serves is fixed: it is not translated and carries none of our
+    // markup. Comparing the whole thing means a stray editor, a "helpful" reformat or
+    // a copied-in page all fail here instead of in Webmaster.
+    const expected =
+      '<html>\n    <head>\n        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">\n' +
+      `    </head>\n    <body>Verification: ${hash}</body>\n</html>\n`
+    if (body.replace(/\r\n/g, '\n') !== expected) {
+      fail(`${name}: the body does not match the hash in its own name (expected "Verification: ${hash}")`)
+    }
+
+    // The address it is checked at is the site root. A copy under en/ would prove
+    // nothing, and would suggest someone mistook it for ordinary content.
+    if (existsSync(path.join(SITE, 'en', name))) {
+      fail(`${name} is also present under en/, where Yandex does not look`)
+    }
+
+    // It must not be advertised: it is a proof, not a page.
+    if (read('sitemap.xml').includes(name)) fail(`sitemap.xml lists ${name}, which is not a page`)
+    if (read('robots.txt').includes(name)) fail(`robots.txt mentions ${name}, which would only draw attention to it`)
+
+    notes.push(`${name}: present, and its body carries the same hash as its name`)
+  }
+}
+
+/**
  * The visit counter, and the consent that gates it.
  *
  * Three states are possible and only one of them is the default. With an empty
@@ -1127,6 +1183,7 @@ async function main() {
   await checkMarkup()
   await checkCss()
   await checkNoExternalRequests()
+  checkWebmasterProof()
   checkMetrics()
   await checkFonts()
   await checkSocialPreview()

@@ -258,6 +258,35 @@ async function main() {
 
     console.log(`\nnetwork failures: ${failures.length}`)
     console.log(`console errors: ${consoleErrors.length}`)
+
+    // The Webmaster proof, fetched directly rather than rendered: it is a plain file
+    // and a browser would show its body either way, 404 included. This is the one
+    // check that proves the address Yandex is going to ask for really answers.
+    const proofName = fs
+      .readdirSync(path.join(__dirname, '..', 'site'))
+      .find((name) => /^yandex_[0-9a-f]{16}\.html$/.test(name))
+    if (!proofName) {
+      problems.push('site/ has no Yandex.Webmaster verification file to check against the live site')
+    } else {
+      const proofUrl = `https://flushot.ink/${proofName}`
+      try {
+        const response = await fetch(proofUrl)
+        const body = await response.text()
+        const hash = /^yandex_([0-9a-f]{16})\.html$/.exec(proofName)[1]
+        console.log(`\nwebmaster proof: ${response.status} ${proofUrl}`)
+        if (response.status !== 200) {
+          problems.push(`${proofUrl}: HTTP ${response.status}, so the property is not verified`)
+        } else if (!body.includes(`Verification: ${hash}`)) {
+          problems.push(`${proofUrl}: served without "Verification: ${hash}" in the body`)
+        } else if (/\u0400-\u04FF/.test(body)) {
+          problems.push(`${proofUrl}: the served body has been translated, so it no longer matches`)
+        } else {
+          console.log('  the body carries the same hash as its name')
+        }
+      } catch (error) {
+        problems.push(`${proofUrl}: could not be fetched (${error.message})`)
+      }
+    }
   } finally {
     browser.kill()
     await sleep(500)
