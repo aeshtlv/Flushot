@@ -96,29 +96,48 @@
   // ------------------------------------------------------------------ the tag
   var loaded = false;
 
+  /**
+   * The queue stub, exactly as Yandex's own snippet defines it.
+   *
+   * `tag.js` does not create `ym`: it reads `window.ym` and drains `ym.a`. The last
+   * statement of the served file is `var b = H(a, "ym"); if (b) { … }`, with no path
+   * that defines it. So the stub has to exist *before* the tag arrives, and calling
+   * `ym(…)` means pushing into a queue that the tag replays once it has loaded.
+   *
+   * Loading the tag first and calling `ym` from its `load` event — which is what this
+   * file did until it was tried against the real tag — leaves `window.ym` undefined
+   * forever and the counter never receives its `init`. The tag answers 200, nothing
+   * errors, and no data is collected: a silent failure that no request check can see.
+   */
+  function stub() {
+    if (typeof window.ym === 'function') return window.ym;
+    window.ym = function () {
+      (window.ym.a = window.ym.a || []).push(arguments);
+    };
+    // The snippet sets this too; the tag uses it as the queue's start time.
+    window.ym.l = 1 * new Date();
+    return window.ym;
+  }
+
   function loadTag() {
     if (loaded) return;
     if (!METRIKA_ID) return;
     loaded = true;
 
+    var ym = stub();
+    ym(Number(METRIKA_ID), 'init', {
+      // The click map and the scroll tracking are the two things worth having on a
+      // one-page site: they answer "does anyone reach the download buttons".
+      clickmap: true,
+      trackLinks: true,
+      accurateTrackBounce: true,
+      webvisor: false
+    });
+
     var script = document.createElement('script');
     script.async = true;
     script.src = TAG;
     script.setAttribute('data-flushot-metrics', 'tag');
-    script.addEventListener('load', function () {
-      // `ym` is defined by tag.js itself. If it is missing the tag failed to
-      // initialise, and calling it anyway would throw inside an event listener
-      // where nothing can see the error.
-      if (typeof window.ym !== 'function') return;
-      window.ym(Number(METRIKA_ID), 'init', {
-        // The click map and the scroll tracking are the two things worth having on
-        // a one-page site: they answer "does anyone reach the download buttons".
-        clickmap: true,
-        trackLinks: true,
-        accurateTrackBounce: true,
-        webvisor: false
-      });
-    });
     document.head.appendChild(script);
   }
 

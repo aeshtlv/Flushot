@@ -246,6 +246,7 @@ async function main() {
   record('the counter is configured', current.id, FAKE_ID)
   record('still nothing requested before a click', tagRequests().length, 0)
   record('nothing stored before an answer', current.consent, null)
+  record('no Metrika global exists yet', await evaluate('typeof window.ym'), 'undefined')
 
   // The banner is the only thing a visitor sees before deciding, so it has to be
   // readable and clickable rather than merely present.
@@ -297,6 +298,16 @@ async function main() {
   record('the answer is remembered', current.consent, 'yes')
   record('the tag is requested only after the click', tagRequests().length > 0, true)
   record('and it is the configured counter\u2019s script', tagRequests()[0] || '', TAG_URL)
+  // tag.js reads `window.ym` and drains `ym.a`; it never defines `ym` itself. A page
+  // that loads the tag first and calls `ym` on its load event therefore never
+  // initialises the counter, with no error anywhere. This is the assertion that
+  // catches that, and it holds even though the tag cannot load in this test.
+  record('a queue stub exists for the tag to drain', await evaluate('typeof window.ym'), 'function')
+  const queued = await evaluate(
+    'window.ym && Array.isArray(window.ym.a) ? window.ym.a.map(function (entry) { return [entry[0], entry[1]] }) : null'
+  )
+  // The id goes in as a number, the way the official snippet passes it.
+  record('the init call is queued', queued, [[Number(FAKE_ID), 'init']])
 
   console.log('  ... next visit')
   await reset(`http://127.0.0.1:${on.port}/`)
