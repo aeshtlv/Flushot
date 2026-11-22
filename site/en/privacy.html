@@ -65,14 +65,6 @@
     page. That counter measures downloads, not installations, and it is not tied to any particular
     person.</p>
 
-  <h2 class="legal__h2">Pictures uploaded as a link</h2>
-  <p>One of the three shortcuts, “With a link”, sends the picture to a server and puts a link to it on the clipboard. That is the only case in which a picture leaves your computer. The other two keys work locally only, and nobody has to press this one.</p>
-  <p><strong>What is stored.</strong> The finished picture as a whole — the same file you would get by saving it, with the frame, the shadow and the annotations already baked in. Nothing else: no file name, no name of yours, no account. The name on the server is sixteen random characters, so the link is tied neither to you nor to any other picture.</p>
-  <p><strong>How long it is kept.</strong> Exactly one hour from the upload. After that the picture is deleted from the server automatically — not “may be deleted”, but deleted: a separate task runs every minute and does it. The link then shows a “Link expired” page. Someone who already has the picture open in a browser will see it until the hour is up; a copy saved beforehand cannot, of course, be recalled.</p>
-  <p><strong>Who can see it.</strong> Anyone holding the link: there is no password on it. The link is hard to guess but public — do not post it anywhere the wrong people will see it. Search engines do not index it, and the server forbids indexing outright with an <code>X-Robots-Tag</code> header.</p>
-  <p><strong>Logs.</strong> The server records the upload itself: time, size and IP address, as every web server does. The logs are kept for ten days. The contents of the picture never reach them.</p>
-  <p><strong>If a picture was uploaded without your consent.</strong> The link can be cancelled early: <code>DELETE https://flushot.ink/api/shot/&lt;the link without its extension&gt;</code> deletes the file immediately. The same address is where to write if something went wrong.</p>
-
   <h2 class="legal__h2">This site</h2>
   <p>The site is a static page. It has no forms, no sign-up and no comments, so there is no user data
     that could be stored about you.</p>
@@ -113,7 +105,7 @@
   <div class="footer__inner">
     <div class="footer__brand">
       <img class="brand__mark" src="../favicon.svg?v=a7643679" width="200" height="200" alt="" aria-hidden="true">
-      <span>Version 2.5.0 · © 2026 Flushot</span>
+      <span>Version 2.4.2 · © 2026 Flushot</span>
     </div>
     <nav class="footer__links" aria-label="Footer navigation">
       <a href="../index.html">Home</a>
