@@ -50,23 +50,31 @@
 
   // Both pages sit one level below the site root (index.html at the root, the
   // English one in en/), so the privacy page is one directory away in each case.
+  //
+  // One short sentence, not a paragraph. The first version explained the whole
+  // policy in the banner — 262 characters, four lines on a desktop and seven on a
+  // phone, a fifth of the screen on a laptop and a third on a phone — to ask a
+  // question whose answer is two buttons. The detail belongs on the privacy page,
+  // which the link opens; the banner only has to say what is being asked and what
+  // it costs. What it must NOT do is answer "yes" by being ignored, which is why the
+  // buttons stay and the tag stays behind them.
   var TEXT = {
     ru: {
       title: 'Считать посещения?',
-      body:
-        'Мы хотим знать, сколько людей заходит на сайт и откуда они приходят. Для этого — Яндекс.Метрика: она ставит cookie, видит IP и адрес страницы, с которой вы перешли. Программа Flushot при этом по-прежнему ничего о вас не отправляет — речь только про эту страницу.',
+      question: 'Считать посещения?',
+      detail: 'Яндекс.Метрика ставит cookie.',
+      more: 'Подробнее',
       accept: 'Принять',
       decline: 'Отклонить',
-      more: 'Что именно собирается',
       privacy: 'privacy.html'
     },
     en: {
       title: 'Count visits?',
-      body:
-        'We would like to know how many people visit the site and where they come from. That needs Yandex.Metrika, which sets a cookie and sees your IP address and the page you arrived from. The Flushot program still sends nothing about you — this is about this page only.',
+      question: 'Count visits?',
+      detail: 'Yandex.Metrika sets a cookie.',
+      more: 'Details',
       accept: 'Accept',
       decline: 'Decline',
-      more: 'What exactly is collected',
       privacy: '../privacy.html'
     }
   }[LANG];
@@ -142,6 +150,10 @@
   }
 
   // --------------------------------------------------------------- the banner
+  //
+  // One row: the question, the cost in four words, and the two answers. The link to
+  // the policy sits inside the sentence so it reads as part of it rather than as a
+  // fourth element competing for the same line.
   function banner() {
     var box = document.createElement('div');
     box.className = 'consent';
@@ -149,18 +161,22 @@
     box.setAttribute('aria-label', text.title);
     box.setAttribute('data-consent', 'banner');
 
-    var heading = document.createElement('p');
-    heading.className = 'consent__title';
-    heading.textContent = text.title;
+    var line = document.createElement('p');
+    line.className = 'consent__text';
 
-    var body = document.createElement('p');
-    body.className = 'consent__text';
-    body.textContent = text.body;
+    var ask = document.createElement('strong');
+    ask.className = 'consent__ask';
+    ask.textContent = text.question + ' ';
+
+    var detail = document.createElement('span');
+    detail.textContent = text.detail + ' ';
 
     var link = document.createElement('a');
     link.className = 'consent__link';
     link.href = text.privacy;
     link.textContent = text.more;
+
+    line.append(ask, detail, link);
 
     var actions = document.createElement('div');
     actions.className = 'consent__actions';
@@ -178,7 +194,7 @@
     no.setAttribute('data-consent-decline', '');
 
     actions.append(yes, no);
-    box.append(heading, body, link, actions);
+    box.append(line, actions);
 
     function close() {
       if (box.parentNode) box.parentNode.removeChild(box);

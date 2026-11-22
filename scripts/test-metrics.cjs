@@ -274,6 +274,56 @@ async function main() {
     true
   )
 
+  // The banner asks one question, so it must stay small. The first version stacked a
+  // heading, a four-line paragraph and a separate link: 241 px tall, 12 % of a
+  // desktop viewport and 33 % of a phone, with 262 characters of text — for a
+  // question whose answer is two buttons. Nobody reads three paragraphs to find a
+  // cookie toggle; they click whatever dismisses it, which is the worst possible
+  // outcome for a consent prompt.
+  //
+  // These numbers are measured at three widths rather than read from the CSS, and
+  // the limits are deliberately loose enough to allow a wording change but not a
+  // return to a paragraph.
+  await send('Emulation.setDeviceMetricsOverride', { width: 1180, height: 800, deviceScaleFactor: 1, mobile: false })
+  const measure = async () => {
+    for (let attempt = 0; attempt < 60; attempt++) {
+      if (await evaluate(`Boolean(document.querySelector('[data-consent="banner"]'))`)) break
+      await sleep(150)
+    }
+    return evaluate(`(() => {
+      const banner = document.querySelector('[data-consent="banner"]');
+      if (!banner) return null;
+      const box = banner.getBoundingClientRect();
+      const text = banner.querySelector('.consent__text');
+      const lineHeight = parseFloat(getComputedStyle(text).lineHeight) || 1;
+      return {
+        w: Math.round(box.width),
+        h: Math.round(box.height),
+        areaShare: Math.round((box.width * box.height) / (innerWidth * innerHeight) * 1000) / 10,
+        chars: text.textContent.replace(/\\s+/g, ' ').trim().length,
+        lines: Math.round(text.getBoundingClientRect().height / lineHeight),
+        hasTitle: Boolean(banner.querySelector('.consent__title'))
+      };
+    })()`)
+  }
+
+  const wide = await measure()
+  record('no separate heading above the question', wide.hasTitle, false)
+  record('the text is a sentence, not a paragraph', wide.chars <= 90, true)
+  record('it takes at most two lines on a laptop', wide.lines <= 2, true)
+  record('it covers under a tenth of a laptop screen', wide.areaShare < 10, true)
+  record('it is a slim bar, not a panel', wide.h <= 80, true)
+
+  await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true })
+  await send('Page.navigate', { url: `http://127.0.0.1:${on.port}/` })
+  const narrow = await measure()
+  record('on a phone it stays a small corner card', narrow.areaShare < 18, true)
+  record('on a phone the text is still short', narrow.chars <= 90, true)
+  record('on a phone it stays under three lines', narrow.lines <= 3, true)
+  await send('Emulation.clearDeviceMetricsOverride', {})
+  await send('Page.navigate', { url: `http://127.0.0.1:${on.port}/` })
+  await sleep(600)
+
   console.log('  ... visitor presses Decline')
   await evaluate(`document.querySelector('[data-consent-decline]').click()`)
   await sleep(400)
