@@ -1,6 +1,6 @@
 {
   "name": "flushot",
-  "version": "2.5.3",
+  "version": "2.5.4",
   "description": "Screenshot tool for Windows: select a region and get a finished picture with a frame, annotations and text recognition",
   "main": "./out/main/index.js",
   "author": "Flushot",

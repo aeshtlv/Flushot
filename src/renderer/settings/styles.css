@@ -278,64 +278,7 @@ body {
   }
 }
 
-/* A free combination the user can take with one click. Small, because it appears only
-   when something went wrong and must not compete with the setting itself. */
-.row-note--suggest {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-}
 
-.hotkey-chip {
-  padding: 3px 8px;
-  font-family: var(--font-mono, inherit);
-  font-size: 11px;
-  color: var(--text);
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-}
-
-.hotkey-chip:hover {
-  background: var(--surface-hover, rgba(127, 127, 127, 0.12));
-  border-color: var(--text-muted);
-}
-
-/* The "does this key actually reach the program" row: a button and its answer on one line.
-   It exists because a registered key can still never fire, and the difference decides what
-   the user should do next. */
-.row-note--test {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-
-.key-test {
-  font-size: 11px;
-  line-height: 1.45;
-}
-
-.key-test--ok {
-  color: #15803d;
-}
-
-.key-test--warn {
-  color: #b45309;
-}
-
-@media (prefers-color-scheme: dark) {
-  .key-test--ok {
-    color: #4ade80;
-  }
-
-  .key-test--warn {
-    color: #fbbf24;
-  }
-}
 
 .segmented {
   display: inline-flex;

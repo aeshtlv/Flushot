@@ -44,22 +44,6 @@ const BACKDROP_OPTIONS: { value: BackgroundPreset; label: MessageKey; swatch: st
 
 export function SettingsApp(): JSX.Element {
   const [settings, setSettings] = useState<SettingsWithHotkeys | null>(null)
-  /**
-   * Free combinations offered after a refusal.
-   *
-   * Kept per field so a suggestion for the upload key cannot appear under the region key,
-   * and cleared as soon as any combination is accepted.
-   */
-  const [suggestions, setSuggestions] = useState<{
-    field: 'hotkey' | 'hotkeyFullscreen' | 'hotkeyUpload'
-    combos: string[]
-  } | null>(null)
-  /**
-   * The result of "does this key actually reach the program".
-   *
-   * Kept per field so an answer about the upload key cannot appear under the region key.
-   */
-  const [keyTest, setKeyTest] = useState<{ field: 'hotkey' | 'hotkeyFullscreen' | 'hotkeyUpload'; tone: 'ok' | 'warn'; text: string } | null>(null)
   const [info, setInfo] = useState<{ version: string; hotkey: string; settingsPath: string } | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [update, setUpdate] = useState<UpdateState>({ kind: 'idle' })
@@ -197,27 +181,6 @@ export function SettingsApp(): JSX.Element {
     }
   }, [lang, showError])
 
-  /**
-   * Ask the main process to take the key for a few seconds and listen.
-   *
-   * This exists because "registered" and "works" are different answers: a key can be free and
-   * still never arrive, if another program swallows it with a keyboard hook. When a user says
-   * "I press it and nothing happens", this is the question that has to be answered first.
-   */
-  const runKeyTest = useCallback(
-    async (field: 'hotkey' | 'hotkeyFullscreen' | 'hotkeyUpload', accelerator: string) => {
-      if (!accelerator) return
-      setKeyTest({ field, tone: 'ok', text: t(lang, 'settings.keyTestRunning', { combo: formatAccelerator(accelerator) }) })
-      try {
-        const result = await window.flushot.testHotkey(accelerator)
-        setKeyTest({ field, tone: result.tone, text: result.text })
-      } catch (error) {
-        setKeyTest({ field, tone: 'warn', text: error instanceof Error ? error.message : t(lang, 'settings.hotkeyChangeFailed') })
-      }
-    },
-    [lang]
-  )
-
   const saveHotkey = useCallback(
     async (field: 'hotkey' | 'hotkeyFullscreen' | 'hotkeyUpload', hotkey: string) => {
       if (!isValidAccelerator(hotkey)) {
@@ -263,10 +226,8 @@ export function SettingsApp(): JSX.Element {
       try {
         const probe = await window.flushot.probeHotkey(normalized)
         if (!probe.free && !probe.ours) {
-          // Name the owner, and — only now, when the user is actually stuck — offer
-          // combinations that were measured free a moment ago. A permanent list beside the
-          // recorder was tried and removed for getting in the way; a list that appears
-          // after a refusal is the answer to a question the user has already asked.
+          // Name the owner and stop. Listing free combinations was tried twice and removed
+          // both times: the user asked for a key of their own, not for our menu of ideas.
           showError(
             probe.hint
               ? tr('settings.hotkeyTakenWithHint', {
@@ -276,11 +237,8 @@ export function SettingsApp(): JSX.Element {
                 })
               : tr('settings.hotkeyTaken', { combo })
           )
-          const free = await window.flushot.suggestHotkey(normalized)
-          setSuggestions({ field, combos: free })
           return
         }
-        setSuggestions(null)
       } catch {
         // A probe that fails is not a reason to block the change; the save below
         // reports whether the key really bound.
@@ -456,28 +414,6 @@ export function SettingsApp(): JSX.Element {
               />
             </Row>
             <HotkeyNotice state={settings.hotkeys?.region} lang={lang} />
-            <p className="row-note row-note--test">
-              <button
-                type="button"
-                className="hotkey-chip"
-                data-hotkey-test="hotkey"
-                onClick={() => void runKeyTest('hotkey', settings.hotkey)}
-              >
-                {tr('settings.keyTest')}
-              </button>
-              {keyTest?.field === 'hotkey' && (
-                <span className={keyTest.tone === 'ok' ? 'key-test key-test--ok' : 'key-test key-test--warn'}>
-                  {keyTest.text}
-                </span>
-              )}
-            </p>
-            {suggestions?.field === 'hotkey' && (
-              <HotkeySuggestions
-                combos={suggestions.combos}
-                lang={lang}
-                onPick={(combo) => void saveHotkey('hotkey', combo)}
-              />
-            )}
 
             <Row label={tr('settings.fullscreen')} hint={tr('settings.fullscreenHint')}>
               <HotkeyRecorder
@@ -489,28 +425,6 @@ export function SettingsApp(): JSX.Element {
               />
             </Row>
             <HotkeyNotice state={settings.hotkeys?.fullscreen} lang={lang} />
-            <p className="row-note row-note--test">
-              <button
-                type="button"
-                className="hotkey-chip"
-                data-hotkey-test="hotkeyFullscreen"
-                onClick={() => void runKeyTest('hotkeyFullscreen', settings.hotkeyFullscreen)}
-              >
-                {tr('settings.keyTest')}
-              </button>
-              {keyTest?.field === 'hotkeyFullscreen' && (
-                <span className={keyTest.tone === 'ok' ? 'key-test key-test--ok' : 'key-test key-test--warn'}>
-                  {keyTest.text}
-                </span>
-              )}
-            </p>
-            {suggestions?.field === 'hotkeyFullscreen' && (
-              <HotkeySuggestions
-                combos={suggestions.combos}
-                lang={lang}
-                onPick={(combo) => void saveHotkey('hotkeyFullscreen', combo)}
-              />
-            )}
 
             {/* The note under this row is the only place in the interface that says a
                 screenshot can leave the computer, so it is part of the control and not
@@ -525,28 +439,6 @@ export function SettingsApp(): JSX.Element {
               />
             </Row>
             <HotkeyNotice state={settings.hotkeys?.upload} lang={lang} />
-            <p className="row-note row-note--test">
-              <button
-                type="button"
-                className="hotkey-chip"
-                data-hotkey-test="hotkeyUpload"
-                onClick={() => void runKeyTest('hotkeyUpload', settings.hotkeyUpload)}
-              >
-                {tr('settings.keyTest')}
-              </button>
-              {keyTest?.field === 'hotkeyUpload' && (
-                <span className={keyTest.tone === 'ok' ? 'key-test key-test--ok' : 'key-test key-test--warn'}>
-                  {keyTest.text}
-                </span>
-              )}
-            </p>
-            {suggestions?.field === 'hotkeyUpload' && (
-              <HotkeySuggestions
-                combos={suggestions.combos}
-                lang={lang}
-                onPick={(combo) => void saveHotkey('hotkeyUpload', combo)}
-              />
-            )}
 
             <p className="row-note">{tr('settings.uploadPrivacy')}</p>
 
@@ -770,6 +662,26 @@ function HotkeyRecorder({
   useEffect(() => {
     if (!recording) return
 
+    // Keys Windows keeps for itself are registered globally for the duration of the
+    // recording: PrintScreen never reaches this window as a keydown, so without this the
+    // field stays empty and the key looks impossible to assign.
+    let stopListening: (() => void) | null = null
+    if (typeof window.flushot.listenForSystemKey === "function") {
+      const unsubscribe = window.flushot.onSystemKey?.((key) => {
+        // Release first: the save path probes the combination, and a listener still holding
+        // it would make our own registration look like another program's.
+        void Promise.resolve(window.flushot.stopListeningForSystemKey?.()).finally(() => {
+          setRecording(false)
+          onCommit(key)
+        })
+      })
+      void window.flushot.listenForSystemKey()
+      stopListening = () => {
+        unsubscribe?.()
+        void window.flushot.stopListeningForSystemKey?.()
+      }
+    }
+
     const onKeyDown = (event: KeyboardEvent): void => {
       if (event.key === 'Escape') {
         event.preventDefault()
@@ -797,7 +709,10 @@ function HotkeyRecorder({
     }
 
     window.addEventListener('keydown', onKeyDown, true)
-    return () => window.removeEventListener('keydown', onKeyDown, true)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown, true)
+      stopListening?.()
+    }
   }, [onCommit, recording])
 
   return (
@@ -876,41 +791,6 @@ function describeUpdate(
     case 'failed':
       return tr('settings.updateFailed', { message: state.message })
   }
-}
-
-/**
- * Free combinations, offered only after the wanted one was refused.
- *
- * A chip is a key that was tried against Windows a moment ago and found free, so clicking
- * it cannot fail for the same reason twice. Nothing is suggested before a failure: a
- * standing list of our own ideas is what got in the way the first time this was tried.
- */
-function HotkeySuggestions({
-  combos,
-  lang,
-  onPick
-}: {
-  combos: string[]
-  lang: Language
-  onPick: (accelerator: string) => void
-}): JSX.Element | null {
-  if (combos.length === 0) return null
-  return (
-    <p className="row-note row-note--suggest" data-hotkey-suggestions>
-      {t(lang, 'settings.hotkeyTryThese')}
-      {combos.map((combo) => (
-        <button
-          key={combo}
-          type="button"
-          className="hotkey-chip"
-          title={t(lang, 'settings.hotkeyTakeThis', { combo: formatAccelerator(combo) })}
-          onClick={() => onPick(combo)}
-        >
-          {formatAccelerator(combo)}
-        </button>
-      ))}
-    </p>
-  )
 }
 
 /**

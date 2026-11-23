@@ -87,22 +87,19 @@ const api = {
   probeHotkey: (accelerator: string): Promise<{ free: boolean; owner?: string; hint?: string; ours?: boolean; invalid?: boolean }> =>
     ipcRenderer.invoke('hotkey:probe', accelerator),
   /**
-   * Combinations that are measurably free, to offer when the wanted one is taken.
+   * Take the keys Windows keeps for itself while the recorder waits, and return the ones taken.
    *
-   * Windows hands a hotkey to the first program that registers it, so a taken key cannot be
-   * taken over; the honest help is a key that really is free right now.
+   * PrintScreen never reaches the window as a keystroke, so the field would stay empty however
+   * often it is pressed. Must be paired with stopListeningForSystemKey.
    */
-  suggestHotkey: (accelerator: string): Promise<string[]> => ipcRenderer.invoke('hotkey:suggest', accelerator),
-  /**
-   * Take the combination for a few seconds and report whether a press arrives.
-   *
-   * Answers the question a user actually has when nothing happens: is the key free, and does
-   * it reach the program at all.
-   */
-  testHotkey: (
-    accelerator: string
-  ): Promise<{ registered: boolean; received: boolean; combo: string; tone: 'ok' | 'warn'; text: string }> =>
-    ipcRenderer.invoke('hotkey:test', accelerator),
+  listenForSystemKey: (): Promise<string[]> => ipcRenderer.invoke('hotkey:listen'),
+  stopListeningForSystemKey: (): Promise<void> => ipcRenderer.invoke('hotkey:stop-listen'),
+  /** A press of one of those keys, while listening. */
+  onSystemKey: (callback: (key: string) => void): (() => void) => {
+    const listener = (_event: unknown, key: string): void => callback(key)
+    ipcRenderer.on('hotkey:system', listener)
+    return () => ipcRenderer.removeListener('hotkey:system', listener)
+  },
   pickDirectory: (): Promise<{ canceled: boolean; path?: string }> => ipcRenderer.invoke('settings:pick-directory'),
   /**
    * Sample card rendered with the current settings.

@@ -3,7 +3,7 @@ import { mkdir } from 'node:fs/promises'
 import { defaultSettings } from '../../shared/settings'
 import { isValidAccelerator, normalizeAccelerator, reservedByWindows } from '../../shared/hotkey'
 import { hotkeysChanged } from '../../shared/hotkeys'
-import { suggestFree } from '../hotkeys/suggest'
+import { startListening, stopListening } from '../hotkeys/listen'
 import type {
   ActionResult,
   AnnotationLayerPayload,
@@ -282,30 +282,22 @@ export function registerIpc(context: IpcContext): void {
   })
 
   /**
-   * Free combinations to offer after the one the user wanted turned out to be taken.
+   * Listen for a key Windows keeps for itself, while the recorder waits.
    *
-   * Windows gives a hotkey to the first registrant and to nobody else — a second
-   * registration fails with error 1409, measured rather than assumed — so the program
-   * cannot take a key away from another application. What it can do is name a combination
-   * that is measurably free, instead of leaving the user to guess.
+   * The recorder sees keydown in its own window; PrintScreen never arrives there because the
+   * shell handles it first. Registering it globally is the only channel left — and it is the
+   * same one the real shortcut uses, so a key heard here is a key that will work once saved.
    */
-  ipcMain.handle('hotkey:suggest', (_event, accelerator: string) => {
-    const mine = [context.getHotkey(), context.getFullscreenHotkey(), context.getUploadHotkey()].filter(Boolean)
-    return suggestFree(accelerator, mine)
+  ipcMain.handle('hotkey:listen', (event) => {
+    const sender = event.sender
+    const taken = startListening((key) => {
+      if (!sender.isDestroyed()) sender.send('hotkey:system', key)
+    })
+    return taken
   })
 
-  /**
-   * Take a combination for a few seconds and report whether a real press arrives.
-   *
-   * Registration is not delivery: a key can register and never fire because another program
-   * swallowed it with a keyboard hook. This is the only way to tell "the combination is free
-   * and works" from "it is free and something eats it", and the difference decides what the
-   * user should do next.
-   */
-  ipcMain.handle('hotkey:test', async (_event, accelerator: string) => {
-    const { testKey, describeKeyTest } = await import('../hotkeys/testKey')
-    const result = await testKey(accelerator)
-    return { ...result, ...describeKeyTest(result) }
+  ipcMain.handle('hotkey:stop-listen', () => {
+    stopListening()
   })
 
   ipcMain.handle('settings:reset', async () => {
