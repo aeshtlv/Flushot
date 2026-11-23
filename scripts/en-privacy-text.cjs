@@ -97,7 +97,7 @@ module.exports = [
   ['>Главная<', '>Home<'],
   ['>Скачать<', '>Download<'],
   ['>Вопросы<', '>Questions<'],
-  ['<span>Версия 2.5.0 · © 2026 Flushot</span>', '<span>Version 2.5.0 · © 2026 Flushot</span>'],
+  ['<span>Версия 2.5.1 · © 2026 Flushot</span>', '<span>Version 2.5.1 · © 2026 Flushot</span>'],
 
   // Strings the reset button writes at runtime
   [
