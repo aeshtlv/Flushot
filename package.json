@@ -1,6 +1,6 @@
 {
   "name": "flushot-site",
-  "version": "2.5.5",
+  "version": "2.5.6",
   "private": true,
   "description": "Landing page for Flushot — its own branch, kept out of the program repository",
   "repository": {
@@ -10,15 +10,15 @@
   "homepage": "https://flushot.ink/",
   "scripts": {
     "assets": "node scripts/build-site.cjs && node scripts/build-fonts.cjs && node scripts/build-en-page.cjs && node scripts/build-seo-pages.cjs && node scripts/build-sitemap.cjs",
-  "seo": "node scripts/build-seo-pages.cjs && node scripts/build-sitemap.cjs",
-  "check:seo": "node scripts/shot-seo.cjs && node scripts/audit-seo.cjs && node scripts/audit-sharpness.cjs",
+    "seo": "node scripts/build-seo-pages.cjs && node scripts/build-sitemap.cjs",
+    "check:seo": "node scripts/shot-seo.cjs && node scripts/audit-seo.cjs && node scripts/audit-sharpness.cjs",
     "stamp": "node scripts/build-en-page.cjs",
     "verify": "node scripts/verify-site.cjs",
     "check:fold": "node scripts/measure-fold.cjs",
     "check:demo": "node scripts/test-try-demo.cjs",
     "check:hotkeys": "node scripts/test-hotkey-demo.cjs",
     "check:live": "node scripts/check-live.cjs",
-  "check:live:seo": "node scripts/check-live-seo.cjs",
+    "check:live:seo": "node scripts/check-live-seo.cjs",
     "check:metrics": "node scripts/test-metrics.cjs",
     "shots": "node scripts/shot-site.cjs",
     "serve": "node scripts/serve-site.cjs"
