@@ -443,7 +443,7 @@ async function main() {
       await sleep(500)
 
       const shot = await browser.send('Page.captureScreenshot', { format: 'png' })
-      await write(shot.data, 'ui-overlay.png', 640)
+      await write(shot.data, 'ui-overlay.png', 1174)
     }
 
     // ------------------------------------------------------------ 2. annotate
@@ -514,7 +514,7 @@ async function main() {
       await sleep(400)
 
       const shot = await browser.send('Page.captureScreenshot', { format: 'png' })
-      await write(shot.data, 'ui-annotate.png', 640)
+      await write(shot.data, 'ui-annotate.png', 1174)
     }
 
     // --------------------------------------------------------- 3. reading text
@@ -548,7 +548,7 @@ async function main() {
       await sleep(400)
 
       const shot = await browser.send('Page.captureScreenshot', { format: 'png' })
-      await write(shot.data, 'ui-ocr.png', 640)
+      await write(shot.data, 'ui-ocr.png', 1174)
     }
 
     // ------------------------------------------------------------ 4. settings
@@ -596,7 +596,7 @@ async function main() {
       for (const entry of truncated) console.log('  · truncated: ' + entry)
 
       const shot = await browser.send('Page.captureScreenshot', { format: 'png' })
-      await write(shot.data, 'ui-settings.png', 260)
+      await write(shot.data, 'ui-settings.png', 520)
     }
 
     // --------------------------------------------------------- 5. two monitors
