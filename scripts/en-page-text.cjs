@@ -39,7 +39,7 @@ module.exports = [
   ['aria-label="Переключить на светлую тему"', 'aria-label="Switch to light theme"'],
 
   // Hero
-  ['Windows 10 и 11 · версия 2.5.4 · бесплатно', 'Windows 10 and 11 · version 2.5.4 · free'],
+  ['Windows 10 и 11 · версия 2.5.5 · бесплатно', 'Windows 10 and 11 · version 2.5.5 · free'],
   ['<span>Снимок экрана,</span>', '<span>A screenshot</span>'],
   ['<span>готовый к вставке</span>', '<span>ready to paste</span>'],
   [
@@ -106,7 +106,7 @@ module.exports = [
   ],
   ['>Свои горячие клавиши<', '>Your own hotkeys<'],
   [
-    'Обе клавиши назначаются в настройках — любые, какие удобны. Хоть Print Screen, хоть F1.',
+    'Все три клавиши назначаются в настройках — любые, какие удобны. Хоть Print Screen, хоть F1.',
     'Both keys are assigned in the settings — whatever suits you. Print Screen or F1, either works.',
   ],
   ['>Print Screen · F1 · любая<', '>Print Screen · F1 · anything<'],
@@ -133,7 +133,7 @@ module.exports = [
   ],
   ['>Без телеметрии<', '>No telemetry<'],
   [
-    'Ни аналитики, ни входа в аккаунт. Снимок уходит в сеть только по отдельной клавише «Со ссылкой» — обычные две работают локально. Раз в сутки программа спрашивает у GitHub про новую версию, это отключается переключателем.',
+    'Ни аналитики, ни входа в аккаунт. Снимок уходит в сеть только по отдельной клавише «Со ссылкой» — две обычные работают локально. Раз в сутки программа спрашивает у GitHub про новую версию, это отключается переключателем.',
     'No analytics, no account. A picture only leaves the computer through a separate key, “With a link” — the other two work locally. Once a day the program asks GitHub about a new version, and one switch turns that off.',
   ],
   ['>без аналитики<', '>no analytics<'],
@@ -151,7 +151,7 @@ module.exports = [
   ],
   ['>Изображения\\Flushot<', '>Pictures\\Flushot<'],
   ['>Как это работает<', '>How it works<'],
-  ['>Два шага, одно вставление<', '>Two steps, one paste<'],
+  ['>Два шага, одна вставка<', '>Two steps, one paste<'],
   [
     '<strong>Нажмите свою клавишу.</strong> По умолчанию <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd>, но её можно сменить на любую. Экран затемняется.</span>',
     '<strong>Press your key.</strong> By default it is <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd>, but you can change it to any key. The screen dims.</span>',
@@ -211,7 +211,7 @@ module.exports = [
   ['>Горячие клавиши<', '>Hotkeys<'],
   ['>Клавиши — ваши, а не наши<', '>The keys are yours, not ours<'],
   [
-    'В текстах выше написаны значения по умолчанию. Это именно значения по умолчанию: обе клавиши\n          меняются в настройках на любые удобные. Ниже — рабочая демонстрация: нажмите «Изменить» и введите сочетание.',
+    'В текстах выше написаны значения по умолчанию. Это именно значения по умолчанию: все три\n          клавиши меняются в настройках на любые удобные. Ниже — рабочая демонстрация: нажмите «Изменить» и введите сочетание.',
     'The text above shows the default values. They really are defaults: both keys can be changed in the settings to whatever suits you. Below is a working demonstration: press “Change” and type a shortcut.',
   ],
   ['>Снимок области<', '>Region screenshot<'],
@@ -223,6 +223,13 @@ module.exports = [
   ],
   ['>Изменить<', '>Change<'],
   ['>Снимок всего экрана<', '>Full-screen screenshot<'],
+  ['>Снимок со ссылкой<', '>Capture with a link<'],
+  ['>Загрузить на сервер и скопировать ссылку<', '>Upload to the server and copy the link<'],
+  [
+    'aria-label="Изменить клавишу снимка со ссылкой"',
+    'aria-label="Change the capture-with-a-link shortcut"'
+  ],
+  ['aria-label="По умолчанию Ctrl Shift U"', 'aria-label="Default Ctrl Shift U"'],
   ['>Без рамки, сразу в буфер или в файл<', '>No frame, straight to the clipboard or to a file<'],
   ['aria-label="По умолчанию Ctrl Shift 3"', 'aria-label="Default: Ctrl Shift 3"'],
   [
@@ -235,7 +242,7 @@ module.exports = [
     'Press “Change” and simply type the shortcut — it records itself as you go, with no dropdown lists.',
   ],
   [
-    'Если сочетание занято другой программой, Flushot так и скажет и предложит другое.',
+    'Если сочетание занято другой программой, Flushot так и скажет — и назовёт, какая программа его держит.',
     'If another program already owns that shortcut, Flushot says so and offers another.',
   ],
   [
@@ -334,9 +341,9 @@ module.exports = [
   ],
 
   // Download
-  ['>Версия 2.5.4 для Windows<', '>Version 2.5.4 for Windows<'],
+  ['>Версия 2.5.5 для Windows<', '>Version 2.5.5 for Windows<'],
   [
-    'Три варианта одной и той же сборки. Программа внутри одинаковая; отличается способ установки и то, обновляется ли она сама.',
+    'Три варианта одной и той же сборки. Программа внутри одинаковая; отличаются способ установки и то, обновляется ли она сама.',
     'Three variants of the same build. The program inside is identical; what differs is how it is installed and whether it updates itself.',
   ],
   ['>Папка с программой<', '>Folder with the program<'],
@@ -397,7 +404,7 @@ module.exports = [
   ],
   ['>Можно ли поменять горячие клавиши?<', '>Can the hotkeys be changed?<'],
   [
-    'Да, обе. Если сочетание занято другой программой, Flushot так и скажет.',
+    'Да, все три. Если сочетание занято другой программой, Flushot так и скажет.',
     'Yes, both. If another program already owns that shortcut, Flushot says so.',
   ],
   [
@@ -501,12 +508,12 @@ module.exports = [
     'Если не понравится — удалить так же просто, как распаковать.',
     'If you do not like it, deleting it takes as little effort as unpacking did.',
   ],
-  ['Скачать Flushot 2.5.4', 'Download Flushot 2.5.4'],
+  ['Скачать Flushot 2.5.5', 'Download Flushot 2.5.5'],
   ['>Сначала вопросы<', '>Questions first<'],
   ['105 МБ · без регистрации · без аналитики', '105 MB · no sign-up · no analytics'],
 
   // Footer
-  ['>Версия 2.5.4 · © 2026 Flushot<', '>Version 2.5.4 · © 2026 Flushot<'],
+  ['>Версия 2.5.5 · © 2026 Flushot<', '>Version 2.5.5 · © 2026 Flushot<'],
   ['aria-label="Навигация в подвале"', 'aria-label="Footer navigation"'],
 
   // JSON-LD
@@ -515,7 +522,7 @@ module.exports = [
     'A free screenshot program for Windows: region selection, a frame with a shadow, a straight line for underlining, and a full-screen screenshot with one key.',
   ],
 
-  // Updates and the download section as of 2.5.4
+  // Updates and the download section as of 2.5.5
   [
     '>Скачать EXE<',
     '>Download EXE<'

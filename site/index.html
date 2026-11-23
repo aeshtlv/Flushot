@@ -62,7 +62,7 @@
            22 px, and declaring the intrinsic size keeps the aspect ratio honest. -->
       <img class="brand__mark" src="favicon.svg?v=a7643679" width="200" height="200" alt="" aria-hidden="true">
       <span class="brand__name">Flushot</span>
-      <span class="brand__ver">2.5.4</span>
+      <span class="brand__ver">2.5.5</span>
     </a>
 
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav" aria-label="Меню">
@@ -106,7 +106,7 @@
     <div class="hero__grid" aria-hidden="true"></div>
     <div class="hero__glow" aria-hidden="true"></div>
     <div class="wrap hero__inner">
-      <p class="eyebrow" data-rise style="--d: 0.05s">Windows 10 и 11 · версия 2.5.4 · бесплатно</p>
+      <p class="eyebrow" data-rise style="--d: 0.05s">Windows 10 и 11 · версия 2.5.5 · бесплатно</p>
       <h1 class="hero__title" data-rise style="--d: 0.1s">
         <span>Снимок экрана,</span>
         <span>готовый к вставке</span>
@@ -263,7 +263,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="6" width="20" height="12" rx="3"/><path d="M7 10h3M14 10h3M7 14h10"/></svg>
           </div>
           <h3 class="feature__name">Свои горячие клавиши</h3>
-          <p class="feature__text">Обе клавиши назначаются в настройках — любые, какие удобны. Хоть Print Screen, хоть F1.</p>
+          <p class="feature__text">Все три клавиши назначаются в настройках — любые, какие удобны. Хоть Print Screen, хоть F1.</p>
           <p class="feature__tag">Print Screen · F1 · любая</p>
         </article>
 
@@ -308,7 +308,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7z"/><path d="M9 12l2 2 4-4"/></svg>
           </div>
           <h3 class="feature__name">Без телеметрии</h3>
-          <p class="feature__text">Ни аналитики, ни входа в аккаунт. Снимок уходит в сеть только по отдельной клавише «Со ссылкой» — обычные две работают локально. Раз в сутки программа спрашивает у GitHub про новую версию, это отключается переключателем.</p>
+          <p class="feature__text">Ни аналитики, ни входа в аккаунт. Снимок уходит в сеть только по отдельной клавише «Со ссылкой» — две обычные работают локально. Раз в сутки программа спрашивает у GitHub про новую версию, это отключается переключателем.</p>
           <p class="feature__tag">без аналитики</p>
         </article>
 
@@ -349,7 +349,7 @@
         <div class="pitch">
           <div class="section-head" style="margin-bottom: 0">
             <p class="eyebrow">Как это работает</p>
-            <h2 class="section-title" id="how-title">Два шага, одно вставление</h2>
+            <h2 class="section-title" id="how-title">Два шага, одна вставка</h2>
           </div>
 
           <ol class="pitch__list">
@@ -434,8 +434,8 @@
         <p class="eyebrow">Горячие клавиши</p>
         <h2 class="section-title" id="hotkeys-title">Клавиши — ваши, а не наши</h2>
         <p class="section-lead">
-          В текстах выше написаны значения по умолчанию. Это именно значения по умолчанию: обе клавиши
-          меняются в настройках на любые удобные. Ниже — рабочая демонстрация: нажмите «Изменить» и введите сочетание.
+          В текстах выше написаны значения по умолчанию. Это именно значения по умолчанию: все три
+          клавиши меняются в настройках на любые удобные. Ниже — рабочая демонстрация: нажмите «Изменить» и введите сочетание.
         </p>
       </div>
 
@@ -462,6 +462,17 @@
             </div>
             <button class="hotkey-change" type="button" data-field="full" aria-label="Изменить клавишу снимка всего экрана">Изменить</button>
           </div>
+
+          <div class="hotkey-row">
+            <div class="hotkey-text">
+              <span class="hotkey-label">Снимок со ссылкой</span>
+              <span class="hotkey-hint">Загрузить на сервер и скопировать ссылку</span>
+            </div>
+            <div class="hotkey-keys" data-field="upload" aria-live="polite" aria-label="По умолчанию Ctrl Shift U">
+              <kbd>Ctrl</kbd><span class="hotkey-plus">+</span><kbd>Shift</kbd><span class="hotkey-plus">+</span><kbd>U</kbd>
+            </div>
+            <button class="hotkey-change" type="button" data-field="upload" aria-label="Изменить клавишу снимка со ссылкой">Изменить</button>
+          </div>
         </div>
 
         <p class="hotkeys__status" role="status" aria-live="polite"></p>
@@ -475,7 +486,7 @@
             </li>
             <li>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
-              <span>Если сочетание занято другой программой, Flushot так и скажет и предложит другое.</span>
+              <span>Если сочетание занято другой программой, Flushot так и скажет — и назовёт, какая программа его держит.</span>
             </li>
             <li>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
@@ -635,8 +646,8 @@
     <div class="wrap">
       <div class="section-head">
         <p class="eyebrow">Скачать</p>
-        <h2 class="section-title" id="download-title">Версия 2.5.4 для Windows</h2>
-        <p class="section-lead">Три варианта одной и той же сборки. Программа внутри одинаковая; отличается способ установки и то, обновляется ли она сама.</p>
+        <h2 class="section-title" id="download-title">Версия 2.5.5 для Windows</h2>
+        <p class="section-lead">Три варианта одной и той же сборки. Программа внутри одинаковая; отличаются способ установки и то, обновляется ли она сама.</p>
       </div>
 
       <div class="dl-grid">
@@ -647,7 +658,7 @@
           </div>
           <p class="dl-card__text">Двойной клик, «Установить» — появятся ярлыки в меню «Пуск» и строка удаления. <strong>Обновляется сам:</strong> раз в сутки проверяет новую версию и ставит её при выходе.</p>
           <p class="dl-card__meta"><span>105 МБ</span><span>EXE</span><span>автообновление</span></p>
-          <a class="btn btn--primary" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.5.4-x64.exe">Скачать EXE</a>
+          <a class="btn btn--primary" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.5.5-x64.exe">Скачать EXE</a>
         </article>
 
         <article class="dl-card">
@@ -656,7 +667,7 @@
           </div>
           <p class="dl-card__text">Один файл без установки. При первом запуске распаковывается во временную папку, поэтому нужен рабочий <code>%TEMP%</code>. Новую версию нужно скачивать вручную.</p>
           <p class="dl-card__meta"><span>94 МБ</span><span>ZIP</span><span>один файл</span></p>
-          <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.5.4-portable.zip">Скачать ZIP</a>
+          <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.5.5-portable.zip">Скачать ZIP</a>
         </article>
 
         <article class="dl-card">
@@ -665,7 +676,7 @@
           </div>
           <p class="dl-card__text">Распаковать в любую папку и запустить <code>Flushot.exe</code>. Временная папка Windows не нужна. Новую версию нужно скачивать вручную.</p>
           <p class="dl-card__meta"><span>148 МБ</span><span>ZIP</span><span>без установки</span></p>
-          <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.5.4-win64.zip">Скачать ZIP</a>
+          <a class="btn btn--ghost" href="https://github.com/aeshtlv/Flushot/releases/latest/download/Flushot-2.5.5-win64.zip">Скачать ZIP</a>
         </article>
       </div>
 
@@ -705,7 +716,7 @@
 
         <details>
           <summary>Можно ли поменять горячие клавиши?</summary>
-          <p>Да, обе. Если сочетание занято другой программой, Flushot так и скажет. Две одинаковые клавиши назначить нельзя: Windows отдаёт сочетание только одному действию.</p>
+          <p>Да, все три. Если сочетание занято другой программой, Flushot так и скажет. Две одинаковые клавиши назначить нельзя: Windows отдаёт сочетание только одному действию.</p>
           <p>А вот <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> назначить не получится ни у нас, ни у кого-либо ещё: пока в Windows установлены «Ножницы», это сочетание принадлежит им. Настройки назовут хозяина и предложат два выхода: удалить «Ножницы» или набрать другое сочетание.</p>
           <p>Готовых кнопок с нашими вариантами в настройках нет: сочетание вы назначаете сами, записью с клавиатуры. Чужие предложения там только мешали.</p>
         </details>
@@ -808,7 +819,7 @@
           <svg class="btn__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>
           </svg>
-          Скачать Flushot 2.5.4
+          Скачать Flushot 2.5.5
         </a>
         <a class="btn btn--ghost btn--lg" href="#faq">Сначала вопросы</a>
       </div>
@@ -821,7 +832,7 @@
   <div class="footer__inner">
     <div class="footer__brand">
       <img class="brand__mark" src="favicon.svg?v=a7643679" width="200" height="200" alt="" aria-hidden="true">
-      <span>Версия 2.5.4 · © 2026 Flushot</span>
+      <span>Версия 2.5.5 · © 2026 Flushot</span>
     </div>
     <nav class="footer__links" aria-label="Навигация в подвале">
       <a href="#features">Возможности</a>
@@ -842,14 +853,14 @@
   "name": "Flushot",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Windows 10, Windows 11",
-  "softwareVersion": "2.5.4",
+  "softwareVersion": "2.5.5",
   "description": "Бесплатная программа для скриншотов на Windows: выделение области, рамка с тенью, ровная линия для подчёркивания, снимок всего экрана одной клавишей.",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "RUB" },
   "inLanguage": "ru"
 }
 </script>
 
-<script src="app.js?v=6f88b656" defer></script>
+<script src="app.js?v=36e1c06d" defer></script>
 <script src="metrics.js?v=6d115193" defer></script>
 </body>
 </html>

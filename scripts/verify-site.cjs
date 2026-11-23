@@ -1041,6 +1041,70 @@ function checkMetrics() {
  * version ("available since 2.3.0") must not fail the build, so the check looks at
  * elements that are meant to describe *this* release.
  */
+/**
+ * The count in the prose has to match the count on the page.
+ *
+ * The reported bug was a heading that said "Два шага, одно вставление" — a wrong noun for the
+ * idiom, which no count check can see. But the same report turned up a class of error that CAN
+ * be checked: prose that still said "обе клавиши" after the program had grown a third one, and a
+ * demo panel that showed two rows while the sentence above it promised three.
+ *
+ * So two things are compared: the number word the prose uses, and the number of rows the demo
+ * actually renders. They come from the same markup, which is the only thing this script can see —
+ * the program source lives on the other branch.
+ */
+function checkStatedCounts() {
+  const html = read('index.html')
+
+  // How many shortcut rows the demo renders.
+  const rows = [...html.matchAll(/class="hotkey-row"/g)].length
+  if (rows === 0) fail('the hotkey demo has no rows, so the section cannot demonstrate anything')
+
+  // What the prose claims, in the same section and in the feature card.
+  const claims = []
+  const section = html.slice(html.indexOf('id="hotkeys"'), html.indexOf('id="screens"'))
+  const sectionText = section.replace(/<[^>]+>/g, ' ')
+  if (/все три клавиши|три клавиши/i.test(sectionText)) claims.push({ where: 'the hotkey section', count: 3 })
+  if (/обе клавиши/i.test(sectionText)) claims.push({ where: 'the hotkey section', count: 2 })
+
+  for (const claim of claims) {
+    if (claim.count !== rows) {
+      fail(`${claim.where} claims ${claim.count} shortcuts, but the demo renders ${rows}`)
+    }
+  }
+
+  // The feature card makes the same promise about the number of keys.
+  const card = /Все три клавиши назначаются/.test(html) ? 3 : /Обе клавиши назначаются/.test(html) ? 2 : null
+  if (card !== null && card !== rows) {
+    fail(`the feature card claims ${card} configurable shortcuts, but the demo renders ${rows}`)
+  }
+
+  notes.push(`${rows} shortcut rows in the demo, and the prose agrees with that number`)
+}
+
+/**
+ * Phrases that are wrong in this text regardless of counting.
+ *
+ * Short on purpose: a general spell checker cannot know that "вставление" is a word but the
+ * wrong one for putting a picture into a document. Each entry is a phrase this project actually
+ * shipped and had to correct, so the list grows only when a real mistake is found.
+ */
+const WRONG_PHRASES = [
+  ['одно вставление', 'одна вставка'],
+  ['два шага, одно вставление', 'два шага, одна вставка'],
+  ['обычные две', 'две обычные']
+]
+
+function checkWrongPhrases() {
+  for (const page of ['index.html', 'privacy.html', 'en/index.html', 'en/privacy.html']) {
+    const html = read(page)
+    for (const [wrong, right] of WRONG_PHRASES) {
+      if (html.includes(wrong)) fail(`${page}: "${wrong}" should be "${right}"`)
+    }
+  }
+  notes.push(`${WRONG_PHRASES.length} known-bad phrases are absent from all four pages`)
+}
+
 function checkVersionStamps() {
   const version = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version
   const pages = [
@@ -1190,6 +1254,8 @@ async function main() {
   await checkBrandMark()
   await checkReleaseLinks()
   checkDownloadSizes()
+  checkStatedCounts()
+  checkWrongPhrases()
   checkVersionStamps()
   await checkAssetStamps()
   await reportSize()

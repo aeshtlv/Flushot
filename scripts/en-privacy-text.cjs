@@ -29,7 +29,7 @@ module.exports = [
   // The program
   ['Программа Flushot', 'The Flushot program'],
   [
-    'Снимки, оформление рамки, пометки и распознавание текста происходят на вашем компьютере. Ни\n    снимок, ни его содержимое, ни имена файлов никуда не отправляются — в программе нет ни аккаунта,\n    ни аналитики, ни идентификатора установки.',
+    'Снимки, оформление рамки, пометки и распознавание текста происходят на вашем компьютере. Сами по\n    себе снимок, его содержимое и имена файлов никуда не отправляются — в программе нет ни аккаунта,\n    ни аналитики, ни идентификатора установки. Единственное исключение — клавиша «Со ссылкой», о ней\n    отдельный раздел ниже.',
     'Screenshots, the frame around them, annotations and text recognition all happen on your computer.\n    Neither the picture, nor its contents, nor file names are sent anywhere — the program has no\n    account, no analytics and no install identifier.'
   ],
   [
@@ -97,7 +97,7 @@ module.exports = [
   ['>Главная<', '>Home<'],
   ['>Скачать<', '>Download<'],
   ['>Вопросы<', '>Questions<'],
-  ['<span>Версия 2.5.4 · © 2026 Flushot</span>', '<span>Version 2.5.4 · © 2026 Flushot</span>'],
+  ['<span>Версия 2.5.5 · © 2026 Flushot</span>', '<span>Version 2.5.5 · © 2026 Flushot</span>'],
 
   // Strings the reset button writes at runtime
   [

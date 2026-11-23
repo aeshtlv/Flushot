@@ -34,9 +34,15 @@ var FLUSHOT_TEXT = {
     cancelledKept: 'Отменили — осталось прежнее сочетание.',
     cancelled: 'Отменили.',
     saved: 'Готово. В приложении это же сочетание записывается так же.',
-    takenBy: function (field) {
-      var other = field === 'area' ? 'снимком всего экрана' : 'снимком области';
-      return 'Это сочетание уже занято ' + other + '. Выберите другое.';
+    // The argument is the action that already holds the combination, so the sentence names
+    // the right one out of three rather than guessing between two.
+    actionName: {
+      area: 'снимком области',
+      full: 'снимком всего экрана',
+      upload: 'снимком со ссылкой'
+    },
+    takenBy: function (other) {
+      return 'Это сочетание уже занято ' + (LT.actionName[other] || 'другим действием') + '. Выберите другое.';
     },
     themeText: 'Тема'
   },
@@ -61,9 +67,13 @@ var FLUSHOT_TEXT = {
     cancelledKept: 'Cancelled — the previous shortcut is still in place.',
     cancelled: 'Cancelled.',
     saved: 'Done. The app records this combination exactly the same way.',
-    takenBy: function (field) {
-      var other = field === 'area' ? 'the whole-screen screenshot' : 'the region screenshot';
-      return 'That shortcut is already taken by ' + other + '. Choose another one.';
+    actionName: {
+      area: 'the region screenshot',
+      full: 'the whole-screen screenshot',
+      upload: 'the capture with a link'
+    },
+    takenBy: function (other) {
+      return 'That shortcut is already taken by ' + (LT.actionName[other] || 'another action') + '. Choose another one.';
     },
     themeText: 'Theme'
   }
@@ -662,12 +672,18 @@ var LT = FLUSHOT_TEXT[FLUSHOT_LANG];
       keys: panel.querySelector('.hotkey-keys[data-field="full"]'),
       button: panel.querySelector('.hotkey-change[data-field="full"]'),
       value: ['Ctrl', 'Shift', '3']
+    },
+    upload: {
+      keys: panel.querySelector('.hotkey-keys[data-field="upload"]'),
+      button: panel.querySelector('.hotkey-change[data-field="upload"]'),
+      value: ['Ctrl', 'Shift', 'U']
     }
   }
 
   const DEFAULTS = {
     area: ['Ctrl', 'Shift', 'S'],
-    full: ['Ctrl', 'Shift', '3']
+    full: ['Ctrl', 'Shift', '3'],
+    upload: ['Ctrl', 'Shift', 'U']
   }
 
   let listening = null
@@ -802,9 +818,14 @@ var LT = FLUSHOT_TEXT[FLUSHOT_LANG];
     }
 
     const parts = modifiers.concat(key)
-    const other = field === 'area' ? 'full' : 'area'
-    if (parts.join('+') === fields[other].value.join('+')) {
-      say(LT.takenBy(field), 'warn')
+    const combo = parts.join('+')
+    // Every other field, not just one: the demo used to know about two actions and would have
+    // let the third take a combination that was already in use.
+    const clash = Object.keys(fields).find(
+      (name) => name !== field && fields[name].value.join('+') === combo
+    )
+    if (clash) {
+      say(LT.takenBy(clash), 'warn')
       return
     }
 

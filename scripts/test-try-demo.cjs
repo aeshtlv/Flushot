@@ -118,6 +118,16 @@ async function main() {
 
   /** Where the scene sits on screen, so the drag lands inside it. */
   await evaluate(`(() => {
+    // Every animation and transition is switched off before anything is measured. The reveal
+    // on this section starts after a delay: the scene sits still for about 100 ms, then moves
+    // 22 px and returns, so "two equal reads in a row" is not the same as "settled". This test
+    // is about drag -> crop, and the reveal is not part of that.
+    if (!document.getElementById('flushot-test-freeze')) {
+      const freeze = document.createElement('style');
+      freeze.id = 'flushot-test-freeze';
+      freeze.textContent = '*, *::before, *::after { animation: none !important; transition: none !important; }';
+      document.head.appendChild(freeze);
+    }
     // Smooth scrolling would still be travelling when the first mouse event
     // arrives, and every coordinate below would be stale.
     document.documentElement.style.scrollBehavior = 'auto';

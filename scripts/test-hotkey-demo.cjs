@@ -194,7 +194,7 @@ async function main() {
   await press(['F1'])
   record('full chip', await chip('full'), 'F1')
 
-  console.log('\nThe two shortcuts cannot collide')
+  console.log('\nThe shortcuts cannot collide')
   await clickChange('full')
   await press(['Ctrl', 'K'])
   record('full chip unchanged', await chip('full'), 'F1')
@@ -202,6 +202,23 @@ async function main() {
   record('conflict is explained', conflict.tone, 'warn')
   record('conflict names the other action', conflict.text.includes('области'), true)
   await press(['Escape'])
+
+  console.log('\nThe third key cannot take a combination another one holds')
+  await clickChange('upload')
+  await press(['Ctrl', 'K'])
+  record('upload chip unchanged', await chip('upload'), 'Ctrl+Shift+U')
+  const thirdConflict = await status()
+  record('third conflict is explained', thirdConflict.tone, 'warn')
+  record('and it names the region action', thirdConflict.text.includes('области'), true)
+  await press(['Escape'])
+
+  console.log('\nAnd it can be rebound on its own')
+  await clickChange('upload')
+  await press(['Ctrl', 'Alt', 'U'])
+  record('upload chip', await chip('upload'), 'Ctrl+Alt+U')
+  await clickChange('upload')
+  await press(['Backspace'])
+  record('upload chip back to default', await chip('upload'), 'Ctrl+Shift+U')
 
   console.log('\nEscape cannot be assigned')
   await clickChange('full')
