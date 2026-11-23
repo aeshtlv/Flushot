@@ -93,6 +93,16 @@ const api = {
    * taken over; the honest help is a key that really is free right now.
    */
   suggestHotkey: (accelerator: string): Promise<string[]> => ipcRenderer.invoke('hotkey:suggest', accelerator),
+  /**
+   * Take the combination for a few seconds and report whether a press arrives.
+   *
+   * Answers the question a user actually has when nothing happens: is the key free, and does
+   * it reach the program at all.
+   */
+  testHotkey: (
+    accelerator: string
+  ): Promise<{ registered: boolean; received: boolean; combo: string; tone: 'ok' | 'warn'; text: string }> =>
+    ipcRenderer.invoke('hotkey:test', accelerator),
   pickDirectory: (): Promise<{ canceled: boolean; path?: string }> => ipcRenderer.invoke('settings:pick-directory'),
   /**
    * Sample card rendered with the current settings.

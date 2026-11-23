@@ -219,15 +219,18 @@ export class CaptureSession {
       const virtual = this.virtualRaw
       if (virtual && this.virtualDescriptor) {
         for (const win of this.overlays) {
-          if (this.booted.has(win.webContents.id)) {
-            win.webContents.send('overlay:frame', {
-              display: this.virtualDescriptor,
-              shot: virtual,
-              fullscreen: this.fullscreen,
-              upload: this.uploadMode,
-              settings: liveSettings
-            })
-          }
+          if (win.isDestroyed()) continue
+          // Every overlay, warm or not. The old condition skipped a window created by this
+          // round — the first hotkey after launch, before the pool exists — and that window
+          // then kept the round flags it had read at mount: a capture started by the upload
+          // key released into the clipboard instead of uploading.
+          win.webContents.send('overlay:frame', {
+            display: this.virtualDescriptor,
+            shot: virtual,
+            fullscreen: this.fullscreen,
+            upload: this.uploadMode,
+            settings: liveSettings
+          })
         }
       }
 
@@ -583,9 +586,15 @@ export class CaptureSession {
       // frame after the button comes up, and Ctrl+V works a few dozen milliseconds
       // later.
       if (selection.intent === 'copy' || selection.intent === 'upload') {
-        // Both actions end the round on release and leave nothing on screen. They
-        // differ in what reaches the clipboard: the picture, or a link to it.
-        const uploading = selection.intent === 'upload'
+        // Both actions end the round on release and leave nothing on screen. They differ in
+        // what reaches the clipboard: the picture, or a link to it.
+        //
+        // The round's own flag has the last word. The renderer sends "copy" for an ordinary
+        // release and "upload" when its state says so, but that state is a React value and
+        // can lag behind the round by a frame — and a release that copies a picture the user
+        // asked to upload is exactly the bug that was reported. The main process started the
+        // round, so it knows.
+        const uploading = selection.intent === 'upload' || this.uploadMode
         this.hideOverlays()
         markCopy('hide')
         const { raster } = await this.cropSelection(selection, descriptor)

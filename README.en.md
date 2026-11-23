@@ -5,7 +5,7 @@ paste, in a neat frame with a soft shadow and rounded corners, at full resolutio
 
 [![CI](https://github.com/aeshtlv/Flushot/actions/workflows/ci.yml/badge.svg)](https://github.com/aeshtlv/Flushot/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-4c8bf5)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.5.2-4c8bf5)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.5.3-4c8bf5)](CHANGELOG.md)
 
 <p align="center">
   <img src="logo/logo.png" alt="Flushot" width="112">
@@ -54,9 +54,9 @@ all three; what differs is how it is installed and whether it updates itself.
 
 | File | Description |
 |---|---|
-| **[Flushot-2.5.2-x64.exe](../../releases/latest/download/Flushot-2.5.2-x64.exe)** | 105 MB. Installer: Start menu shortcuts, install location, uninstaller. **Updates itself** — recommended |
-| [Flushot-2.5.2-portable.zip](../../releases/latest/download/Flushot-2.5.2-portable.zip) | 94 MB. Portable single file, no installation. Updated by hand |
-| [Flushot-2.5.2-win64.zip](../../releases/latest/download/Flushot-2.5.2-win64.zip) | 148 MB. Unpack anywhere and run `Flushot.exe`. Updated by hand |
+| **[Flushot-2.5.3-x64.exe](../../releases/latest/download/Flushot-2.5.3-x64.exe)** | 105 MB. Installer: Start menu shortcuts, install location, uninstaller. **Updates itself** — recommended |
+| [Flushot-2.5.3-portable.zip](../../releases/latest/download/Flushot-2.5.3-portable.zip) | 94 MB. Portable single file, no installation. Updated by hand |
+| [Flushot-2.5.3-win64.zip](../../releases/latest/download/Flushot-2.5.3-win64.zip) | 148 MB. Unpack anywhere and run `Flushot.exe`. Updated by hand |
 
 Only the installer can update itself: the portable build unpacks into a temporary folder on every
 launch, and the archive has no uninstaller for the updater to run. Those two are told about a new
@@ -66,7 +66,7 @@ The binaries are not code-signed, so SmartScreen warns on first launch: **More i
 That is standard behaviour for an unsigned executable.
 
 <!-- downloads:begin -->
-**v2.5.2** was published just now, so it has no downloads yet — 82 in total. These are downloads, not installs.
+**v2.5.3** was published just now, so it has no downloads yet — 86 in total. These are downloads, not installs.
 <!-- downloads:end -->
 
 That number updates itself: once a day the `Download counter` workflow copies it from GitHub into

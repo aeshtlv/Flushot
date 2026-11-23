@@ -337,6 +337,15 @@ export interface OverlayFrame {
   /** See `OverlayInit.fullscreen`: the region arrives already selected. */
   fullscreen?: boolean
   /**
+   * See `OverlayInit.upload`: releasing the mouse uploads instead of copying.
+   *
+   * It has to be on the frame and not only on the init payload, because a warm window is
+   * created once at startup and never re-reads its init. A round started by the upload key
+   * would otherwise keep whatever the window booted with — false — and the release would
+   * copy the picture, which is exactly what users saw.
+   */
+  upload?: boolean
+  /**
    * Settings as they are *now*, not as they were when the window booted.
    *
    * A warm window lives for the whole session, so without this it would keep the

@@ -294,6 +294,20 @@ export function registerIpc(context: IpcContext): void {
     return suggestFree(accelerator, mine)
   })
 
+  /**
+   * Take a combination for a few seconds and report whether a real press arrives.
+   *
+   * Registration is not delivery: a key can register and never fire because another program
+   * swallowed it with a keyboard hook. This is the only way to tell "the combination is free
+   * and works" from "it is free and something eats it", and the difference decides what the
+   * user should do next.
+   */
+  ipcMain.handle('hotkey:test', async (_event, accelerator: string) => {
+    const { testKey, describeKeyTest } = await import('../hotkeys/testKey')
+    const result = await testKey(accelerator)
+    return { ...result, ...describeKeyTest(result) }
+  })
+
   ipcMain.handle('settings:reset', async () => {
     const next = await settings.update(defaultSettings(defaultDirectory))
     context.onHotkeysChanged?.()

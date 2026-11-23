@@ -417,9 +417,10 @@ export function OverlayApp(): JSX.Element {
       setOcrPick(false)
       setOcrMarquee(null)
       setBlanked(false)
-      // A reused window must not keep the previous round's full-screen flag: the
-      // next round may have been started by the ordinary region hotkey.
-      setInit((current) => (current ? { ...current, fullscreen: false } : current))
+      // A reused window must not keep the previous round's flags: the next round may
+      // have been started by an ordinary key, and an upload round left behind would make
+      // the following release try to upload a picture nobody asked to upload.
+      setInit((current) => (current ? { ...current, fullscreen: false, upload: false } : current))
       selection.reset()
     })
 
@@ -431,7 +432,15 @@ export function OverlayApp(): JSX.Element {
       // session of nothing happening after the user changed something.
       setInit((current) =>
         current
-          ? { ...current, display: frame.display, fullscreen: frame.fullscreen, settings: frame.settings ?? current.settings }
+          ? {
+              ...current,
+              display: frame.display,
+              fullscreen: frame.fullscreen,
+              // Carried on the frame because a warm window never re-reads its init: a
+              // round started by the upload key must not keep the flag it booted with.
+              upload: frame.upload,
+              settings: frame.settings ?? current.settings
+            }
           : current
       )
       setShot(frame.shot)

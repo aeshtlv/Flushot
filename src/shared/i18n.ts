@@ -216,6 +216,12 @@ const RU = {
   'settings.hotkeyTryThese':
     'Занято другой программой — Windows отдаёт сочетание первому, кто его занял. Свободны: ',
   'settings.hotkeyTakeThis': 'Назначить {combo}',
+  'settings.keyTest': 'Проверить',
+  'settings.keyTestRunning': 'Нажмите {combo}…',
+  'settings.keyTestOk': 'Клавиша работает: {combo} дошла до Flushot.',
+  'settings.keyTestTaken': 'Клавишу занять не удалось: {combo} держит другая программа.',
+  'settings.keyTestSwallowed':
+    '{combo} зарегистрирована, но за {seconds} с до Flushot не дошла: нажатие перехватывает другая программа или сама Windows. Проверьте её горячие клавиши.',
   'settings.recordingPrompt': 'Нажмите сочетание…',
   'settings.recordingTitle': 'Нажмите сочетание клавиш, Esc — отмена',
   'settings.recordTitle': 'Нажмите, чтобы записать сочетание',
@@ -579,6 +585,12 @@ const EN: Record<MessageKey, string> = {
   'settings.hotkeyTryThese':
     'Taken by another program — Windows gives a combination to whoever registered it first. These are free: ',
   'settings.hotkeyTakeThis': 'Assign {combo}',
+  'settings.keyTest': 'Test',
+  'settings.keyTestRunning': 'Press {combo}…',
+  'settings.keyTestOk': 'The key works: {combo} reached Flushot.',
+  'settings.keyTestTaken': 'Could not take the key: {combo} is held by another program.',
+  'settings.keyTestSwallowed':
+    '{combo} is registered but did not reach Flushot within {seconds}s: another program, or Windows itself, is swallowing the press. Check its shortcuts.',
   'settings.recordingPrompt': 'Press the combination…',
   'settings.recordingTitle': 'Press the key combination, Esc to cancel',
   'settings.recordTitle': 'Click to record a combination',

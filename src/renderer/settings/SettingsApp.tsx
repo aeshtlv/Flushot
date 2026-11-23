@@ -54,6 +54,12 @@ export function SettingsApp(): JSX.Element {
     field: 'hotkey' | 'hotkeyFullscreen' | 'hotkeyUpload'
     combos: string[]
   } | null>(null)
+  /**
+   * The result of "does this key actually reach the program".
+   *
+   * Kept per field so an answer about the upload key cannot appear under the region key.
+   */
+  const [keyTest, setKeyTest] = useState<{ field: 'hotkey' | 'hotkeyFullscreen' | 'hotkeyUpload'; tone: 'ok' | 'warn'; text: string } | null>(null)
   const [info, setInfo] = useState<{ version: string; hotkey: string; settingsPath: string } | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [update, setUpdate] = useState<UpdateState>({ kind: 'idle' })
@@ -190,6 +196,27 @@ export function SettingsApp(): JSX.Element {
       showError(error instanceof Error ? error.message : t(lang, 'settings.resetFailed'))
     }
   }, [lang, showError])
+
+  /**
+   * Ask the main process to take the key for a few seconds and listen.
+   *
+   * This exists because "registered" and "works" are different answers: a key can be free and
+   * still never arrive, if another program swallows it with a keyboard hook. When a user says
+   * "I press it and nothing happens", this is the question that has to be answered first.
+   */
+  const runKeyTest = useCallback(
+    async (field: 'hotkey' | 'hotkeyFullscreen' | 'hotkeyUpload', accelerator: string) => {
+      if (!accelerator) return
+      setKeyTest({ field, tone: 'ok', text: t(lang, 'settings.keyTestRunning', { combo: formatAccelerator(accelerator) }) })
+      try {
+        const result = await window.flushot.testHotkey(accelerator)
+        setKeyTest({ field, tone: result.tone, text: result.text })
+      } catch (error) {
+        setKeyTest({ field, tone: 'warn', text: error instanceof Error ? error.message : t(lang, 'settings.hotkeyChangeFailed') })
+      }
+    },
+    [lang]
+  )
 
   const saveHotkey = useCallback(
     async (field: 'hotkey' | 'hotkeyFullscreen' | 'hotkeyUpload', hotkey: string) => {
@@ -429,6 +456,21 @@ export function SettingsApp(): JSX.Element {
               />
             </Row>
             <HotkeyNotice state={settings.hotkeys?.region} lang={lang} />
+            <p className="row-note row-note--test">
+              <button
+                type="button"
+                className="hotkey-chip"
+                data-hotkey-test="hotkey"
+                onClick={() => void runKeyTest('hotkey', settings.hotkey)}
+              >
+                {tr('settings.keyTest')}
+              </button>
+              {keyTest?.field === 'hotkey' && (
+                <span className={keyTest.tone === 'ok' ? 'key-test key-test--ok' : 'key-test key-test--warn'}>
+                  {keyTest.text}
+                </span>
+              )}
+            </p>
             {suggestions?.field === 'hotkey' && (
               <HotkeySuggestions
                 combos={suggestions.combos}
@@ -447,6 +489,21 @@ export function SettingsApp(): JSX.Element {
               />
             </Row>
             <HotkeyNotice state={settings.hotkeys?.fullscreen} lang={lang} />
+            <p className="row-note row-note--test">
+              <button
+                type="button"
+                className="hotkey-chip"
+                data-hotkey-test="hotkeyFullscreen"
+                onClick={() => void runKeyTest('hotkeyFullscreen', settings.hotkeyFullscreen)}
+              >
+                {tr('settings.keyTest')}
+              </button>
+              {keyTest?.field === 'hotkeyFullscreen' && (
+                <span className={keyTest.tone === 'ok' ? 'key-test key-test--ok' : 'key-test key-test--warn'}>
+                  {keyTest.text}
+                </span>
+              )}
+            </p>
             {suggestions?.field === 'hotkeyFullscreen' && (
               <HotkeySuggestions
                 combos={suggestions.combos}
@@ -468,6 +525,21 @@ export function SettingsApp(): JSX.Element {
               />
             </Row>
             <HotkeyNotice state={settings.hotkeys?.upload} lang={lang} />
+            <p className="row-note row-note--test">
+              <button
+                type="button"
+                className="hotkey-chip"
+                data-hotkey-test="hotkeyUpload"
+                onClick={() => void runKeyTest('hotkeyUpload', settings.hotkeyUpload)}
+              >
+                {tr('settings.keyTest')}
+              </button>
+              {keyTest?.field === 'hotkeyUpload' && (
+                <span className={keyTest.tone === 'ok' ? 'key-test key-test--ok' : 'key-test key-test--warn'}>
+                  {keyTest.text}
+                </span>
+              )}
+            </p>
             {suggestions?.field === 'hotkeyUpload' && (
               <HotkeySuggestions
                 combos={suggestions.combos}
