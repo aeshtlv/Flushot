@@ -9,6 +9,7 @@ import type {
   OcrRegion,
   OverlayShot,
   ScreenshotSettings,
+  SettingsWithHotkeys,
   UpdateState
 } from '../shared/types'
 
@@ -73,10 +74,10 @@ const api = {
   reportOverlayPainted: (): void => ipcRenderer.send('overlay:painted'),
 
   // ---- settings window ----
-  getSettings: (): Promise<ScreenshotSettings> => ipcRenderer.invoke('settings:get'),
-  updateSettings: (patch: Partial<ScreenshotSettings>): Promise<ScreenshotSettings> =>
+  getSettings: (): Promise<SettingsWithHotkeys> => ipcRenderer.invoke('settings:get'),
+  updateSettings: (patch: Partial<ScreenshotSettings>): Promise<SettingsWithHotkeys> =>
     ipcRenderer.invoke('settings:update', patch),
-  resetSettings: (): Promise<ScreenshotSettings> => ipcRenderer.invoke('settings:reset'),
+  resetSettings: (): Promise<SettingsWithHotkeys> => ipcRenderer.invoke('settings:reset'),
   /**
    * Ask whether a combination can really be taken, before saving it.
    *

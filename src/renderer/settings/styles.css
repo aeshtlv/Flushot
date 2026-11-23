@@ -265,6 +265,19 @@ body {
   color: var(--text-muted);
 }
 
+/* A shortcut that is not doing what the field says. Amber rather than red: nothing is
+   broken, the key is simply held by another program, and the fix is a click away. */
+.row-note--warn {
+  color: #b45309;
+  padding-left: 2px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .row-note--warn {
+    color: #fbbf24;
+  }
+}
+
 .segmented {
   display: inline-flex;
   padding: 2px;

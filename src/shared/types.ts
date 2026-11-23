@@ -346,6 +346,26 @@ export interface OverlayFrame {
   settings: ScreenshotSettings
 }
 
+/**
+ * What is bound for one shortcut, and what was asked for.
+ *
+ * The two differ after a fallback: Windows hands a combination to one program only, so a
+ * taken key is replaced by an alternative. The window shows `active`, and explains
+ * `requested` when they disagree — showing the requested one while a different key is
+ * live is how "the program ignores my shortcut" happens.
+ */
+export interface HotkeyState {
+  /** The combination the app is really listening for, or '' when none could be bound. */
+  active: string
+  /** What the settings file asks for. Differs from `active` after a fallback. */
+  requested: string
+}
+
+/** Settings as the window receives them: with the shortcuts that are really live. */
+export interface SettingsWithHotkeys extends ScreenshotSettings {
+  hotkeys?: Record<'region' | 'fullscreen' | 'upload', HotkeyState>
+}
+
 export interface ActionResult {
   ok: boolean
   message: string

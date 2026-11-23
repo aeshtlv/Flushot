@@ -21,7 +21,7 @@ import {
   type LanguagePreference,
   type MessageKey
 } from '../../shared/i18n'
-import type {
+import type { HotkeyState, SettingsWithHotkeys,
   AfterRegion,
   BackgroundPreset,
   ImageFormat,
@@ -43,7 +43,7 @@ const BACKDROP_OPTIONS: { value: BackgroundPreset; label: MessageKey; swatch: st
 ]
 
 export function SettingsApp(): JSX.Element {
-  const [settings, setSettings] = useState<ScreenshotSettings | null>(null)
+  const [settings, setSettings] = useState<SettingsWithHotkeys | null>(null)
   const [info, setInfo] = useState<{ version: string; hotkey: string; settingsPath: string } | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [update, setUpdate] = useState<UpdateState>({ kind: 'idle' })
@@ -414,6 +414,7 @@ export function SettingsApp(): JSX.Element {
                 onCommit={(hotkey) => void saveHotkey('hotkey', hotkey)}
               />
             </Row>
+            <HotkeyNotice state={settings.hotkeys?.region} lang={lang} />
 
             <Row label={tr('settings.fullscreen')} hint={tr('settings.fullscreenHint')}>
               <HotkeyRecorder
@@ -424,6 +425,7 @@ export function SettingsApp(): JSX.Element {
                 onCommit={(hotkey) => void saveHotkey('hotkeyFullscreen', hotkey)}
               />
             </Row>
+            <HotkeyNotice state={settings.hotkeys?.fullscreen} lang={lang} />
 
             {/* The note under this row is the only place in the interface that says a
                 screenshot can leave the computer, so it is part of the control and not
@@ -437,6 +439,7 @@ export function SettingsApp(): JSX.Element {
                 onCommit={(hotkey) => void saveHotkey('hotkeyUpload', hotkey)}
               />
             </Row>
+            <HotkeyNotice state={settings.hotkeys?.upload} lang={lang} />
 
             <p className="row-note">{tr('settings.uploadPrivacy')}</p>
 
@@ -766,6 +769,36 @@ function describeUpdate(
     case 'failed':
       return tr('settings.updateFailed', { message: state.message })
   }
+}
+
+/**
+ * The honest answer to "is this shortcut working".
+ *
+ * Three states, and the middle one is the reason this exists: Windows gives a combination
+ * to one program only, so a taken key is replaced by an alternative, or by nothing at all.
+ * The window used to show the combination from the file in every case — the user pressed
+ * it, nothing happened, and nothing on screen said why.
+ */
+function HotkeyNotice({ state, lang }: { state?: HotkeyState; lang: Language }): JSX.Element | null {
+  if (!state) return null
+  if (!state.active) {
+    return (
+      <p className="row-note row-note--warn" data-hotkey-notice="unbound">
+        {t(lang, 'settings.hotkeyUnbound', { requested: formatAccelerator(state.requested) })}
+      </p>
+    )
+  }
+  if (state.active !== state.requested) {
+    return (
+      <p className="row-note row-note--warn" data-hotkey-notice="fallback">
+        {t(lang, 'settings.hotkeyFallback', {
+          requested: formatAccelerator(state.requested),
+          active: formatAccelerator(state.active)
+        })}
+      </p>
+    )
+  }
+  return null
 }
 
 function Row({ label, hint, children }: { label: string; hint?: string; children: JSX.Element }): JSX.Element {

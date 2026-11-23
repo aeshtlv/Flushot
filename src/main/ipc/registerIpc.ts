@@ -2,13 +2,15 @@ import { BrowserWindow, app, clipboard, dialog, globalShortcut, ipcMain, shell }
 import { mkdir } from 'node:fs/promises'
 import { defaultSettings } from '../../shared/settings'
 import { isValidAccelerator, normalizeAccelerator, reservedByWindows } from '../../shared/hotkey'
+import { hotkeysChanged } from '../../shared/hotkeys'
 import type {
   ActionResult,
   AnnotationLayerPayload,
   CaptureSelection,
   OcrOutcome,
   OcrRegion,
-  ScreenshotSettings
+  ScreenshotSettings,
+  SettingsWithHotkeys
 } from '../../shared/types'
 import type { CaptureSession } from '../capture/CaptureSession'
 import type { SettingsStore } from '../settings/SettingsStore'
@@ -56,6 +58,27 @@ export interface IpcContext {
   /** Quit and apply a downloaded update. */
   installUpdate?: () => void
   openSettings: () => void
+}
+
+/**
+ * The settings as the interface should show them: with the combinations that are
+ * actually bound.
+ *
+ * A saved combination that Windows refused is not what the user is pressing. Showing it
+ * anyway is the worst of both worlds — the window says the key is set, and pressing it
+ * does nothing. The effective value replaces the saved one, so the row always names a
+ * key that works; `requestedHotkey` keeps what the file asked for, so the window can
+ * explain the difference instead of silently rewriting it.
+ */
+function withEffectiveHotkeys(context: IpcContext, settings: ScreenshotSettings): SettingsWithHotkeys {
+  return {
+    ...settings,
+    hotkeys: {
+      region: { active: context.getHotkey(), requested: settings.hotkey },
+      fullscreen: { active: context.getFullscreenHotkey(), requested: settings.hotkeyFullscreen },
+      upload: { active: context.getUploadHotkey(), requested: settings.hotkeyUpload }
+    }
+  }
 }
 
 function senderWindow(event: Electron.IpcMainInvokeEvent): BrowserWindow | null {
@@ -178,8 +201,8 @@ export function registerIpc(context: IpcContext): void {
     // The Run key lives outside the app and can be changed by other tools, so
     // the window shows what Windows really reports and the file follows it.
     const actual = isAutostartEnabled()
-    if (actual !== current.launchAtLogin) return settings.update({ launchAtLogin: actual })
-    return current
+    const settled = actual !== current.launchAtLogin ? await settings.update({ launchAtLogin: actual }) : current
+    return withEffectiveHotkeys(context, settled)
   })
 
   ipcMain.handle('settings:update', async (_event, patch: Partial<ScreenshotSettings>) => {
@@ -206,17 +229,15 @@ export function registerIpc(context: IpcContext): void {
       context.onUpdatesChanged?.(next.checkUpdates)
     }
 
-    if (before.hotkey !== next.hotkey || before.hotkeyFullscreen !== next.hotkeyFullscreen) {
-      // Re-bind both keys, then report the combinations that are really active:
-      // a saved value that could not be registered must not look as if it worked.
+    if (hotkeysChanged(before, next)) {
+      // Re-bind all three, then report the combinations that are really active: a saved
+      // value that could not be registered must not look as if it worked.
+      //
+      // The upload key was missing from this comparison when it was added, so binding it
+      // wrote the file and changed nothing until the next launch — which reads exactly
+      // like "the program ignores my shortcut".
       context.onHotkeysChanged?.()
-      const effective = context.getHotkey()
-      const effectiveFull = context.getFullscreenHotkey()
-      return {
-        ...next,
-        hotkey: effective === next.hotkey ? next.hotkey : effective,
-        hotkeyFullscreen: effectiveFull === next.hotkeyFullscreen ? next.hotkeyFullscreen : effectiveFull
-      }
+      return withEffectiveHotkeys(context, next)
     }
 
     return next
@@ -235,7 +256,9 @@ export function registerIpc(context: IpcContext): void {
     const normalized = normalizeAccelerator(accelerator)
 
     // Our own keys are "taken" by us, which is not a conflict.
-    const mine = [context.getHotkey(), context.getFullscreenHotkey()].filter(Boolean).map(normalizeAccelerator)
+    const mine = [context.getHotkey(), context.getFullscreenHotkey(), context.getUploadHotkey()]
+      .filter(Boolean)
+      .map(normalizeAccelerator)
     if (mine.includes(normalized)) return { free: true, ours: true }
 
     const reserved = reservedByWindows(normalized)
@@ -261,13 +284,7 @@ export function registerIpc(context: IpcContext): void {
     const next = await settings.update(defaultSettings(defaultDirectory))
     context.onHotkeysChanged?.()
     context.onSettingsChanged?.()
-    const effective = context.getHotkey()
-    const effectiveFull = context.getFullscreenHotkey()
-    return {
-      ...next,
-      hotkey: effective === next.hotkey ? next.hotkey : effective,
-      hotkeyFullscreen: effectiveFull === next.hotkeyFullscreen ? next.hotkeyFullscreen : effectiveFull
-    }
+    return withEffectiveHotkeys(context, next)
   })
 
   ipcMain.handle('settings:pick-directory', async (event) => {

@@ -209,6 +209,10 @@ const RU = {
   'settings.hotkeyNotAssigned': '{combo} не удалось назначить — выберите другое сочетание',
   'settings.hotkeyIntrusive': 'Клавиша {combo} перехватывается во всех программах — печатать её не получится',
   'settings.hotkeyChangeFailed': 'Не удалось изменить клавишу',
+  'settings.hotkeyUnbound':
+    'Клавиша не назначена: {requested} занята другой программой, и запасная комбинация тоже. Нажмите на поле и запишите другое сочетание.',
+  'settings.hotkeyFallback':
+    'Работает {active}: {requested} занята другой программой. Нажмите на поле, чтобы выбрать другое сочетание.',
   'settings.recordingPrompt': 'Нажмите сочетание…',
   'settings.recordingTitle': 'Нажмите сочетание клавиш, Esc — отмена',
   'settings.recordTitle': 'Нажмите, чтобы записать сочетание',
@@ -565,6 +569,10 @@ const EN: Record<MessageKey, string> = {
   'settings.hotkeyIntrusive':
     '{combo} is intercepted in every program — you will not be able to type it',
   'settings.hotkeyChangeFailed': 'Could not change the shortcut',
+  'settings.hotkeyUnbound':
+    'No key is assigned: {requested} is taken by another program, and so is the alternative. Click the field and record a different combination.',
+  'settings.hotkeyFallback':
+    '{active} is in use: {requested} is taken by another program. Click the field to choose another combination.',
   'settings.recordingPrompt': 'Press the combination…',
   'settings.recordingTitle': 'Press the key combination, Esc to cancel',
   'settings.recordTitle': 'Click to record a combination',
