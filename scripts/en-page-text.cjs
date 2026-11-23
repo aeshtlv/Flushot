@@ -39,7 +39,7 @@ module.exports = [
   ['aria-label="Переключить на светлую тему"', 'aria-label="Switch to light theme"'],
 
   // Hero
-  ['Windows 10 и 11 · версия 2.5.2 · бесплатно', 'Windows 10 and 11 · version 2.5.2 · free'],
+  ['Windows 10 и 11 · версия 2.5.3 · бесплатно', 'Windows 10 and 11 · version 2.5.3 · free'],
   ['<span>Снимок экрана,</span>', '<span>A screenshot</span>'],
   ['<span>готовый к вставке</span>', '<span>ready to paste</span>'],
   [
@@ -334,7 +334,7 @@ module.exports = [
   ],
 
   // Download
-  ['>Версия 2.5.2 для Windows<', '>Version 2.5.2 for Windows<'],
+  ['>Версия 2.5.3 для Windows<', '>Version 2.5.3 for Windows<'],
   [
     'Три варианта одной и той же сборки. Программа внутри одинаковая; отличается способ установки и то, обновляется ли она сама.',
     'Three variants of the same build. The program inside is identical; what differs is how it is installed and whether it updates itself.',
@@ -501,12 +501,12 @@ module.exports = [
     'Если не понравится — удалить так же просто, как распаковать.',
     'If you do not like it, deleting it takes as little effort as unpacking did.',
   ],
-  ['Скачать Flushot 2.5.2', 'Download Flushot 2.5.2'],
+  ['Скачать Flushot 2.5.3', 'Download Flushot 2.5.3'],
   ['>Сначала вопросы<', '>Questions first<'],
   ['105 МБ · без регистрации · без аналитики', '105 MB · no sign-up · no analytics'],
 
   // Footer
-  ['>Версия 2.5.2 · © 2026 Flushot<', '>Version 2.5.2 · © 2026 Flushot<'],
+  ['>Версия 2.5.3 · © 2026 Flushot<', '>Version 2.5.3 · © 2026 Flushot<'],
   ['aria-label="Навигация в подвале"', 'aria-label="Footer navigation"'],
 
   // JSON-LD
@@ -515,7 +515,7 @@ module.exports = [
     'A free screenshot program for Windows: region selection, a frame with a shadow, a straight line for underlining, and a full-screen screenshot with one key.',
   ],
 
-  // Updates and the download section as of 2.5.2
+  // Updates and the download section as of 2.5.3
   [
     '>Скачать EXE<',
     '>Download EXE<'

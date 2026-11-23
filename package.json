@@ -1,6 +1,6 @@
 {
   "name": "flushot-site",
-  "version": "2.5.2",
+  "version": "2.5.3",
   "private": true,
   "description": "Landing page for Flushot — its own branch, kept out of the program repository",
   "repository": {
