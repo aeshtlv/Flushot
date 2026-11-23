@@ -3,6 +3,7 @@ import { mkdir } from 'node:fs/promises'
 import { defaultSettings } from '../../shared/settings'
 import { isValidAccelerator, normalizeAccelerator, reservedByWindows } from '../../shared/hotkey'
 import { hotkeysChanged } from '../../shared/hotkeys'
+import { suggestFree } from '../hotkeys/suggest'
 import type {
   ActionResult,
   AnnotationLayerPayload,
@@ -278,6 +279,19 @@ export function registerIpc(context: IpcContext): void {
       }
     }
     return { free }
+  })
+
+  /**
+   * Free combinations to offer after the one the user wanted turned out to be taken.
+   *
+   * Windows gives a hotkey to the first registrant and to nobody else — a second
+   * registration fails with error 1409, measured rather than assumed — so the program
+   * cannot take a key away from another application. What it can do is name a combination
+   * that is measurably free, instead of leaving the user to guess.
+   */
+  ipcMain.handle('hotkey:suggest', (_event, accelerator: string) => {
+    const mine = [context.getHotkey(), context.getFullscreenHotkey(), context.getUploadHotkey()].filter(Boolean)
+    return suggestFree(accelerator, mine)
   })
 
   ipcMain.handle('settings:reset', async () => {

@@ -44,6 +44,16 @@ const BACKDROP_OPTIONS: { value: BackgroundPreset; label: MessageKey; swatch: st
 
 export function SettingsApp(): JSX.Element {
   const [settings, setSettings] = useState<SettingsWithHotkeys | null>(null)
+  /**
+   * Free combinations offered after a refusal.
+   *
+   * Kept per field so a suggestion for the upload key cannot appear under the region key,
+   * and cleared as soon as any combination is accepted.
+   */
+  const [suggestions, setSuggestions] = useState<{
+    field: 'hotkey' | 'hotkeyFullscreen' | 'hotkeyUpload'
+    combos: string[]
+  } | null>(null)
   const [info, setInfo] = useState<{ version: string; hotkey: string; settingsPath: string } | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [update, setUpdate] = useState<UpdateState>({ kind: 'idle' })
@@ -226,9 +236,10 @@ export function SettingsApp(): JSX.Element {
       try {
         const probe = await window.flushot.probeHotkey(normalized)
         if (!probe.free && !probe.ours) {
-          // Name the owner and stop there. Listing "free" combinations was tried and
-          // removed: it turned the row into a menu of our suggestions and the user
-          // asked to choose their own key.
+          // Name the owner, and — only now, when the user is actually stuck — offer
+          // combinations that were measured free a moment ago. A permanent list beside the
+          // recorder was tried and removed for getting in the way; a list that appears
+          // after a refusal is the answer to a question the user has already asked.
           showError(
             probe.hint
               ? tr('settings.hotkeyTakenWithHint', {
@@ -238,8 +249,11 @@ export function SettingsApp(): JSX.Element {
                 })
               : tr('settings.hotkeyTaken', { combo })
           )
+          const free = await window.flushot.suggestHotkey(normalized)
+          setSuggestions({ field, combos: free })
           return
         }
+        setSuggestions(null)
       } catch {
         // A probe that fails is not a reason to block the change; the save below
         // reports whether the key really bound.
@@ -415,6 +429,13 @@ export function SettingsApp(): JSX.Element {
               />
             </Row>
             <HotkeyNotice state={settings.hotkeys?.region} lang={lang} />
+            {suggestions?.field === 'hotkey' && (
+              <HotkeySuggestions
+                combos={suggestions.combos}
+                lang={lang}
+                onPick={(combo) => void saveHotkey('hotkey', combo)}
+              />
+            )}
 
             <Row label={tr('settings.fullscreen')} hint={tr('settings.fullscreenHint')}>
               <HotkeyRecorder
@@ -426,6 +447,13 @@ export function SettingsApp(): JSX.Element {
               />
             </Row>
             <HotkeyNotice state={settings.hotkeys?.fullscreen} lang={lang} />
+            {suggestions?.field === 'hotkeyFullscreen' && (
+              <HotkeySuggestions
+                combos={suggestions.combos}
+                lang={lang}
+                onPick={(combo) => void saveHotkey('hotkeyFullscreen', combo)}
+              />
+            )}
 
             {/* The note under this row is the only place in the interface that says a
                 screenshot can leave the computer, so it is part of the control and not
@@ -440,6 +468,13 @@ export function SettingsApp(): JSX.Element {
               />
             </Row>
             <HotkeyNotice state={settings.hotkeys?.upload} lang={lang} />
+            {suggestions?.field === 'hotkeyUpload' && (
+              <HotkeySuggestions
+                combos={suggestions.combos}
+                lang={lang}
+                onPick={(combo) => void saveHotkey('hotkeyUpload', combo)}
+              />
+            )}
 
             <p className="row-note">{tr('settings.uploadPrivacy')}</p>
 
@@ -769,6 +804,41 @@ function describeUpdate(
     case 'failed':
       return tr('settings.updateFailed', { message: state.message })
   }
+}
+
+/**
+ * Free combinations, offered only after the wanted one was refused.
+ *
+ * A chip is a key that was tried against Windows a moment ago and found free, so clicking
+ * it cannot fail for the same reason twice. Nothing is suggested before a failure: a
+ * standing list of our own ideas is what got in the way the first time this was tried.
+ */
+function HotkeySuggestions({
+  combos,
+  lang,
+  onPick
+}: {
+  combos: string[]
+  lang: Language
+  onPick: (accelerator: string) => void
+}): JSX.Element | null {
+  if (combos.length === 0) return null
+  return (
+    <p className="row-note row-note--suggest" data-hotkey-suggestions>
+      {t(lang, 'settings.hotkeyTryThese')}
+      {combos.map((combo) => (
+        <button
+          key={combo}
+          type="button"
+          className="hotkey-chip"
+          title={t(lang, 'settings.hotkeyTakeThis', { combo: formatAccelerator(combo) })}
+          onClick={() => onPick(combo)}
+        >
+          {formatAccelerator(combo)}
+        </button>
+      ))}
+    </p>
+  )
 }
 
 /**

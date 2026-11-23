@@ -213,6 +213,9 @@ const RU = {
     'Клавиша не назначена: {requested} занята другой программой, и запасная комбинация тоже. Нажмите на поле и запишите другое сочетание.',
   'settings.hotkeyFallback':
     'Работает {active}: {requested} занята другой программой. Нажмите на поле, чтобы выбрать другое сочетание.',
+  'settings.hotkeyTryThese':
+    'Занято другой программой — Windows отдаёт сочетание первому, кто его занял. Свободны: ',
+  'settings.hotkeyTakeThis': 'Назначить {combo}',
   'settings.recordingPrompt': 'Нажмите сочетание…',
   'settings.recordingTitle': 'Нажмите сочетание клавиш, Esc — отмена',
   'settings.recordTitle': 'Нажмите, чтобы записать сочетание',
@@ -573,6 +576,9 @@ const EN: Record<MessageKey, string> = {
     'No key is assigned: {requested} is taken by another program, and so is the alternative. Click the field and record a different combination.',
   'settings.hotkeyFallback':
     '{active} is in use: {requested} is taken by another program. Click the field to choose another combination.',
+  'settings.hotkeyTryThese':
+    'Taken by another program — Windows gives a combination to whoever registered it first. These are free: ',
+  'settings.hotkeyTakeThis': 'Assign {combo}',
   'settings.recordingPrompt': 'Press the combination…',
   'settings.recordingTitle': 'Press the key combination, Esc to cancel',
   'settings.recordTitle': 'Click to record a combination',

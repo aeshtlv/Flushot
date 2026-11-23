@@ -86,6 +86,13 @@ const api = {
    */
   probeHotkey: (accelerator: string): Promise<{ free: boolean; owner?: string; hint?: string; ours?: boolean; invalid?: boolean }> =>
     ipcRenderer.invoke('hotkey:probe', accelerator),
+  /**
+   * Combinations that are measurably free, to offer when the wanted one is taken.
+   *
+   * Windows hands a hotkey to the first program that registers it, so a taken key cannot be
+   * taken over; the honest help is a key that really is free right now.
+   */
+  suggestHotkey: (accelerator: string): Promise<string[]> => ipcRenderer.invoke('hotkey:suggest', accelerator),
   pickDirectory: (): Promise<{ canceled: boolean; path?: string }> => ipcRenderer.invoke('settings:pick-directory'),
   /**
    * Sample card rendered with the current settings.

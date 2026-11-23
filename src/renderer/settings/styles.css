@@ -278,6 +278,32 @@ body {
   }
 }
 
+/* A free combination the user can take with one click. Small, because it appears only
+   when something went wrong and must not compete with the setting itself. */
+.row-note--suggest {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.hotkey-chip {
+  padding: 3px 8px;
+  font-family: var(--font-mono, inherit);
+  font-size: 11px;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.hotkey-chip:hover {
+  background: var(--surface-hover, rgba(127, 127, 127, 0.12));
+  border-color: var(--text-muted);
+}
+
 .segmented {
   display: inline-flex;
   padding: 2px;
