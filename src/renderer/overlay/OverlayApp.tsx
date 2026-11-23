@@ -1160,7 +1160,13 @@ export function OverlayApp(): JSX.Element {
         </div>
       )}
 
-      {stage === 'selecting' && !rect && (
+      {/* The hint is rendered only once the frame for this round has arrived.
+          A warm window is created at startup and paints once with the flags it booted with, so for
+          the first fraction of a second of an upload round it promised the clipboard and then
+          changed its mind. The screen is already frozen by the time the frame lands, so nothing is
+          lost by waiting for it — and a hint that says the wrong thing at the moment the user starts
+          dragging reads as "it is going to copy". */}
+      {stage === 'selecting' && !rect && shot !== null && (
         <div className="hint" style={hintStyle}>
           <p className="hint__title">{tr('overlay.selectTitle')}</p>
           {/* The hint promises what actually happens on release. In the fast mode that

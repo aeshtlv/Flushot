@@ -6,7 +6,7 @@ Windows 10 и 11, x64.
 
 [![CI](https://github.com/aeshtlv/Flushot/actions/workflows/ci.yml/badge.svg)](https://github.com/aeshtlv/Flushot/actions/workflows/ci.yml)
 [![Лицензия: MIT](https://img.shields.io/badge/%D0%BB%D0%B8%D1%86%D0%B5%D0%BD%D0%B7%D0%B8%D1%8F-MIT-4c8bf5)](LICENSE)
-[![Версия](https://img.shields.io/badge/%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D1%8F-2.5.5-4c8bf5)](CHANGELOG.md)
+[![Версия](https://img.shields.io/badge/%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D1%8F-2.5.6-4c8bf5)](CHANGELOG.md)
 
 <p align="center">
   <img src="logo/logo.png" alt="Flushot" width="112">
@@ -52,9 +52,9 @@ Windows 10 и 11, x64.
 
 | Файл | Описание |
 |---|---|
-| **[Flushot-2.5.5-x64.exe](../../releases/latest/download/Flushot-2.5.5-x64.exe)** | 105 МБ. Установщик: ярлыки в меню «Пуск», выбор папки, деинсталлятор. **Обновляется сам** — рекомендуемый вариант |
-| [Flushot-2.5.5-portable.zip](../../releases/latest/download/Flushot-2.5.5-portable.zip) | 94 МБ. Portable-версия одним файлом, без установки. Обновлять вручную |
-| [Flushot-2.5.5-win64.zip](../../releases/latest/download/Flushot-2.5.5-win64.zip) | 148 МБ. Распаковать в любую папку и запустить `Flushot.exe`. Обновлять вручную |
+| **[Flushot-2.5.6-x64.exe](../../releases/latest/download/Flushot-2.5.6-x64.exe)** | 105 МБ. Установщик: ярлыки в меню «Пуск», выбор папки, деинсталлятор. **Обновляется сам** — рекомендуемый вариант |
+| [Flushot-2.5.6-portable.zip](../../releases/latest/download/Flushot-2.5.6-portable.zip) | 94 МБ. Portable-версия одним файлом, без установки. Обновлять вручную |
+| [Flushot-2.5.6-win64.zip](../../releases/latest/download/Flushot-2.5.6-win64.zip) | 148 МБ. Распаковать в любую папку и запустить `Flushot.exe`. Обновлять вручную |
 
 Автообновление работает только у установщика: portable-версия при каждом запуске распаковывается во
 временную папку, а версия из архива ставится без деинсталлятора — replace-механизм не может их
@@ -65,7 +65,7 @@ Windows 10 и 11, x64.
 исполняемого файла.
 
 <!-- downloads:begin -->
-Скачано с GitHub для **v2.5.5**: 5 — из них 1 portable.zip, 1 win64.zip, 3 x64.exe. За всё время — 101. Считаются скачивания, не установки.
+Скачано с GitHub для **v2.5.6**: 5 — из них 1 portable.zip, 1 win64.zip, 3 x64.exe. За всё время — 101. Считаются скачивания, не установки.
 <!-- downloads:end -->
 
 Число выше обновляется само: раз в сутки workflow `Download counter` переписывает его из

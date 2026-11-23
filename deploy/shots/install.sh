@@ -59,7 +59,9 @@ install -o root -g root -m 0644 "$HERE/nginx-locations.conf" /etc/nginx/flushot-
 # declared before the server block that uses it.
 install -o root -g root -m 0644 "$HERE/nginx-zones.conf" /etc/nginx/conf.d/00-flushot-shots-zones.conf
 
-if grep -qF "$INCLUDE_LINE" "$NGINX_SITE"; then
+# Either form counts as present: the plain path this script used to write, or the glob the
+# repository ships. Both make nginx read the same file, and including it twice is a fatal error.
+if grep -qE '^[[:space:]]*include[[:space:]]+/etc/nginx/flushot-shots-locations[^;]*;' "$NGINX_SITE"; then
     echo "    the server block already includes the upload rules"
 else
     # Inserted before the access_log line, which appears exactly once in the file —
@@ -82,7 +84,7 @@ else
         }
         { print }
     ' "$NGINX_SITE.bak-shots" > "$NGINX_SITE"
-    if ! grep -qF "$INCLUDE_LINE" "$NGINX_SITE"; then
+    if ! grep -qE '^[[:space:]]*include[[:space:]]+/etc/nginx/flushot-shots-locations[^;]*;' "$NGINX_SITE"; then
         echo "    the include was not added; restoring the backup"
         cp "$NGINX_SITE.bak-shots" "$NGINX_SITE"
         exit 1
