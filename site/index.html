@@ -32,8 +32,8 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=980e5cca">
 <link rel="manifest" href="site.webmanifest?v=06f0995b">
 <link rel="stylesheet" href="fonts.css?v=0b21389f">
-<link rel="stylesheet" href="styles.css?v=d2b87fcd">
-<link rel="preload" as="image" href="assets/hero.webp?v=127812f4" type="image/webp">
+<link rel="stylesheet" href="styles.css?v=94f108b1">
+<link rel="preload" as="image" href="assets/hero.webp?v=779106a6" type="image/webp">
 
 <script>
   // Set the theme before the first paint, otherwise the page flashes light on a
@@ -134,7 +134,7 @@
         <div class="hero__frame">
           <picture>
             <source srcset="assets/hero.webp" type="image/webp">
-            <img src="assets/hero.png?v=6237782e" width="1640" height="957"
+            <img src="assets/hero.png?v=290ae54d" width="2248" height="1311"
                  alt="Снимок окна программы, оформленный Flushot: белая рамка, скруглённые углы и мягкая тень."
                  fetchpriority="high" decoding="async">
           </picture>
@@ -534,7 +534,7 @@
           <div class="shot">
             <picture>
               <source srcset="assets/overlay.webp" type="image/webp">
-              <img src="assets/overlay.png?v=6576bff7" width="1280" height="720" loading="lazy" decoding="async"
+              <img src="assets/overlay.png?v=cc432fed" width="2348" height="1321" loading="lazy" decoding="async"
                    alt="Затемнённый экран с выделенной областью, подписью размера и панелью кнопок снизу.">
             </picture>
           </div>
@@ -545,7 +545,7 @@
           <div class="shot">
             <picture>
               <source srcset="assets/annotate.webp" type="image/webp">
-              <img src="assets/annotate.png?v=e57b1776" width="1280" height="720" loading="lazy" decoding="async"
+              <img src="assets/annotate.png?v=ca120df5" width="2348" height="1321" loading="lazy" decoding="async"
                    alt="Готовый снимок с панелью инструментов и нарисованной стрелкой.">
             </picture>
           </div>
@@ -556,7 +556,7 @@
           <div class="shot">
             <picture>
               <source srcset="assets/ocr.webp" type="image/webp">
-              <img src="assets/ocr.png?v=e53139de" width="1280" height="720" loading="lazy" decoding="async"
+              <img src="assets/ocr.png?v=6db6dd3d" width="2348" height="1321" loading="lazy" decoding="async"
                    alt="Снимок с выделенным фрагментом и панелью распознанного текста.">
             </picture>
           </div>
@@ -564,10 +564,10 @@
         </div>
 
         <div class="gallery__panel gallery__panel--split" role="tabpanel" id="panel-settings" aria-labelledby="tab-settings" hidden>
-          <div class="shot shot--native">
+          <div class="shot shot--native" style="--shot-display: 520px">
             <picture>
               <source srcset="assets/settings.webp" type="image/webp">
-              <img src="assets/settings.png?v=da369a7f" width="520" height="820" loading="lazy" decoding="async"
+              <img src="assets/settings.png?v=1f6aeef9" width="1040" height="1640" loading="lazy" decoding="async"
                    alt="Окно настроек: тема, цвет рамки, тень, папка сохранения, формат и горячие клавиши.">
             </picture>
           </div>
@@ -634,7 +634,7 @@
         <div class="shot">
           <picture>
             <source srcset="assets/monitors.webp" type="image/webp">
-            <img src="assets/monitors.png?v=5f338f4b" width="840" height="945" loading="lazy" decoding="async"
+            <img src="assets/monitors.png?v=7e784350" width="840" height="945" loading="lazy" decoding="async"
                  alt="Затемнённые два монитора, расположенные один над другим, с выделенной областью на обоих.">
           </picture>
         </div>
@@ -810,6 +810,37 @@
     </div>
   </section>
 
+  <section class="section" id="guides" aria-labelledby="guides-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Подробнее</p>
+        <h2 class="section-title" id="guides-title">Разборы отдельных возможностей</h2>
+        <p class="section-lead">Три страницы о том, что чаще всего спрашивают: про бесплатность, про оформление и про пометки.</p>
+      </div>
+
+      <ul class="seo-related">
+        <li class="seo-related__item">
+          <a class="seo-related__link" href="free-screenshot-tool/">
+            <span class="seo-related__name">Бесплатный скриншотер для Windows</span>
+            <span class="seo-related__text">Что умеет программа, чем она отличается от «Ножниц» и что отправляет в сеть.</span>
+          </a>
+        </li>
+        <li class="seo-related__item">
+          <a class="seo-related__link" href="rounded-screenshot/">
+            <span class="seo-related__name">Скриншоты со скруглёнными углами</span>
+            <span class="seo-related__text">Рамка, скругление и тень в момент снимка: какие есть настройки и чего они не умеют.</span>
+          </a>
+        </li>
+        <li class="seo-related__item">
+          <a class="seo-related__link" href="screenshot-annotation/">
+            <span class="seo-related__name">Пометки на скриншотах</span>
+            <span class="seo-related__text">Семь инструментов: стрелки, рамки, текст, шаги и размытие — и почему пометки необратимы.</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </section>
+
   <section class="cta" aria-labelledby="cta-title">
     <div class="wrap cta__inner">
       <h2 class="cta__title" id="cta-title">Попробуйте на одном скриншоте</h2>
@@ -841,6 +872,9 @@
       <a href="#screens">Скриншоты</a>
       <a href="#faq">Вопросы</a>
       <a href="#download">Скачать</a>
+      <a href="free-screenshot-tool/">Бесплатный скриншотер</a>
+      <a href="rounded-screenshot/">Скруглённые углы</a>
+      <a href="screenshot-annotation/">Пометки</a>
       <a href="privacy.html">Приватность</a>
     </nav>
   </div>

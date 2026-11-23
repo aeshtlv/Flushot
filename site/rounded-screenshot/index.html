@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Скриншот со скруглёнными углами и тенью на Windows — Flushot</title>
+<meta name="description" content="Скруглённые углы, рамка и тень применяются в момент снимка: в буфер попадает готовая карточка. Радиус, цвет фона и тень настраиваются.">
+<meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="dark light">
+<link rel="canonical" href="https://flushot.ink/rounded-screenshot/">
+<link rel="alternate" hreflang="ru" href="https://flushot.ink/rounded-screenshot/">
+<link rel="alternate" hreflang="en" href="https://flushot.ink/en/rounded-screenshot/">
+<link rel="alternate" hreflang="x-default" href="https://flushot.ink/rounded-screenshot/">
+
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Flushot">
+<meta property="og:url" content="https://flushot.ink/rounded-screenshot/">
+<meta property="og:title" content="Скриншоты со скруглёнными углами и тенью">
+<meta property="og:description" content="Скруглённые углы, рамка и тень применяются в момент снимка: в буфер попадает готовая карточка. Радиус, цвет фона и тень настраиваются.">
+<meta property="og:image" content="https://flushot.ink/og-image.png?v=806e6f2c">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ru_RU">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Скриншоты со скруглёнными углами и тенью">
+<meta name="twitter:description" content="Скруглённые углы, рамка и тень применяются в момент снимка: в буфер попадает готовая карточка. Радиус, цвет фона и тень настраиваются.">
+<meta name="twitter:image" content="https://flushot.ink/og-image.png?v=806e6f2c">
+
+<link rel="icon" href="../favicon.svg?v=a7643679" type="image/svg+xml">
+<link rel="icon" href="../favicon-32.png?v=67a7ece7" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png?v=980e5cca">
+<link rel="manifest" href="../site.webmanifest?v=06f0995b">
+<link rel="stylesheet" href="../fonts.css?v=0b21389f">
+<link rel="stylesheet" href="../styles.css?v=94f108b1">
+
+<script>
+  // Before the first paint, so the page does not flash light on a dark desktop.
+  (function () {
+    try {
+      var saved = localStorage.getItem('flushot-theme');
+      document.documentElement.dataset.theme =
+        saved === 'dark' || saved === 'light' ? saved : 'dark';
+    } catch (error) {
+      document.documentElement.dataset.theme = 'dark';
+    }
+  })();
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Перейти к содержимому</a>
+
+<header class="header">
+  <div class="nav-inner">
+    <a class="brand" href="../" aria-label="Flushot — на главную">
+      <img class="brand__mark" src="../favicon.svg?v=a7643679" width="200" height="200" alt="" aria-hidden="true">
+      <span class="brand__name">Flushot</span>
+      <span class="brand__ver">2.5.5</span>
+    </a>
+
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav" aria-label="Меню">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M4 7h16M4 12h16M4 17h16"/>
+      </svg>
+    </button>
+
+    <div class="nav-right" id="nav">
+      <nav class="nav-links" aria-label="Основная навигация">
+        <a class="nav-link" href="../#features">Возможности</a>
+        <a class="nav-link" href="../#how">Как работает</a>
+        <a class="nav-link" href="../#download">Скачать</a>
+        <a class="nav-link" href="../#faq">Вопросы</a>
+      </nav>
+      <a class="lang-switch" href="../en/rounded-screenshot/" hreflang="en" lang="en" data-lang-switch
+         aria-label="English version">EN</a>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Переключить на светлую тему">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+        </svg>
+      </button>
+      <a class="btn btn--primary nav-cta" href="../#download">Скачать</a>
+    </div>
+  </div>
+  <span class="header__progress" data-progress aria-hidden="true"></span>
+</header>
+
+<main id="main">
+  <section class="hero hero--seo" id="top">
+    <div class="hero__grid" aria-hidden="true"></div>
+    <div class="hero__glow" aria-hidden="true"></div>
+    <div class="wrap hero__inner">
+      <p class="eyebrow" data-rise style="--d: 0.05s">Оформление в момент снимка · бесплатно</p>
+      <h1 class="hero__title" data-rise style="--d: 0.1s">
+        <span>Скриншоты со скруглёнными углами и тенью</span>
+      </h1>
+      <p class="hero__sub" data-rise style="--d: 0.16s">Скруглённые углы, рамка и тень — не отдельный редактор, а часть самого снимка. Вы отпускаете мышь и получаете готовую карточку: её можно вставить в презентацию или отправить в чат, ничего не дорабатывая.</p>
+      <div class="hero__actions" data-rise style="--d: 0.22s">
+        <a class="btn btn--primary btn--lg" href="../#download">
+          <svg class="btn__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>
+          </svg>
+          Скачать для Windows
+        </a>
+        <a class="btn btn--ghost btn--lg" href="../#features">Все возможности</a>
+      </div>
+      <p class="hero__note" data-rise style="--d: 0.26s">
+        <span>Без рекламы и телеметрии ·</span>
+        <a href="../#download">установщик обновляется сам</a>
+      </p>
+
+      <figure class="hero__preview" data-rise style="--d: 0.3s">
+        <div class="hero__frame">
+<picture>
+              <source srcset="../assets/hero.webp" type="image/webp">
+              <img src="../assets/hero.png?v=290ae54d" width="2248" height="1311"
+                   alt="Снимок окна со скруглёнными углами, белой рамкой и мягкой тенью." fetchpriority="high" decoding="async">
+            </picture>
+        </div>
+      </figure>
+    </div>
+  </section>
+
+      <section class="section" aria-labelledby="rounded-screenshot-1">
+        <div class="wrap">
+          <div class="section-head">
+            <h2 class="section-title" id="rounded-screenshot-1">Что можно настроить</h2>
+            <p class="section-lead">Четыре параметра, и все они видны в предпросмотре сразу — без пересъёмки и без «применить и посмотреть».</p>
+          </div>
+          <div class="feature-grid">
+            <article class="feature">
+              <span class="feature__mark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><rect x="7.5" y="7.5" width="9" height="9" rx="1.5"/></svg>
+              </span>
+              <h3 class="feature__name">Радиус скругления</h3>
+              <p class="feature__text">Углы скругляются на выбранную величину. Значение применяется к снимку, а не к рамке вокруг него.</p>
+              
+            </article>
+            <article class="feature">
+              <span class="feature__mark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8"/><path d="M12 16v4"/></svg>
+              </span>
+              <h3 class="feature__name">Цвет фона</h3>
+              <p class="feature__text">Фон под карточкой — свой цвет, поэтому снимок читается и на светлой, и на тёмной странице документа.</p>
+              
+            </article>
+            <article class="feature">
+              <span class="feature__mark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14.5 6.5l3 3"/></svg>
+              </span>
+              <h3 class="feature__name">Толщина рамки</h3>
+              <p class="feature__text">Рамка отделяет снимок от фона. Толщина настраивается, вплоть до полного отказа от неё.</p>
+              
+            </article>
+            <article class="feature">
+              <span class="feature__mark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3"/><circle cx="15.5" cy="14" r="3"/><path d="M3.5 3.5l17 17"/></svg>
+              </span>
+              <h3 class="feature__name">Сила тени</h3>
+              <p class="feature__text">Тень мягкая, с настраиваемой интенсивностью — от почти незаметной до заметной.</p>
+              
+            </article>
+            <article class="feature">
+              <span class="feature__mark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+              </span>
+              <h3 class="feature__name">Без второго шага</h3>
+              <p class="feature__text">Оформление применяется при съёмке. Открывать редактор и что-то дорисовывать не нужно — это экономит время на каждом снимке.</p>
+              
+            </article>
+            <article class="feature">
+              <span class="feature__mark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6h14"/><path d="M12 6v13"/><path d="M9 19h6"/></svg>
+              </span>
+              <h3 class="feature__name">И в файле, и в буфере</h3>
+              <p class="feature__text">Оформленная карточка — это и то, что попадает в буфер обмена, и то, что записывается в файл. Предпросмотр и результат совпадают по растру.</p>
+              
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="wrap">
+          <figure class="seo-figure" style="max-width: 880px">
+            <div class="shot">
+<picture>
+              <source srcset="../assets/hero.webp" type="image/webp">
+              <img src="../assets/hero.png?v=290ae54d" width="2248" height="1311"
+                   alt="Карточка со скруглёнными углами: рамка, тень и ровный фон вокруг снимка." loading="lazy" decoding="async">
+            </picture>
+            </div>
+            <figcaption class="shot-caption">Рамка, скругление и тень рисуются один раз, при съёмке. Дальше карточка живёт как обычная картинка.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="rounded-screenshot-3">
+        <div class="wrap">
+          <div class="section-head">
+            <h2 class="section-title" id="rounded-screenshot-3">Как получить такой снимок</h2>
+            <p class="section-lead">Настроить один раз, дальше — только клавиша.</p>
+          </div>
+          <ol class="pitch__list seo-steps">
+            <li class="pitch__item">
+              <span class="pitch__num" aria-hidden="true">1</span>
+              <span class="seo-step">
+                <h3 class="seo-step__name">Откройте настройки</h3>
+                <span class="seo-step__text">Значок в трее → «Настройки». Раздел с оформлением — там же, где формат файла и горячие клавиши.</span>
+              </span>
+            </li>
+            <li class="pitch__item">
+              <span class="pitch__num" aria-hidden="true">2</span>
+              <span class="seo-step">
+                <h3 class="seo-step__name">Выставьте радиус, рамку, фон и тень</h3>
+                <span class="seo-step__text">Значения сохраняются сразу. Пересобирать программу или перезапускать её не нужно: следующий снимок уже будет с новыми настройками.</span>
+              </span>
+            </li>
+            <li class="pitch__item">
+              <span class="pitch__num" aria-hidden="true">3</span>
+              <span class="seo-step">
+                <h3 class="seo-step__name">Снимите область</h3>
+                <span class="seo-step__text">По умолчанию Ctrl+Shift+S. Экран замирает в момент нажатия, поэтому в снимок не попадёт ничего, что появилось позже.</span>
+              </span>
+            </li>
+            <li class="pitch__item">
+              <span class="pitch__num" aria-hidden="true">4</span>
+              <span class="seo-step">
+                <h3 class="seo-step__name">Вставьте через Ctrl+V</h3>
+                <span class="seo-step__text">Отпустили мышь — карточка в буфере обмена. Рамка, скругление и тень уже внутри, дорисовывать нечего.</span>
+              </span>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="rounded-screenshot-4">
+        <div class="wrap">
+          <div class="seo-prose">
+            <h2 class="section-title" id="rounded-screenshot-4">Почему это делается при съёмке, а не потом</h2>
+            <p>Обычный путь — снять экран, открыть графический редактор, обрезать, скруглить углы, добавить рамку и тень, экспортировать. На один снимок уходит несколько минут, и на десятом повторении их становится жаль. Flushot переносит эту работу в то место, где она ничего не стоит: в момент, когда снимок и так создаётся.</p>
+            <p>Побочная выгода — единообразие. Десять снимков для одной инструкции, сделанных одной программой с одними настройками, выглядят как серия. Сделанные вручную в разные дни — как десять разных картинок.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="wrap">
+          <figure class="seo-figure" style="max-width: 520px">
+            <div class="shot">
+<picture>
+              <source srcset="../assets/settings.webp" type="image/webp">
+              <img src="../assets/settings.png?v=1f6aeef9" width="1040" height="1640"
+                   alt="Раздел оформления в настройках: радиус скругления, цвет фона, толщина рамки и сила тени." loading="lazy" decoding="async">
+            </picture>
+            </div>
+            <figcaption class="shot-caption">Настройки оформления. Меняются один раз и применяются к каждому следующему снимку.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="rounded-screenshot-6">
+        <div class="wrap">
+          <div class="seo-prose">
+            <h2 class="section-title" id="rounded-screenshot-6">Чего эти настройки не умеют</h2>
+            <p>Оформить уже готовый скриншот программа не может: рамка, скругление и тень применяются к тому снимку, который делается сейчас. Файл, найденный на диске, через Flushot не оформить — нужен новый снимок или другой инструмент.</p>
+            <p>Пометки — отдельная история: они вшиваются в файл при сохранении, и убрать одну из них после сохранения нельзя. Единственная отмена — до сохранения, через Ctrl+Z.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="rounded-screenshot-7">
+        <div class="wrap">
+          <div class="section-head">
+            <h2 class="section-title" id="rounded-screenshot-7">Частые вопросы</h2>
+          </div>
+          <div class="faq">
+            <details>
+              <summary>Углы будут прозрачными или залитыми?</summary>
+              <p>Место, освободившееся от скруглённых углов, заполняется выбранным цветом фона — так карточка выглядит одинаково и на светлом, и на тёмном фоне документа. Цвет фона задаётся в том же разделе настроек.</p>
+            </details>
+            <details>
+              <summary>Можно ли сделать углы прямыми?</summary>
+              <p>Да: радиус скругления настраивается, и при нулевом значении углы остаются прямыми. Рамку и тень тоже можно убрать — тогда снимок будет обычным прямоугольником.</p>
+            </details>
+            <details>
+              <summary>Настройки применяются к следующему снимку?</summary>
+              <p>Да, сразу. Сохранённые значения действуют с первого же снимка после изменения — перезапускать программу не нужно.</p>
+            </details>
+            <details>
+              <summary>В каком формате сохраняется карточка?</summary>
+              <p>На выбор: PNG без потерь, JPEG с настраиваемым качеством или WebP. Для вставки в документ формат не важен — в буфере обмена оказывается уже готовое изображение.</p>
+            </details>
+            <details>
+              <summary>Пострадает ли качество снимка?</summary>
+              <p>Снимок делается в физических пикселях монитора, поэтому при масштабе 125 % или 150 % он не мыльный. В PNG он сохраняется без пережатия, то есть совпадает с выбранной областью побайтово.</p>
+            </details>
+          </div>
+          <nav class="seo-also" aria-label="Ещё про Flushot">
+            <span class="seo-also__lead">Читать дальше</span>
+            <a class="seo-also__link" href="../free-screenshot-tool/">что умеет программа</a><span class="seo-also__sep" aria-hidden="true">·</span><a class="seo-also__link" href="../screenshot-annotation/">стрелки, шаги и размытие</a><span class="seo-also__sep" aria-hidden="true">·</span><a class="seo-also__link" href="../">всё остальное — на главной</a>
+          </nav>
+        </div>
+      </section>
+
+  <section class="cta" aria-labelledby="rounded-screenshot-cta">
+    <div class="wrap cta__inner">
+      <h2 class="cta__title" id="rounded-screenshot-cta">Попробуйте на одном скриншоте</h2>
+      <p class="cta__sub">Если не понравится — удалить так же просто, как распаковать.</p>
+      <div class="cta__actions">
+        <a class="btn btn--primary btn--lg" href="../#download">
+          <svg class="btn__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>
+          </svg>
+          Скачать Flushot 2.5.5
+        </a>
+        <a class="btn btn--ghost btn--lg" href="../#faq">Сначала вопросы</a>
+      </div>
+      <p class="cta__meta">105 МБ · без регистрации · без аналитики</p>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer__inner">
+    <div class="footer__brand">
+      <img class="brand__mark" src="../favicon.svg?v=a7643679" width="200" height="200" alt="" aria-hidden="true">
+      <span>Версия 2.5.5 · © 2026 Flushot</span>
+    </div>
+    <nav class="footer__links" aria-label="Навигация в подвале">
+      <a href="../">Главная</a>
+      <a href="../free-screenshot-tool/">Бесплатный скриншот</a>
+      <a href="../rounded-screenshot/">Скруглённые углы</a>
+      <a href="../screenshot-annotation/">Пометки на снимках</a>
+      <a href="../privacy.html">Приватность</a>
+    </nav>
+  </div>
+</footer>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://flushot.ink/#software",
+      "name": "Flushot",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Windows 10, Windows 11",
+      "softwareVersion": "2.5.5",
+      "description": "Скруглённые углы, рамка и тень применяются в момент снимка: в буфер попадает готовая карточка. Радиус, цвет фона и тень настраиваются.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "RUB"
+      },
+      "inLanguage": "ru"
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://flushot.ink/rounded-screenshot/",
+      "url": "https://flushot.ink/rounded-screenshot/",
+      "name": "Скриншот со скруглёнными углами и тенью на Windows — Flushot",
+      "description": "Скруглённые углы, рамка и тень применяются в момент снимка: в буфер попадает готовая карточка. Радиус, цвет фона и тень настраиваются.",
+      "inLanguage": "ru",
+      "isPartOf": {
+        "@id": "https://flushot.ink/#website"
+      },
+      "primaryImageOfPage": "https://flushot.ink/og-image.png"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Главная",
+          "item": "https://flushot.ink/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Скруглённые углы",
+          "item": "https://flushot.ink/rounded-screenshot/"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://flushot.ink/rounded-screenshot/#faq",
+      "inLanguage": "ru",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Углы будут прозрачными или залитыми?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Место, освободившееся от скруглённых углов, заполняется выбранным цветом фона — так карточка выглядит одинаково и на светлом, и на тёмном фоне документа. Цвет фона задаётся в том же разделе настроек."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Можно ли сделать углы прямыми?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Да: радиус скругления настраивается, и при нулевом значении углы остаются прямыми. Рамку и тень тоже можно убрать — тогда снимок будет обычным прямоугольником."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Настройки применяются к следующему снимку?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Да, сразу. Сохранённые значения действуют с первого же снимка после изменения — перезапускать программу не нужно."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "В каком формате сохраняется карточка?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "На выбор: PNG без потерь, JPEG с настраиваемым качеством или WebP. Для вставки в документ формат не важен — в буфере обмена оказывается уже готовое изображение."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Пострадает ли качество снимка?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Снимок делается в физических пикселях монитора, поэтому при масштабе 125 % или 150 % он не мыльный. В PNG он сохраняется без пережатия, то есть совпадает с выбранной областью побайтово."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+<script src="../app.js?v=36e1c06d" defer></script>
+<script src="../metrics.js?v=6d115193" defer></script>
+</body>
+</html>

@@ -9,7 +9,9 @@
   },
   "homepage": "https://flushot.ink/",
   "scripts": {
-    "assets": "node scripts/build-site.cjs && node scripts/build-fonts.cjs && node scripts/build-en-page.cjs",
+    "assets": "node scripts/build-site.cjs && node scripts/build-fonts.cjs && node scripts/build-en-page.cjs && node scripts/build-seo-pages.cjs && node scripts/build-sitemap.cjs",
+  "seo": "node scripts/build-seo-pages.cjs && node scripts/build-sitemap.cjs",
+  "check:seo": "node scripts/shot-seo.cjs && node scripts/audit-seo.cjs && node scripts/audit-sharpness.cjs",
     "stamp": "node scripts/build-en-page.cjs",
     "verify": "node scripts/verify-site.cjs",
     "check:fold": "node scripts/measure-fold.cjs",

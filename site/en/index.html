@@ -32,8 +32,8 @@
 <link rel="apple-touch-icon" href="../apple-touch-icon.png?v=980e5cca">
 <link rel="manifest" href="../site.webmanifest?v=06f0995b">
 <link rel="stylesheet" href="../fonts.css?v=0b21389f">
-<link rel="stylesheet" href="../styles.css?v=d2b87fcd">
-<link rel="preload" as="image" href="../assets/en/hero.webp?v=bfd76a00" type="image/webp">
+<link rel="stylesheet" href="../styles.css?v=94f108b1">
+<link rel="preload" as="image" href="../assets/en/hero.webp?v=4b7eda25" type="image/webp">
 
 <script>
   // Set the theme before the first paint, otherwise the page flashes light on a
@@ -132,7 +132,7 @@
         <div class="hero__frame">
           <picture>
             <source srcset="../assets/en/hero.webp" type="image/webp">
-            <img src="../assets/en/hero.png?v=6baed87a" width="1640" height="957"
+            <img src="../assets/en/hero.png?v=236b1a3f" width="2248" height="1311"
                  alt="A screenshot of the program window styled by Flushot: white frame, rounded corners and a soft shadow."
                  fetchpriority="high" decoding="async">
           </picture>
@@ -528,7 +528,7 @@
           <div class="shot">
             <picture>
               <source srcset="../assets/en/overlay.webp" type="image/webp">
-              <img src="../assets/en/overlay.png?v=197f6349" width="1280" height="720" loading="lazy" decoding="async"
+              <img src="../assets/en/overlay.png?v=414158d8" width="2348" height="1321" loading="lazy" decoding="async"
                    alt="A dimmed screen with a region selected, a size label and a button panel at the bottom.">
             </picture>
           </div>
@@ -539,7 +539,7 @@
           <div class="shot">
             <picture>
               <source srcset="../assets/en/annotate.webp" type="image/webp">
-              <img src="../assets/en/annotate.png?v=4eab3014" width="1280" height="720" loading="lazy" decoding="async"
+              <img src="../assets/en/annotate.png?v=fc7e55c0" width="2348" height="1321" loading="lazy" decoding="async"
                    alt="A finished screenshot with the tool panel and an arrow drawn on it.">
             </picture>
           </div>
@@ -550,7 +550,7 @@
           <div class="shot">
             <picture>
               <source srcset="../assets/en/ocr.webp" type="image/webp">
-              <img src="../assets/en/ocr.png?v=124eee11" width="1280" height="720" loading="lazy" decoding="async"
+              <img src="../assets/en/ocr.png?v=31b2a976" width="2348" height="1321" loading="lazy" decoding="async"
                    alt="A screenshot with a fragment selected and the recognised text panel.">
             </picture>
           </div>
@@ -558,10 +558,10 @@
         </div>
 
         <div class="gallery__panel gallery__panel--split" role="tabpanel" id="panel-settings" aria-labelledby="tab-settings" hidden>
-          <div class="shot shot--native">
+          <div class="shot shot--native" style="--shot-display: 520px">
             <picture>
               <source srcset="../assets/en/settings.webp" type="image/webp">
-              <img src="../assets/en/settings.png?v=34a62478" width="520" height="820" loading="lazy" decoding="async"
+              <img src="../assets/en/settings.png?v=2b33732b" width="1040" height="1640" loading="lazy" decoding="async"
                    alt="The settings window: theme, frame colour, shadow, save folder, format and hotkeys.">
             </picture>
           </div>
@@ -628,7 +628,7 @@
         <div class="shot">
           <picture>
             <source srcset="../assets/en/monitors.webp" type="image/webp">
-            <img src="../assets/en/monitors.png?v=0d8eecb8" width="840" height="945" loading="lazy" decoding="async"
+            <img src="../assets/en/monitors.png?v=7f21f5ea" width="840" height="945" loading="lazy" decoding="async"
                  alt="Two dimmed monitors stacked one above the other, with a region selected across both.">
           </picture>
         </div>
@@ -804,6 +804,37 @@
     </div>
   </section>
 
+  <section class="section" id="guides" aria-labelledby="guides-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">More detail</p>
+        <h2 class="section-title" id="guides-title">Individual features, explained</h2>
+        <p class="section-lead">Three pages on what gets asked most: whether it is free, how the styling works, and annotations.</p>
+      </div>
+
+      <ul class="seo-related">
+        <li class="seo-related__item">
+          <a class="seo-related__link" href="free-screenshot-tool/">
+            <span class="seo-related__name">Free screenshot tool for Windows</span>
+            <span class="seo-related__text">What the program does, how it differs from the Snipping Tool, and what it sends over the network.</span>
+          </a>
+        </li>
+        <li class="seo-related__item">
+          <a class="seo-related__link" href="rounded-screenshot/">
+            <span class="seo-related__name">Screenshots with rounded corners</span>
+            <span class="seo-related__text">Border, rounding and shadow at capture time: which settings exist and what they cannot do.</span>
+          </a>
+        </li>
+        <li class="seo-related__item">
+          <a class="seo-related__link" href="screenshot-annotation/">
+            <span class="seo-related__name">Annotations on screenshots</span>
+            <span class="seo-related__text">Seven tools — arrows, boxes, text, steps and blur — and why annotations cannot be undone.</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </section>
+
   <section class="cta" aria-labelledby="cta-title">
     <div class="wrap cta__inner">
       <h2 class="cta__title" id="cta-title">Try it on one screenshot</h2>
@@ -835,6 +866,9 @@
       <a href="#screens">Screenshots</a>
       <a href="#faq">Questions</a>
       <a href="#download">Download</a>
+      <a href="free-screenshot-tool/">Free screenshot tool</a>
+      <a href="rounded-screenshot/">Rounded corners</a>
+      <a href="screenshot-annotation/">Annotations</a>
       <a href="privacy.html">Privacy</a>
     </nav>
   </div>

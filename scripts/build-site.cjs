@@ -75,11 +75,13 @@ async function rasteriseIcon(svg, size) {
 const IMAGES = [
   // The hero is a real Flushot output of the synthetic demo scene, not a capture
   // of whatever was on the author's desktop.
-  { src: 'hero-framed.png', out: 'hero', width: 820, height: null },
-  { src: 'ui-overlay.png', out: 'overlay', width: 640, height: null },
-  { src: 'ui-annotate.png', out: 'annotate', width: 640, height: null },
-  { src: 'ui-ocr.png', out: 'ocr', width: 640, height: null },
-  { src: 'ui-settings.png', out: 'settings', width: 260, height: null },
+  { src: 'hero-framed.png', out: 'hero', width: 1124, height: null },
+  { src: 'ui-overlay.png', out: 'overlay', width: 1174, height: null },
+  { src: 'ui-annotate.png', out: 'annotate', width: 1174, height: null },
+  { src: 'ui-ocr.png', out: 'ocr', width: 1174, height: null },
+  // The settings window is 520 CSS pixels wide in the picture itself, so 520 is both what it is
+  // shown at and the widest it can honestly be: the file holds 1040, exactly twice that.
+  { src: 'ui-settings.png', out: 'settings', width: 520, height: null },
   { src: 'multi-monitor.png', out: 'monitors', width: 420, height: null }
 ]
 

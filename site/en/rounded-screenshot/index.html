@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rounded Corner Screenshots for Windows — Flushot</title>
+<meta name="description" content="Rounded corners, a border and a shadow are applied at capture time, so the clipboard gets a finished card. Radius, colour and shadow are adjustable.">
+<meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="dark light">
+<link rel="canonical" href="https://flushot.ink/en/rounded-screenshot/">
+<link rel="alternate" hreflang="ru" href="https://flushot.ink/rounded-screenshot/">
+<link rel="alternate" hreflang="en" href="https://flushot.ink/en/rounded-screenshot/">
+<link rel="alternate" hreflang="x-default" href="https://flushot.ink/rounded-screenshot/">
+
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Flushot">
+<meta property="og:url" content="https://flushot.ink/en/rounded-screenshot/">
+<meta property="og:title" content="Rounded Corner Screenshots">
+<meta property="og:description" content="Rounded corners, a border and a shadow are applied at capture time, so the clipboard gets a finished card. Radius, colour and shadow are adjustable.">
+<meta property="og:image" content="https://flushot.ink/og-image-en.png?v=979a4501">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="en_GB">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Rounded Corner Screenshots">
+<meta name="twitter:description" content="Rounded corners, a border and a shadow are applied at capture time, so the clipboard gets a finished card. Radius, colour and shadow are adjustable.">
+<meta name="twitter:image" content="https://flushot.ink/og-image-en.png?v=979a4501">
+
+<link rel="icon" href="../../favicon.svg?v=a7643679" type="image/svg+xml">
+<link rel="icon" href="../../favicon-32.png?v=67a7ece7" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png?v=980e5cca">
+<link rel="manifest" href="../../site.webmanifest?v=06f0995b">
+<link rel="stylesheet" href="../../fonts.css?v=0b21389f">
+<link rel="stylesheet" href="../../styles.css?v=94f108b1">
+
+<script>
+  // Before the first paint, so the page does not flash light on a dark desktop.
+  (function () {
+    try {
+      var saved = localStorage.getItem('flushot-theme');
+      document.documentElement.dataset.theme =
+        saved === 'dark' || saved === 'light' ? saved : 'dark';
+    } catch (error) {
+      document.documentElement.dataset.theme = 'dark';
+    }
+  })();
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="header">
+  <div class="nav-inner">
+    <a class="brand" href="../../en/" aria-label="Flushot — home">
+      <img class="brand__mark" src="../../favicon.svg?v=a7643679" width="200" height="200" alt="" aria-hidden="true">
+      <span class="brand__name">Flushot</span>
+      <span class="brand__ver">2.5.5</span>
+    </a>
+
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav" aria-label="Menu">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M4 7h16M4 12h16M4 17h16"/>
+      </svg>
+    </button>
+
+    <div class="nav-right" id="nav">
+      <nav class="nav-links" aria-label="Main navigation">
+        <a class="nav-link" href="../../en/#features">Features</a>
+        <a class="nav-link" href="../../en/#how">How it works</a>
+        <a class="nav-link" href="../../en/#download">Downloads</a>
+        <a class="nav-link" href="../../en/#faq">Questions</a>
+      </nav>
+      <a class="lang-switch" href="../../rounded-screenshot/" hreflang="ru" lang="ru" data-lang-switch
+         aria-label="Русская версия">RU</a>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to the light theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+        </svg>
+      </button>
+      <a class="btn btn--primary nav-cta" href="../../en/#download">Download</a>
+    </div>
+  </div>
+  <span class="header__progress" data-progress aria-hidden="true"></span>
+</header>
+
+<main id="main">
+  <section class="hero hero--seo" id="top">
+    <div class="hero__grid" aria-hidden="true"></div>
+    <div class="hero__glow" aria-hidden="true"></div>
+    <div class="wrap hero__inner">
+      <p class="eyebrow" data-rise style="--d: 0.05s">Styled at capture time · free</p>
+      <h1 class="hero__title" data-rise style="--d: 0.1s">
+        <span>Create Beautiful Screenshots with Rounded Corners</span>
+      </h1>
+      <p class="hero__sub" data-rise style="--d: 0.16s">Rounded corners, a border and a shadow are not a separate editor — they are part of the capture itself. You release the mouse and get a finished card that goes straight into a slide deck or a chat with no further work.</p>
+      <div class="hero__actions" data-rise style="--d: 0.22s">
+        <a class="btn btn--primary btn--lg" href="../../en/#download">
+          <svg class="btn__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>
+          </svg>
+          Download for Windows
+        </a>
+        <a class="btn btn--ghost btn--lg" href="../../en/#features">All features</a>
+      </div>
+      <p class="hero__note" data-rise style="--d: 0.26s">
+        <span>No ads and no telemetry ·</span>
+        <a href="../../en/#download">the installer updates itself</a>
+      </p>
+
+      <figure class="hero__preview" data-rise style="--d: 0.3s">
+        <div class="hero__frame">
+<picture>
+              <source srcset="../../assets/en/hero.webp" type="image/webp">
+              <img src="../../assets/en/hero.png?v=236b1a3f" width="2248" height="1311"
+                   alt="A screenshot with rounded corners, a white border and a soft shadow." fetchpriority="high" decoding="async">
+            </picture>
+        </div>
+      </figure>
+    </div>
+  </section>
+
+      <section class="section" aria-labelledby="rounded-screenshot-1">
+        <div class="wrap">
+          <div class="section-head">
+            <h2 class="section-title" id="rounded-screenshot-1">What you can adjust</h2>
+            <p class="section-lead">Four parameters, all visible in the preview immediately — no re-capture and no "apply and hope".</p>
+          </div>
+          <div class="feature-grid">
+            <article class="feature">
+              <span class="feature__mark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><rect x="7.5" y="7.5" width="9" height="9" rx="1.5"/></svg>
+              </span>
+              <h3 class="feature__name">Corner radius</h3>
+              <p class="feature__text">Corners are rounded by the chosen amount. The value applies to the picture itself, not to a frame drawn around it.</p>
+              
+            </article>
+            <article class="feature">
+              <span class="feature__mark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8"/><path d="M12 16v4"/></svg>
+              </span>
+              <h3 class="feature__name">Background colour</h3>
+              <p class="feature__text">The background behind the card is a colour you pick, so the picture reads well on both a light and a dark page.</p>
+              
+            </article>
+            <article class="feature">
+              <span class="feature__mark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14.5 6.5l3 3"/></svg>
+              </span>
+              <h3 class="feature__name">Border width</h3>
+              <p class="feature__text">The border separates the picture from the background. Its width is adjustable, down to removing it altogether.</p>
+              
+            </article>
+            <article class="feature">
+              <span class="feature__mark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3"/><circle cx="15.5" cy="14" r="3"/><path d="M3.5 3.5l17 17"/></svg>
+              </span>
+              <h3 class="feature__name">Shadow strength</h3>
+              <p class="feature__text">The shadow is soft, with adjustable intensity — from barely visible to clearly present.</p>
+              
+            </article>
+            <article class="feature">
+              <span class="feature__mark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+              </span>
+              <h3 class="feature__name">No second step</h3>
+              <p class="feature__text">The styling is applied during capture. There is no editor to open and nothing to draw afterwards, which saves time on every single screenshot.</p>
+              
+            </article>
+            <article class="feature">
+              <span class="feature__mark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6h14"/><path d="M12 6v13"/><path d="M9 19h6"/></svg>
+              </span>
+              <h3 class="feature__name">In the file and on the clipboard</h3>
+              <p class="feature__text">The styled card is both what reaches the clipboard and what is written to the file. The preview and the result are the same raster.</p>
+              
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="wrap">
+          <figure class="seo-figure" style="max-width: 880px">
+            <div class="shot">
+<picture>
+              <source srcset="../../assets/en/hero.webp" type="image/webp">
+              <img src="../../assets/en/hero.png?v=236b1a3f" width="2248" height="1311"
+                   alt="A card with rounded corners: border, shadow and a clean background around the screenshot." loading="lazy" decoding="async">
+            </picture>
+            </div>
+            <figcaption class="shot-caption">The border, the rounding and the shadow are drawn once, at capture. After that the card is just a picture.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="rounded-screenshot-3">
+        <div class="wrap">
+          <div class="section-head">
+            <h2 class="section-title" id="rounded-screenshot-3">How to get a screenshot like this</h2>
+            <p class="section-lead">Set it up once; after that it is just the shortcut.</p>
+          </div>
+          <ol class="pitch__list seo-steps">
+            <li class="pitch__item">
+              <span class="pitch__num" aria-hidden="true">1</span>
+              <span class="seo-step">
+                <h3 class="seo-step__name">Open the settings</h3>
+                <span class="seo-step__text">Tray icon → Settings. The styling section sits next to the file format and the shortcuts.</span>
+              </span>
+            </li>
+            <li class="pitch__item">
+              <span class="pitch__num" aria-hidden="true">2</span>
+              <span class="seo-step">
+                <h3 class="seo-step__name">Set radius, border, background and shadow</h3>
+                <span class="seo-step__text">Values are saved immediately. There is no rebuild and no restart: the next screenshot already uses the new settings.</span>
+              </span>
+            </li>
+            <li class="pitch__item">
+              <span class="pitch__num" aria-hidden="true">3</span>
+              <span class="seo-step">
+                <h3 class="seo-step__name">Capture a region</h3>
+                <span class="seo-step__text">Ctrl+Shift+S by default. The screen freezes the moment the key goes down, so nothing that appears later gets into the picture.</span>
+              </span>
+            </li>
+            <li class="pitch__item">
+              <span class="pitch__num" aria-hidden="true">4</span>
+              <span class="seo-step">
+                <h3 class="seo-step__name">Paste with Ctrl+V</h3>
+                <span class="seo-step__text">Release the mouse and the card is on the clipboard — border, rounding and shadow included, with nothing left to draw.</span>
+              </span>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="rounded-screenshot-4">
+        <div class="wrap">
+          <div class="seo-prose">
+            <h2 class="section-title" id="rounded-screenshot-4">Why this happens at capture, not afterwards</h2>
+            <p>The usual route is: capture the screen, open a graphics editor, crop, round the corners, add a border and a shadow, export. That costs a few minutes per screenshot, and by the tenth one those minutes start to hurt. Flushot moves the work to where it costs nothing — the moment the picture is already being made.</p>
+            <p>A side benefit is consistency. Ten screenshots for one document, made by the same program with the same settings, look like a series. Made by hand on different days, they look like ten unrelated pictures.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="wrap">
+          <figure class="seo-figure" style="max-width: 520px">
+            <div class="shot">
+<picture>
+              <source srcset="../../assets/en/settings.webp" type="image/webp">
+              <img src="../../assets/en/settings.png?v=2b33732b" width="1040" height="1640"
+                   alt="The styling section in the settings: corner radius, background colour, border width and shadow strength." loading="lazy" decoding="async">
+            </picture>
+            </div>
+            <figcaption class="shot-caption">The styling settings. Changed once, applied to every screenshot after that.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="rounded-screenshot-6">
+        <div class="wrap">
+          <div class="seo-prose">
+            <h2 class="section-title" id="rounded-screenshot-6">What these settings do not do</h2>
+            <p>The program cannot style a screenshot you already have: the border, rounding and shadow apply to the picture being captured right now. A file found on disk cannot be sent through Flushot — that needs a fresh capture or a different tool.</p>
+            <p>Annotations are a separate matter: they are baked into the file when it is saved, and a single one cannot be removed afterwards. The only undo is before saving, with Ctrl+Z.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="rounded-screenshot-7">
+        <div class="wrap">
+          <div class="section-head">
+            <h2 class="section-title" id="rounded-screenshot-7">Frequent questions</h2>
+          </div>
+          <div class="faq">
+            <details>
+              <summary>Will the corners be transparent or filled?</summary>
+              <p>The space freed by the rounded corners is filled with the chosen background colour, so the card looks the same on a light or a dark page. The background colour is set in the same part of the settings.</p>
+            </details>
+            <details>
+              <summary>Can the corners stay square?</summary>
+              <p>Yes: the radius is adjustable, and at zero the corners stay square. The border and the shadow can be removed too, leaving an ordinary rectangle.</p>
+            </details>
+            <details>
+              <summary>Do the settings apply to the next screenshot?</summary>
+              <p>Yes, immediately. Saved values take effect from the very next capture — no restart needed.</p>
+            </details>
+            <details>
+              <summary>What format is the card saved in?</summary>
+              <p>Your choice: lossless PNG, JPEG with adjustable quality, or WebP. For pasting into a document the format does not matter — the clipboard already holds a finished image.</p>
+            </details>
+            <details>
+              <summary>Does the picture lose quality?</summary>
+              <p>The capture happens in the monitor’s physical pixels, so at 125 % or 150 % scaling it is not blurry. In PNG it is stored without recompression, matching the selected region byte for byte.</p>
+            </details>
+          </div>
+          <nav class="seo-also" aria-label="More about Flushot">
+            <span class="seo-also__lead">Read next</span>
+            <a class="seo-also__link" href="../../en/free-screenshot-tool/">what the program can do</a><span class="seo-also__sep" aria-hidden="true">·</span><a class="seo-also__link" href="../../en/screenshot-annotation/">arrows, steps and blur</a><span class="seo-also__sep" aria-hidden="true">·</span><a class="seo-also__link" href="../../en/">everything else, on the main page</a>
+          </nav>
+        </div>
+      </section>
+
+  <section class="cta" aria-labelledby="rounded-screenshot-cta">
+    <div class="wrap cta__inner">
+      <h2 class="cta__title" id="rounded-screenshot-cta">Try it on a single screenshot</h2>
+      <p class="cta__sub">If you do not like it, removing it is as easy as unzipping it.</p>
+      <div class="cta__actions">
+        <a class="btn btn--primary btn--lg" href="../../en/#download">
+          <svg class="btn__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>
+          </svg>
+          Download Flushot 2.5.5
+        </a>
+        <a class="btn btn--ghost btn--lg" href="../../en/#faq">Questions first</a>
+      </div>
+      <p class="cta__meta">105 MB · no sign-up · no analytics</p>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer__inner">
+    <div class="footer__brand">
+      <img class="brand__mark" src="../../favicon.svg?v=a7643679" width="200" height="200" alt="" aria-hidden="true">
+      <span>Version 2.5.5 · © 2026 Flushot</span>
+    </div>
+    <nav class="footer__links" aria-label="Footer navigation">
+      <a href="../../en/">Home</a>
+      <a href="../../en/free-screenshot-tool/">Free screenshot tool</a>
+      <a href="../../en/rounded-screenshot/">Rounded corners</a>
+      <a href="../../en/screenshot-annotation/">Annotations</a>
+      <a href="../../en/privacy.html">Privacy</a>
+    </nav>
+  </div>
+</footer>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://flushot.ink/#software",
+      "name": "Flushot",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Windows 10, Windows 11",
+      "softwareVersion": "2.5.5",
+      "description": "Rounded corners, a border and a shadow are applied at capture time, so the clipboard gets a finished card. Radius, colour and shadow are adjustable.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "RUB"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://flushot.ink/en/rounded-screenshot/",
+      "url": "https://flushot.ink/en/rounded-screenshot/",
+      "name": "Rounded Corner Screenshots for Windows — Flushot",
+      "description": "Rounded corners, a border and a shadow are applied at capture time, so the clipboard gets a finished card. Radius, colour and shadow are adjustable.",
+      "inLanguage": "en",
+      "isPartOf": {
+        "@id": "https://flushot.ink/#website"
+      },
+      "primaryImageOfPage": "https://flushot.ink/og-image-en.png"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://flushot.ink/en/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Rounded corners",
+          "item": "https://flushot.ink/en/rounded-screenshot/"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://flushot.ink/en/rounded-screenshot/#faq",
+      "inLanguage": "en",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Will the corners be transparent or filled?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The space freed by the rounded corners is filled with the chosen background colour, so the card looks the same on a light or a dark page. The background colour is set in the same part of the settings."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can the corners stay square?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes: the radius is adjustable, and at zero the corners stay square. The border and the shadow can be removed too, leaving an ordinary rectangle."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do the settings apply to the next screenshot?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, immediately. Saved values take effect from the very next capture — no restart needed."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What format is the card saved in?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Your choice: lossless PNG, JPEG with adjustable quality, or WebP. For pasting into a document the format does not matter — the clipboard already holds a finished image."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does the picture lose quality?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The capture happens in the monitor’s physical pixels, so at 125 % or 150 % scaling it is not blurry. In PNG it is stored without recompression, matching the selected region byte for byte."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+<script src="../../app.js?v=36e1c06d" defer></script>
+<script src="../../metrics.js?v=6d115193" defer></script>
+</body>
+</html>

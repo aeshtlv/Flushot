@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Бесплатная программа для скриншотов на Windows — Flushot</title>
+<meta name="description" content="Flushot — бесплатная программа для скриншотов на Windows 10 и 11: выделили область, отпустили мышь, снимок уже в буфере. Без рекламы и регистрации.">
+<meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="dark light">
+<link rel="canonical" href="https://flushot.ink/free-screenshot-tool/">
+<link rel="alternate" hreflang="ru" href="https://flushot.ink/free-screenshot-tool/">
+<link rel="alternate" hreflang="en" href="https://flushot.ink/en/free-screenshot-tool/">
+<link rel="alternate" hreflang="x-default" href="https://flushot.ink/free-screenshot-tool/">
+
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Flushot">
+<meta property="og:url" content="https://flushot.ink/free-screenshot-tool/">
+<meta property="og:title" content="Бесплатная программа для скриншотов на Windows">
+<meta property="og:description" content="Flushot — бесплатная программа для скриншотов на Windows 10 и 11: выделили область, отпустили мышь, снимок уже в буфере. Без рекламы и регистрации.">
+<meta property="og:image" content="https://flushot.ink/og-image.png?v=806e6f2c">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ru_RU">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Бесплатная программа для скриншотов на Windows">
+<meta name="twitter:description" content="Flushot — бесплатная программа для скриншотов на Windows 10 и 11: выделили область, отпустили мышь, снимок уже в буфере. Без рекламы и регистрации.">
+<meta name="twitter:image" content="https://flushot.ink/og-image.png?v=806e6f2c">
+
+<link rel="icon" href="../favicon.svg?v=a7643679" type="image/svg+xml">
+<link rel="icon" href="../favicon-32.png?v=67a7ece7" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png?v=980e5cca">
+<link rel="manifest" href="../site.webmanifest?v=06f0995b">
+<link rel="stylesheet" href="../fonts.css?v=0b21389f">
+<link rel="stylesheet" href="../styles.css?v=94f108b1">
+
+<script>
+  // Before the first paint, so the page does not flash light on a dark desktop.
+  (function () {
+    try {
+      var saved = localStorage.getItem('flushot-theme');
+      document.documentElement.dataset.theme =
+        saved === 'dark' || saved === 'light' ? saved : 'dark';
+    } catch (error) {
+      document.documentElement.dataset.theme = 'dark';
+    }
+  })();
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Перейти к содержимому</a>
+
+<header class="header">
+  <div class="nav-inner">
+    <a class="brand" href="../" aria-label="Flushot — на главную">
+      <img class="brand__mark" src="../favicon.svg?v=a7643679" width="200" height="200" alt="" aria-hidden="true">
+      <span class="brand__name">Flushot</span>
+      <span class="brand__ver">2.5.5</span>
+    </a>
+
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav" aria-label="Меню">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M4 7h16M4 12h16M4 17h16"/>
+      </svg>
+    </button>
+
+    <div class="nav-right" id="nav">
+      <nav class="nav-links" aria-label="Основная навигация">
+        <a class="nav-link" href="../#features">Возможности</a>
+        <a class="nav-link" href="../#how">Как работает</a>
+        <a class="nav-link" href="../#download">Скачать</a>
+        <a class="nav-link" href="../#faq">Вопросы</a>
+      </nav>
+      <a class="lang-switch" href="../en/free-screenshot-tool/" hreflang="en" lang="en" data-lang-switch
+         aria-label="English version">EN</a>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Переключить на светлую тему">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+        </svg>
+      </button>
+      <a class="btn btn--primary nav-cta" href="../#download">Скачать</a>
+    </div>
+  </div>
+  <span class="header__progress" data-progress aria-hidden="true"></span>
+</header>
+
+<main id="main">
+  <section class="hero hero--seo" id="top">
+    <div class="hero__grid" aria-hidden="true"></div>
+    <div class="hero__glow" aria-hidden="true"></div>
+    <div class="wrap hero__inner">
+      <p class="eyebrow" data-rise style="--d: 0.05s">Windows 10 и 11 · версия 2.5.5 · бесплатно</p>
+      <h1 class="hero__title" data-rise style="--d: 0.1s">
+        <span>Бесплатная программа для скриншотов на Windows</span>
+      </h1>
+      <p class="hero__sub" data-rise style="--d: 0.16s">Flushot делает снимок за одно движение: выделили область, отпустили мышь — картинка уже в буфере обмена, с рамкой и скруглёнными углами. Ни регистрации, ни рекламы, ни подписок, ни урезанной бесплатной версии.</p>
+      <div class="hero__actions" data-rise style="--d: 0.22s">
+        <a class="btn btn--primary btn--lg" href="../#download">
+          <svg class="btn__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>
+          </svg>
+          Скачать для Windows
+        </a>
+        <a class="btn btn--ghost btn--lg" href="../#features">Все возможности</a>
+      </div>
+      <p class="hero__note" data-rise style="--d: 0.26s">
+        <span>Без рекламы и телеметрии ·</span>
+        <a href="../#download">установщик обновляется сам</a>
+      </p>
+
+      <figure class="hero__preview" data-rise style="--d: 0.3s">
+        <div class="hero__frame">
+<picture>
+              <source srcset="../assets/hero.webp" type="image/webp">
+              <img src="../assets/hero.png?v=290ae54d" width="2248" height="1311"
+                   alt="Окно программы Flushot с оформленным снимком: белая рамка, скруглённые углы и мягкая тень на сером фоне." fetchpriority="high" decoding="async">
+            </picture>
+        </div>
+      </figure>
+    </div>
+  </section>
+
+      <section class="section" aria-labelledby="free-screenshot-tool-1">
+        <div class="wrap">
+          <div class="section-head">
+            <h2 class="section-title" id="free-screenshot-tool-1">Что умеет программа</h2>
+            <p class="section-lead">Список целиком. Платной версии нет, платить не за что и нечем: всё перечисленное есть в том файле, который вы скачали.</p>
+          </div>
+          <div class="feature-grid">
+            <article class="feature">
+              <span class="feature__mark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 17 2.2-6.8L20 11z"/></svg>
+              </span>
+              <h3 class="feature__name">Снимок области</h3>
+              <p class="feature__text">Клавиша по умолчанию — Ctrl+Shift+S, но её можно сменить на любую, вплоть до одной клавиши без модификаторов.</p>
+              <p class="feature__tag">Ctrl+Shift+S</p>
+            </article>
+            <article class="feature">
+              <span class="feature__mark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8"/><path d="M12 16v4"/></svg>
+              </span>
+              <h3 class="feature__name">Снимок всего экрана</h3>
+              <p class="feature__text">Отдельная клавиша снимает основной монитор целиком — без рамки, сразу в буфер обмена или в файл.</p>
+              <p class="feature__tag">Ctrl+Shift+3</p>
+            </article>
+            <article class="feature">
+              <span class="feature__mark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><rect x="7.5" y="7.5" width="9" height="9" rx="1.5"/></svg>
+              </span>
+              <h3 class="feature__name">Рамка и скруглённые углы</h3>
+              <p class="feature__text">Оформление применяется в момент снимка. В буфер попадает готовая карточка, а не голый прямоугольник с резкими углами.</p>
+              
+            </article>
+            <article class="feature">
+              <span class="feature__mark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14.5 6.5l3 3"/></svg>
+              </span>
+              <h3 class="feature__name">Пометки</h3>
+              <p class="feature__text">Стрелка, линия, прямоугольник, карандаш, текст, нумерованные шаги и размытие — семь инструментов.</p>
+              <p class="feature__tag">7 инструментов</p>
+            </article>
+            <article class="feature">
+              <span class="feature__mark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6h14"/><path d="M12 6v13"/><path d="M9 19h6"/></svg>
+              </span>
+              <h3 class="feature__name">Текст со снимка</h3>
+              <p class="feature__text">Встроенный движок Windows читает текст на снимке офлайн: без загрузки языков и без интернета.</p>
+              <p class="feature__tag">Windows OCR</p>
+            </article>
+            <article class="feature">
+              <span class="feature__mark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2.5"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg>
+              </span>
+              <h3 class="feature__name">Свои клавиши</h3>
+              <p class="feature__text">Все три клавиши переназначаются в настройках. Если сочетание занято другой программой, Flushot скажет об этом, а не сделает вид, что всё хорошо.</p>
+              
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="free-screenshot-tool-2">
+        <div class="wrap">
+          <div class="section-head">
+            <h2 class="section-title" id="free-screenshot-tool-2">Как сделать снимок экрана</h2>
+            <p class="section-lead">Четыре шага, из которых обязательны первые три.</p>
+          </div>
+          <ol class="pitch__list seo-steps">
+            <li class="pitch__item">
+              <span class="pitch__num" aria-hidden="true">1</span>
+              <span class="seo-step">
+                <h3 class="seo-step__name">Нажмите свою клавишу</h3>
+                <span class="seo-step__text">По умолчанию Ctrl+Shift+S. Экран замирает в момент нажатия: меню и подсказки, появившиеся позже, в снимок не попадут — задержки съёмки нет.</span>
+              </span>
+            </li>
+            <li class="pitch__item">
+              <span class="pitch__num" aria-hidden="true">2</span>
+              <span class="seo-step">
+                <h3 class="seo-step__name">Выделите область</h3>
+                <span class="seo-step__text">Размер в пикселях показан рядом с рамкой и обновляется на ходу. Рамку можно двигать целиком и тянуть за любой край.</span>
+              </span>
+            </li>
+            <li class="pitch__item">
+              <span class="pitch__num" aria-hidden="true">3</span>
+              <span class="seo-step">
+                <h3 class="seo-step__name">Отпустите мышь</h3>
+                <span class="seo-step__text">Это и есть снимок: карточка уже в буфере обмена, нажимать Ctrl+C не нужно. Остаётся вставить её через Ctrl+V в чат, письмо или документ.</span>
+              </span>
+            </li>
+            <li class="pitch__item">
+              <span class="pitch__num" aria-hidden="true">4</span>
+              <span class="seo-step">
+                <h3 class="seo-step__name">Если нужен файл — удержите Shift</h3>
+                <span class="seo-step__text">Shift при отпускании оставляет окно на экране: в нём пометки, сохранение и распознавание текста. Ctrl+S записывает файл, Ctrl+C копирует.</span>
+              </span>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="wrap">
+          <figure class="seo-figure" style="max-width: 880px">
+            <div class="shot">
+<picture>
+              <source srcset="../assets/overlay.webp" type="image/webp">
+              <img src="../assets/overlay.png?v=cc432fed" width="2348" height="1321"
+                   alt="Оверлей выделения области: затемнение, прицел у курсора и рамка с размером в пикселях." loading="lazy" decoding="async">
+            </picture>
+            </div>
+            <figcaption class="shot-caption">Выделение области. Панель с кнопками внизу видна даже тогда, когда выделен весь экран, — она не уезжает за край.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="free-screenshot-tool-4">
+        <div class="wrap">
+          <div class="seo-prose">
+            <h2 class="section-title" id="free-screenshot-tool-4">Чем это отличается от «Ножниц» и PrintScreen</h2>
+            <p>В Windows уже есть снимок экрана: Win+Shift+S открывает «Ножницы». Они снимают область и кладут её в буфер — но голым прямоугольником, с резкими углами и без тени. Дальше начинается ручная работа: вставить в редактор, обрезать, скруглить, добавить рамку. Flushot делает эту часть сам и до того, как вы что-то нажмёте.</p>
+            <p>PrintScreen на Windows 10 и 11 умеет открывать тот же «Ножницы» — это настройка системы. Flushot на эту клавишу не претендует: он занимает свою комбинацию и системную не трогает. Клавишу можно переназначить, но отобрать PrintScreen у Windows программа не может и не пытается.</p>
+            <p>Чего Flushot не делает: он не фоторедактор. Пометки вшиваются в файл при сохранении, и убрать одну из них потом нельзя. Для ретуши, слоёв и работы с готовыми картинками нужен другой инструмент.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="wrap">
+          <figure class="seo-figure" style="max-width: 520px">
+            <div class="shot">
+<picture>
+              <source srcset="../assets/settings.webp" type="image/webp">
+              <img src="../assets/settings.png?v=1f6aeef9" width="1040" height="1640"
+                   alt="Окно настроек Flushot: три горячие клавиши, формат файла и оформление рамки." loading="lazy" decoding="async">
+            </picture>
+            </div>
+            <figcaption class="shot-caption">Настройки: три горячие клавиши, формат файла, цвет фона, толщина рамки, радиус скругления и сила тени.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="free-screenshot-tool-6">
+        <div class="wrap">
+          <div class="seo-prose">
+            <h2 class="section-title" id="free-screenshot-tool-6">Что программа отправляет в интернет</h2>
+            <p>Один запрос в сутки: установленная версия спрашивает у GitHub, не вышла ли новая, и если вышла — скачивает её в фоне. Это отключается переключателем «Обновления» в настройках, после чего сеть не используется совсем.</p>
+            <p>Из трёх горячих клавиш в сеть уходит только третья — «Со ссылкой». Она отправляет снимок на сервер и кладёт в буфер ссылку на него; ссылка живёт час, потом снимок удаляется с сервера. Эту клавишу можно переназначить или не нажимать вовсе: две другие работают полностью локально.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="free-screenshot-tool-7">
+        <div class="wrap">
+          <div class="section-head">
+            <h2 class="section-title" id="free-screenshot-tool-7">Частые вопросы</h2>
+          </div>
+          <div class="faq">
+            <details>
+              <summary>Flushot действительно бесплатный?</summary>
+              <p>Да. Без рекламы, без подписок, без регистрации и без урезанных версий: все возможности, перечисленные выше, есть в том файле, который вы скачали.</p>
+            </details>
+            <details>
+              <summary>Нужен ли интернет для работы?</summary>
+              <p>Нет. Снимок, оформление, пометки, сохранение и распознавание текста происходят на вашем компьютере — движок распознавания встроен в Windows. Интернет нужен только для проверки обновлений и для клавиши «Со ссылкой».</p>
+            </details>
+            <details>
+              <summary>Куда сохраняется файл?</summary>
+              <p>Готовые снимки складываются в папку «Изображения» с датой и временем в имени файла. Папку можно сменить в настройках. Отдельно можно удерживать Shift при отпускании мыши — тогда окно останется на экране и файл можно записать вручную, в PNG, JPEG или WebP.</p>
+            </details>
+            <details>
+              <summary>Работает ли программа на Windows 7 или 8?</summary>
+              <p>Нет. Flushot собран под Windows 10 и 11 и на более старых системах не запустится. Это ограничение, а не недосмотр: программа опирается на средства, которых в Windows 7 и 8 нет.</p>
+            </details>
+            <details>
+              <summary>Почему Windows предупреждает при запуске?</summary>
+              <p>Файлы не подписаны сертификатом разработчика: сертификат платный, и для бесплатной программы его не покупают. SmartScreen поэтому показывает предупреждение — нажмите «Подробнее» → «Выполнить всё равно». Предупреждение говорит об отсутствии подписи, а не о содержимом файла.</p>
+            </details>
+            <details>
+              <summary>Сколько места занимает и как её удалить?</summary>
+              <p>Установщик — около 105 МБ. Удаляется обычным способом: «Параметры» → «Приложения» → Flushot → «Удалить». Portable-версия удаляется вместе со своей папкой и ничего в системе не оставляет.</p>
+            </details>
+          </div>
+          <nav class="seo-also" aria-label="Ещё про Flushot">
+            <span class="seo-also__lead">Читать дальше</span>
+            <a class="seo-also__link" href="../rounded-screenshot/">рамка, скругление и тень</a><span class="seo-also__sep" aria-hidden="true">·</span><a class="seo-also__link" href="../screenshot-annotation/">стрелки, шаги и размытие</a><span class="seo-also__sep" aria-hidden="true">·</span><a class="seo-also__link" href="../">всё остальное — на главной</a>
+          </nav>
+        </div>
+      </section>
+
+  <section class="cta" aria-labelledby="free-screenshot-tool-cta">
+    <div class="wrap cta__inner">
+      <h2 class="cta__title" id="free-screenshot-tool-cta">Попробуйте на одном скриншоте</h2>
+      <p class="cta__sub">Если не понравится — удалить так же просто, как распаковать.</p>
+      <div class="cta__actions">
+        <a class="btn btn--primary btn--lg" href="../#download">
+          <svg class="btn__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>
+          </svg>
+          Скачать Flushot 2.5.5
+        </a>
+        <a class="btn btn--ghost btn--lg" href="../#faq">Сначала вопросы</a>
+      </div>
+      <p class="cta__meta">105 МБ · без регистрации · без аналитики</p>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer__inner">
+    <div class="footer__brand">
+      <img class="brand__mark" src="../favicon.svg?v=a7643679" width="200" height="200" alt="" aria-hidden="true">
+      <span>Версия 2.5.5 · © 2026 Flushot</span>
+    </div>
+    <nav class="footer__links" aria-label="Навигация в подвале">
+      <a href="../">Главная</a>
+      <a href="../free-screenshot-tool/">Бесплатный скриншот</a>
+      <a href="../rounded-screenshot/">Скруглённые углы</a>
+      <a href="../screenshot-annotation/">Пометки на снимках</a>
+      <a href="../privacy.html">Приватность</a>
+    </nav>
+  </div>
+</footer>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://flushot.ink/#software",
+      "name": "Flushot",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Windows 10, Windows 11",
+      "softwareVersion": "2.5.5",
+      "description": "Flushot — бесплатная программа для скриншотов на Windows 10 и 11: выделили область, отпустили мышь, снимок уже в буфере. Без рекламы и регистрации.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "RUB"
+      },
+      "inLanguage": "ru"
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://flushot.ink/free-screenshot-tool/",
+      "url": "https://flushot.ink/free-screenshot-tool/",
+      "name": "Бесплатная программа для скриншотов на Windows — Flushot",
+      "description": "Flushot — бесплатная программа для скриншотов на Windows 10 и 11: выделили область, отпустили мышь, снимок уже в буфере. Без рекламы и регистрации.",
+      "inLanguage": "ru",
+      "isPartOf": {
+        "@id": "https://flushot.ink/#website"
+      },
+      "primaryImageOfPage": "https://flushot.ink/og-image.png"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Главная",
+          "item": "https://flushot.ink/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Бесплатный скриншот",
+          "item": "https://flushot.ink/free-screenshot-tool/"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://flushot.ink/free-screenshot-tool/#faq",
+      "inLanguage": "ru",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Flushot действительно бесплатный?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Да. Без рекламы, без подписок, без регистрации и без урезанных версий: все возможности, перечисленные выше, есть в том файле, который вы скачали."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Нужен ли интернет для работы?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Нет. Снимок, оформление, пометки, сохранение и распознавание текста происходят на вашем компьютере — движок распознавания встроен в Windows. Интернет нужен только для проверки обновлений и для клавиши «Со ссылкой»."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Куда сохраняется файл?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Готовые снимки складываются в папку «Изображения» с датой и временем в имени файла. Папку можно сменить в настройках. Отдельно можно удерживать Shift при отпускании мыши — тогда окно останется на экране и файл можно записать вручную, в PNG, JPEG или WebP."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Работает ли программа на Windows 7 или 8?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Нет. Flushot собран под Windows 10 и 11 и на более старых системах не запустится. Это ограничение, а не недосмотр: программа опирается на средства, которых в Windows 7 и 8 нет."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Почему Windows предупреждает при запуске?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Файлы не подписаны сертификатом разработчика: сертификат платный, и для бесплатной программы его не покупают. SmartScreen поэтому показывает предупреждение — нажмите «Подробнее» → «Выполнить всё равно». Предупреждение говорит об отсутствии подписи, а не о содержимом файла."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Сколько места занимает и как её удалить?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Установщик — около 105 МБ. Удаляется обычным способом: «Параметры» → «Приложения» → Flushot → «Удалить». Portable-версия удаляется вместе со своей папкой и ничего в системе не оставляет."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+<script src="../app.js?v=36e1c06d" defer></script>
+<script src="../metrics.js?v=6d115193" defer></script>
+</body>
+</html>

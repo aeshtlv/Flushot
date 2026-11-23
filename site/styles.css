@@ -1908,12 +1908,15 @@ code {
   height: auto;
 }
 
-/* Screens are shown at their real pixel size, never upscaled: a 520 px settings
-   window blown up to 1174 px is a blurry screenshot pretending to be a retina
-   one. */
+/* Screens are shown at the size of the window they picture, never upscaled: a 520 px settings
+   window blown up to 1174 px is a blurry screenshot pretending to be a retina one.
+
+   The files are stored at twice that width, so the display size cannot be the file's own pixel
+   width any more — that would show the window twice as large as it is. It is stated with
+   `--shot-display` instead, and defaults to half the picture for the case where nobody said. */
 .shot--native img {
   width: auto;
-  max-width: 100%;
+  max-width: min(100%, var(--shot-display, 50%));
   margin: 0 auto;
 }
 
@@ -2909,4 +2912,236 @@ code {
     --border: rgba(0, 0, 0, 0.25);
     --border-strong: rgba(0, 0, 0, 0.4);
   }
+}
+
+/* ------------------------------------------------------- search pages */
+/*
+   Long-form text.
+   The landing page is a wall of short blocks; these pages are meant to be read, and a measure of
+   68 characters is what makes a paragraph readable rather than a line the eye loses its place in.
+*/
+.seo-prose {
+  max-width: 68ch;
+}
+
+.seo-prose .section-title {
+  margin-bottom: 18px;
+}
+
+.seo-prose p {
+  margin-bottom: 16px;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--fg-muted);
+}
+
+.seo-prose p:last-child {
+  margin-bottom: 0;
+}
+
+/*
+   The search pages carry a heading of one long sentence — "Бесплатная программа для скриншотов на
+   Windows" — where the landing page has two short lines. At the shared scale that wrapped into four
+   lines on a phone, so the first screen was all heading. A wider measure takes one line less at
+   desktop, and the lower floor takes one less again at mobile, without touching the landing page.
+*/
+.hero--seo .hero__title {
+  max-width: 26ch;
+  font-size: clamp(31px, 5.6vw, 68px);
+}
+
+/* A 320-pixel screen leaves about 288 pixels of measure, and these headings are one long sentence.
+   Below 400 pixels the floor drops a further step so the heading still takes three lines instead of
+   four — at that width four lines of heading is the whole first screen. */
+@media (max-width: 400px) {
+  .hero--seo .hero__title {
+    font-size: clamp(26px, 8vw, 31px);
+  }
+}
+
+/* --------------------------------------------------------------- steps */
+
+/*
+   The numbered list is the landing page's own (.pitch__list), extended to two lines: a bold
+   name and the explanation under it. The number stays in its box at the top left.
+*/
+.seo-steps {
+  max-width: 74ch;
+  gap: 18px;
+}
+
+.seo-step {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.seo-step__name {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--fg);
+}
+
+.seo-step__text {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--fg-muted);
+}
+
+/* ------------------------------------------------------------- figures */
+
+.seo-figure {
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.seo-figure .shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* --------------------------------------------------------- cross-links */
+
+/*
+   Every page links to every other one and to the landing page. Without this the five pages are
+   islands that only a sitemap knows about, and a visitor who lands on one has no way onward.
+*/
+.seo-related {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.seo-related__item {
+  display: flex;
+}
+
+.seo-related__link {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 5px;
+  padding: 18px 20px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color 0.2s, background 0.2s, transform 0.2s;
+}
+
+.seo-related__link:hover {
+  background: var(--bg-card);
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+.seo-related__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.seo-related__text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--fg-dim);
+}
+
+@media (max-width: 820px) {
+  .seo-related {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .seo-prose p,
+  .seo-step__text {
+    font-size: 15px;
+  }
+
+  .seo-figure {
+    max-width: none;
+  }
+}
+
+/* ---------------------------------------------- feature grid, any count */
+.feature-grid--loose {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+}
+
+.feature-grid--loose .feature {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.feature-grid--loose .feature:nth-child(3n),
+.feature-grid--loose .feature:nth-last-child(-n + 3) {
+  border-right: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+
+@media (max-width: 1080px) {
+  .feature-grid--loose {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 820px) {
+  .feature-grid--loose {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ------------------------------------------------------- the way onward */
+
+/*
+   One line at the end of the article, not a block of cards and not a band of its own.
+   The cards that used to sit here repeated the titles of the sibling pages between two sections of
+   real content, which is the shape of filler. The links are still here — a crawler that enters on one
+   page has to reach the others — but they close the article instead of interrupting it: same measure
+   as the questions above, no rule of their own, no padding that would read as another section.
+*/
+.seo-also {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 12px;
+  max-width: 760px;
+  margin-top: 32px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--fg-dim);
+}
+
+.seo-also__lead {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+}
+
+.seo-also__link {
+  color: var(--fg-muted);
+  text-decoration: underline;
+  text-decoration-color: var(--rule);
+  text-underline-offset: 3px;
+  transition: color 0.15s, text-decoration-color 0.15s;
+}
+
+.seo-also__link:hover {
+  color: var(--fg);
+  text-decoration-color: currentColor;
+}
+
+.seo-also__sep {
+  color: var(--fg-dim);
+  opacity: 0.6;
 }

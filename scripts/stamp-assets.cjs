@@ -129,18 +129,35 @@ function rewrite(source, pattern) {
 
 // Order matters. The manifest is rewritten first because index.html links to it,
 // and the manifest's own content decides the hash that link has to carry.
-const results = [
+const PAGES = [
   // Icons are referenced by property, not by attribute.
-  rewrite('site.webmanifest', /("src"\s*:\s*")([^"]+)(")/g),
+  ['site.webmanifest', /("src"\s*:\s*")([^"]+)(")/g],
   // href, src, and content on the social preview: stylesheets, scripts, images.
-  rewrite('index.html', /((?:href|src|content)=")([^"]+)(")/g),
+  ['index.html', /((?:href|src|content)=")([^"]+)(")/g],
   // Generated from the Russian page by scripts/build-en-page.cjs, so it is
   // always stamped after it.
-  rewrite('en/index.html', /((?:href|src|content)=")([^"]+)(")/g),
-  rewrite('privacy.html', /((?:href|src|content)=")([^"]+)(")/g),
-  rewrite('en/privacy.html', /((?:href|src|content)=")([^"]+)(")/g),
-  rewrite('404.html', /((?:href|src|content)=")([^"]+)(")/g)
+  ['en/index.html', /((?:href|src|content)=")([^"]+)(")/g],
+  ['privacy.html', /((?:href|src|content)=")([^"]+)(")/g],
+  ['en/privacy.html', /((?:href|src|content)=")([^"]+)(")/g],
+  ['404.html', /((?:href|src|content)=")([^"]+)(")/g]
 ]
+
+// The search pages, in both languages. Read from the data rather than listed here, so a page added
+// to that file is stamped without a second edit — the omission this change exists to prevent.
+try {
+  for (const page of require('./seo-pages.cjs').PAGES) {
+    PAGES.push([`${page.slug}/index.html`, /((?:href|src|content)=")([^"]+)(")/g])
+    PAGES.push([`en/${page.slug}/index.html`, /((?:href|src|content)=")([^"]+)(")/g])
+  }
+} catch (error) {
+  console.log(`search pages skipped: ${error.message}`)
+}
+
+const results = []
+for (const [file, pattern] of PAGES) {
+  if (!existsSync(path.join(SITE, file))) continue
+  results.push(rewrite(file, pattern))
+}
 
 let total = 0
 for (const result of results) {

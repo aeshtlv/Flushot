@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Пометки на скриншотах: стрелки, рамки, размытие — Flushot</title>
+<meta name="description" content="Стрелки, рамки, карандаш, текст, шаги и размытие — семь инструментов прямо на снимке. Пометки вшиваются в файл при сохранении.">
+<meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="dark light">
+<link rel="canonical" href="https://flushot.ink/screenshot-annotation/">
+<link rel="alternate" hreflang="ru" href="https://flushot.ink/screenshot-annotation/">
+<link rel="alternate" hreflang="en" href="https://flushot.ink/en/screenshot-annotation/">
+<link rel="alternate" hreflang="x-default" href="https://flushot.ink/screenshot-annotation/">
+
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Flushot">
+<meta property="og:url" content="https://flushot.ink/screenshot-annotation/">
+<meta property="og:title" content="Пометки на скриншотах">
+<meta property="og:description" content="Стрелки, рамки, карандаш, текст, шаги и размытие — семь инструментов прямо на снимке. Пометки вшиваются в файл при сохранении.">
+<meta property="og:image" content="https://flushot.ink/og-image.png?v=806e6f2c">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ru_RU">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Пометки на скриншотах">
+<meta name="twitter:description" content="Стрелки, рамки, карандаш, текст, шаги и размытие — семь инструментов прямо на снимке. Пометки вшиваются в файл при сохранении.">
+<meta name="twitter:image" content="https://flushot.ink/og-image.png?v=806e6f2c">
+
+<link rel="icon" href="../favicon.svg?v=a7643679" type="image/svg+xml">
+<link rel="icon" href="../favicon-32.png?v=67a7ece7" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png?v=980e5cca">
+<link rel="manifest" href="../site.webmanifest?v=06f0995b">
+<link rel="stylesheet" href="../fonts.css?v=0b21389f">
+<link rel="stylesheet" href="../styles.css?v=94f108b1">
+
+<script>
+  // Before the first paint, so the page does not flash light on a dark desktop.
+  (function () {
+    try {
+      var saved = localStorage.getItem('flushot-theme');
+      document.documentElement.dataset.theme =
+        saved === 'dark' || saved === 'light' ? saved : 'dark';
+    } catch (error) {
+      document.documentElement.dataset.theme = 'dark';
+    }
+  })();
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Перейти к содержимому</a>
+
+<header class="header">
+  <div class="nav-inner">
+    <a class="brand" href="../" aria-label="Flushot — на главную">
+      <img class="brand__mark" src="../favicon.svg?v=a7643679" width="200" height="200" alt="" aria-hidden="true">
+      <span class="brand__name">Flushot</span>
+      <span class="brand__ver">2.5.5</span>
+    </a>
+
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav" aria-label="Меню">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M4 7h16M4 12h16M4 17h16"/>
+      </svg>
+    </button>
+
+    <div class="nav-right" id="nav">
+      <nav class="nav-links" aria-label="Основная навигация">
+        <a class="nav-link" href="../#features">Возможности</a>
+        <a class="nav-link" href="../#how">Как работает</a>
+        <a class="nav-link" href="../#download">Скачать</a>
+        <a class="nav-link" href="../#faq">Вопросы</a>
+      </nav>
+      <a class="lang-switch" href="../en/screenshot-annotation/" hreflang="en" lang="en" data-lang-switch
+         aria-label="English version">EN</a>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Переключить на светлую тему">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+        </svg>
+      </button>
+      <a class="btn btn--primary nav-cta" href="../#download">Скачать</a>
+    </div>
+  </div>
+  <span class="header__progress" data-progress aria-hidden="true"></span>
+</header>
+
+<main id="main">
+  <section class="hero hero--seo" id="top">
+    <div class="hero__grid" aria-hidden="true"></div>
+    <div class="hero__glow" aria-hidden="true"></div>
+    <div class="wrap hero__inner">
+      <p class="eyebrow" data-rise style="--d: 0.05s">Семь инструментов · Windows 10 и 11</p>
+      <h1 class="hero__title" data-rise style="--d: 0.1s">
+        <span>Пометки на скриншотах: стрелки, рамки, размытие</span>
+      </h1>
+      <p class="hero__sub" data-rise style="--d: 0.16s">Обвести место, на которое надо смотреть, поставить стрелку, спрятать персональные данные под размытием — прямо на снимке, не открывая отдельного редактора. Пометки вшиваются в картинку при сохранении.</p>
+      <div class="hero__actions" data-rise style="--d: 0.22s">
+        <a class="btn btn--primary btn--lg" href="../#download">
+          <svg class="btn__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>
+          </svg>
+          Скачать для Windows
+        </a>
+        <a class="btn btn--ghost btn--lg" href="../#features">Все возможности</a>
+      </div>
+      <p class="hero__note" data-rise style="--d: 0.26s">
+        <span>Без рекламы и телеметрии ·</span>
+        <a href="../#download">установщик обновляется сам</a>
+      </p>
+
+      <figure class="hero__preview" data-rise style="--d: 0.3s">
+        <div class="hero__frame">
+<picture>
+              <source srcset="../assets/annotate.webp" type="image/webp">
+              <img src="../assets/annotate.png?v=ca120df5" width="2348" height="1321"
+                   alt="Окно Flushot с панелью пометок и снимком, на котором нарисованы стрелка, рамка и размытие." fetchpriority="high" decoding="async">
+            </picture>
+        </div>
+      </figure>
+    </div>
+  </section>
+
+      <section class="section" aria-labelledby="screenshot-annotation-1">
+        <div class="wrap">
+          <div class="section-head">
+            <h2 class="section-title" id="screenshot-annotation-1">Семь инструментов</h2>
+            <p class="section-lead">Все работают на самом снимке и остаются в нём после сохранения.</p>
+          </div>
+          <div class="feature-grid feature-grid--loose">
+            <article class="feature">
+              <span class="feature__mark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l13-8"/><path d="M13 8l4 4-4 4"/></svg>
+              </span>
+              <h3 class="feature__name">Стрелка</h3>
+              <p class="feature__text">Показать, куда именно смотреть. Самый быстрый способ объяснить правку на скриншоте.</p>
+              
+            </article>
+            <article class="feature">
+              <span class="feature__mark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14.5 6.5l3 3"/></svg>
+              </span>
+              <h3 class="feature__name">Линия и карандаш</h3>
+              <p class="feature__text">Ровная линия прилипает к 0°, 45° и 90° при зажатом Shift, а карандаш годится для всего остального.</p>
+              <p class="feature__tag">Shift · 0°/45°/90°</p>
+            </article>
+            <article class="feature">
+              <span class="feature__mark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><rect x="7.5" y="7.5" width="9" height="9" rx="1.5"/></svg>
+              </span>
+              <h3 class="feature__name">Прямоугольник</h3>
+              <p class="feature__text">Обвести область целиком, когда стрелки недостаточно и нужен контур.</p>
+              
+            </article>
+            <article class="feature">
+              <span class="feature__mark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6h14"/><path d="M12 6v13"/><path d="M9 19h6"/></svg>
+              </span>
+              <h3 class="feature__name">Текст</h3>
+              <p class="feature__text">Подпись прямо на снимке. Не нужно потом сводить картинку с отдельным текстовым слоем.</p>
+              
+            </article>
+            <article class="feature">
+              <span class="feature__mark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+              </span>
+              <h3 class="feature__name">Нумерованные шаги</h3>
+              <p class="feature__text">Последовательность 1, 2, 3 — для инструкций, где важен порядок, а не отдельные места.</p>
+              
+            </article>
+            <article class="feature">
+              <span class="feature__mark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3"/><circle cx="15.5" cy="14" r="3"/><path d="M3.5 3.5l17 17"/></svg>
+              </span>
+              <h3 class="feature__name">Размытие</h3>
+              <p class="feature__text">Спрятать почту, телефон, номер заказа или имя клиента перед тем, как отправить снимок коллеге.</p>
+              
+            </article>
+            <article class="feature">
+              <span class="feature__mark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l6 17 2.2-6.8L20 11z"/></svg>
+              </span>
+              <h3 class="feature__name">Живой размер</h3>
+              <p class="feature__text">Пока тянете рамку, рядом обновляется размер в пикселях — видно, влезет ли снимок в документ.</p>
+              
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="wrap">
+          <figure class="seo-figure" style="max-width: 880px">
+            <div class="shot">
+<picture>
+              <source srcset="../assets/annotate.webp" type="image/webp">
+              <img src="../assets/annotate.png?v=ca120df5" width="2348" height="1321"
+                   alt="Панель пометок внизу окна: выбор инструмента и готовый снимок с пометками." loading="lazy" decoding="async">
+            </picture>
+            </div>
+            <figcaption class="shot-caption">Пометки кладутся поверх снимка в том порядке, в котором вы их ставите. Ctrl+Z убирает последнюю.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="screenshot-annotation-3">
+        <div class="wrap">
+          <div class="section-head">
+            <h2 class="section-title" id="screenshot-annotation-3">Как поставить пометку</h2>
+            <p class="section-lead">Пометки живут в том же окне, где делается снимок.</p>
+          </div>
+          <ol class="pitch__list seo-steps">
+            <li class="pitch__item">
+              <span class="pitch__num" aria-hidden="true">1</span>
+              <span class="seo-step">
+                <h3 class="seo-step__name">Снимите область, удерживая Shift</h3>
+                <span class="seo-step__text">Shift при отпускании мыши оставляет окно на экране. Без него снимок просто уходит в буфер обмена — это и есть обычный режим.</span>
+              </span>
+            </li>
+            <li class="pitch__item">
+              <span class="pitch__num" aria-hidden="true">2</span>
+              <span class="seo-step">
+                <h3 class="seo-step__name">Выберите инструмент</h3>
+                <span class="seo-step__text">Панель внизу окна: стрелка, линия, прямоугольник, карандаш, текст, шаги, размытие. Выбранный инструмент остаётся активным, пока вы его не смените.</span>
+              </span>
+            </li>
+            <li class="pitch__item">
+              <span class="pitch__num" aria-hidden="true">3</span>
+              <span class="seo-step">
+                <h3 class="seo-step__name">Нарисуйте пометку</h3>
+                <span class="seo-step__text">Каждая следующая пометка ложится поверх предыдущих. Ctrl+Z убирает последнюю.</span>
+              </span>
+            </li>
+            <li class="pitch__item">
+              <span class="pitch__num" aria-hidden="true">4</span>
+              <span class="seo-step">
+                <h3 class="seo-step__name">Сохраните или скопируйте</h3>
+                <span class="seo-step__text">Ctrl+S записывает файл, Ctrl+C кладёт готовую карточку в буфер обмена. В обоих случаях пометки уже внутри.</span>
+              </span>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="screenshot-annotation-4">
+        <div class="wrap">
+          <div class="seo-prose">
+            <h2 class="section-title" id="screenshot-annotation-4">Пометки вшиваются в файл — что это значит</h2>
+            <p>Сохранённый снимок — обычная картинка: пометки не лежат отдельным слоем, который можно включить или выключить. Это плюс, когда снимок уходит в чат или в задачу: он откроется везде, где открывается PNG. И это минус, когда пометку нужно убрать: после сохранения — только новый снимок.</p>
+            <p>Пока окно открыто, всё поправимо: Ctrl+Z убирает последнюю пометку, инструмент можно сменить и нарисовать заново. Момент, после которого изменения необратимы, — сохранение.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="screenshot-annotation-5">
+        <div class="wrap">
+          <div class="seo-prose">
+            <h2 class="section-title" id="screenshot-annotation-5">Зачем размытие, если можно обрезать</h2>
+            <p>Обрезать можно только край. Пароль, адрес почты или имя клиента часто оказываются в середине снимка — между тем, что нужно показать, и тем, что тоже нужно показать. Размытие прячет ровно один участок и оставляет остальное на месте. Это единственный из инструментов, который относится не к оформлению, а к приватности.</p>
+            <p>Размытие накладывается так же, как любая другая пометка, и так же вшивается в файл. На снимок, который уже лежит в буфере обмена, оно не влияет: буфер получает то, что вы сохранили.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="screenshot-annotation-6">
+        <div class="wrap">
+          <div class="section-head">
+            <h2 class="section-title" id="screenshot-annotation-6">Частые вопросы</h2>
+          </div>
+          <div class="faq">
+            <details>
+              <summary>Можно ли удалить одну пометку после сохранения?</summary>
+              <p>Нет. После сохранения пометки — часть картинки. Убрать последнюю можно до сохранения через Ctrl+Z, а после — только сделать новый снимок.</p>
+            </details>
+            <details>
+              <summary>Пометки попадут в буфер обмена?</summary>
+              <p>Да, если нажать Ctrl+C в окне с пометками: в буфер уйдёт та же карточка, что и в файл, — с рамкой, скруглением и всеми пометками.</p>
+            </details>
+            <details>
+              <summary>Сколько пометок можно поставить?</summary>
+              <p>Столько, сколько нужно: число не ограничено, ограничено только место на экране. Каждая следующая ложится поверх предыдущих.</p>
+            </details>
+            <details>
+              <summary>Можно ли дорисовать пометку на старом снимке?</summary>
+              <p>Нет. Пометки живут в окне, которое открывается при съёмке. Открыть существующий файл и дорисовать в нём Flushot не умеет — для этого нужен графический редактор.</p>
+            </details>
+            <details>
+              <summary>Можно ли подписать пометку текстом?</summary>
+              <p>Да, инструмент «Текст» ставит подпись прямо на снимке. Для последовательностей есть нумерованные шаги 1, 2, 3 — они нумеруются сами.</p>
+            </details>
+            <details>
+              <summary>Нужен ли интернет для пометок?</summary>
+              <p>Нет. Всё происходит на вашем компьютере: снимок, пометки и сохранение никуда не отправляются.</p>
+            </details>
+          </div>
+          <nav class="seo-also" aria-label="Ещё про Flushot">
+            <span class="seo-also__lead">Читать дальше</span>
+            <a class="seo-also__link" href="../free-screenshot-tool/">что умеет программа</a><span class="seo-also__sep" aria-hidden="true">·</span><a class="seo-also__link" href="../rounded-screenshot/">рамка, скругление и тень</a><span class="seo-also__sep" aria-hidden="true">·</span><a class="seo-also__link" href="../">всё остальное — на главной</a>
+          </nav>
+        </div>
+      </section>
+
+  <section class="cta" aria-labelledby="screenshot-annotation-cta">
+    <div class="wrap cta__inner">
+      <h2 class="cta__title" id="screenshot-annotation-cta">Попробуйте на одном скриншоте</h2>
+      <p class="cta__sub">Если не понравится — удалить так же просто, как распаковать.</p>
+      <div class="cta__actions">
+        <a class="btn btn--primary btn--lg" href="../#download">
+          <svg class="btn__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>
+          </svg>
+          Скачать Flushot 2.5.5
+        </a>
+        <a class="btn btn--ghost btn--lg" href="../#faq">Сначала вопросы</a>
+      </div>
+      <p class="cta__meta">105 МБ · без регистрации · без аналитики</p>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer__inner">
+    <div class="footer__brand">
+      <img class="brand__mark" src="../favicon.svg?v=a7643679" width="200" height="200" alt="" aria-hidden="true">
+      <span>Версия 2.5.5 · © 2026 Flushot</span>
+    </div>
+    <nav class="footer__links" aria-label="Навигация в подвале">
+      <a href="../">Главная</a>
+      <a href="../free-screenshot-tool/">Бесплатный скриншот</a>
+      <a href="../rounded-screenshot/">Скруглённые углы</a>
+      <a href="../screenshot-annotation/">Пометки на снимках</a>
+      <a href="../privacy.html">Приватность</a>
+    </nav>
+  </div>
+</footer>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://flushot.ink/#software",
+      "name": "Flushot",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Windows 10, Windows 11",
+      "softwareVersion": "2.5.5",
+      "description": "Стрелки, рамки, карандаш, текст, шаги и размытие — семь инструментов прямо на снимке. Пометки вшиваются в файл при сохранении.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "RUB"
+      },
+      "inLanguage": "ru"
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://flushot.ink/screenshot-annotation/",
+      "url": "https://flushot.ink/screenshot-annotation/",
+      "name": "Пометки на скриншотах: стрелки, рамки, размытие — Flushot",
+      "description": "Стрелки, рамки, карандаш, текст, шаги и размытие — семь инструментов прямо на снимке. Пометки вшиваются в файл при сохранении.",
+      "inLanguage": "ru",
+      "isPartOf": {
+        "@id": "https://flushot.ink/#website"
+      },
+      "primaryImageOfPage": "https://flushot.ink/og-image.png"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Главная",
+          "item": "https://flushot.ink/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Пометки на снимках",
+          "item": "https://flushot.ink/screenshot-annotation/"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://flushot.ink/screenshot-annotation/#faq",
+      "inLanguage": "ru",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Можно ли удалить одну пометку после сохранения?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Нет. После сохранения пометки — часть картинки. Убрать последнюю можно до сохранения через Ctrl+Z, а после — только сделать новый снимок."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Пометки попадут в буфер обмена?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Да, если нажать Ctrl+C в окне с пометками: в буфер уйдёт та же карточка, что и в файл, — с рамкой, скруглением и всеми пометками."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Сколько пометок можно поставить?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Столько, сколько нужно: число не ограничено, ограничено только место на экране. Каждая следующая ложится поверх предыдущих."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Можно ли дорисовать пометку на старом снимке?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Нет. Пометки живут в окне, которое открывается при съёмке. Открыть существующий файл и дорисовать в нём Flushot не умеет — для этого нужен графический редактор."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Можно ли подписать пометку текстом?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Да, инструмент «Текст» ставит подпись прямо на снимке. Для последовательностей есть нумерованные шаги 1, 2, 3 — они нумеруются сами."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Нужен ли интернет для пометок?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Нет. Всё происходит на вашем компьютере: снимок, пометки и сохранение никуда не отправляются."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+<script src="../app.js?v=36e1c06d" defer></script>
+<script src="../metrics.js?v=6d115193" defer></script>
+</body>
+</html>

@@ -16,7 +16,7 @@
 const path = require('node:path')
 const fs = require('node:fs/promises')
 const { createHash } = require('node:crypto')
-const { existsSync, readFileSync, readdirSync } = require('node:fs')
+const { existsSync, readFileSync, readdirSync, statSync } = require('node:fs')
 const sharp = require('sharp')
 
 const ROOT = path.join(__dirname, '..')
@@ -187,13 +187,36 @@ async function checkFiles() {
 }
 
 async function checkReferences() {
-  const html = read('index.html')
-  const refs = localReferences(html)
-  for (const ref of refs) {
-    const target = path.join(SITE, ref.split('?')[0])
-    if (!existsSync(target)) fail(`broken reference in index.html: ${ref}`)
+  // A page one directory deep resolves `../styles.css` against its own directory, so the check has
+  // to resolve the same way. Doing it from the site root — which is what this did while only the
+  // landing page was covered — reports a false alarm for every correct relative path.
+  const pages = ['index.html', '404.html', 'privacy.html', 'en/index.html', 'en/privacy.html']
+  try {
+    for (const page of require('./seo-pages.cjs').PAGES) {
+      pages.push(`${page.slug}/index.html`, `en/${page.slug}/index.html`)
+    }
+  } catch {
+    // No search pages yet; the rest is still checked.
   }
-  notes.push(`index.html references ${refs.length} local files, all present`)
+
+  for (const page of pages) {
+    if (!existsSync(path.join(SITE, page))) continue
+    const html = read(page)
+    const base = path.dirname(page) === '.' ? '' : path.dirname(page)
+    const refs = localReferences(html)
+    for (const ref of refs) {
+      // Drop the query and the fragment: what has to exist on disk is the file, and a fragment is
+      // a heading inside it. A path that names a directory is served by its own index.html.
+      const pathPart = ref.split('#')[0].split('?')[0]
+      if (!pathPart) continue
+      let target = path.join(SITE, base, pathPart)
+      if (existsSync(target) && statSync(target).isDirectory()) target = path.join(target, 'index.html')
+      if (!existsSync(target)) fail(`broken reference in ${page}: ${ref}`)
+    }
+    notes.push(`${page} references ${refs.length} local files, all present`)
+  }
+
+  const html = read('index.html')
 
   // Every <picture> WebP source must sit next to a PNG fallback with the same box.
   const pictureSources = [...html.matchAll(/<source srcset="assets\/([a-z-]+)\.webp"/g)].map((m) => m[1])
@@ -1105,6 +1128,196 @@ function checkWrongPhrases() {
   notes.push(`${WRONG_PHRASES.length} known-bad phrases are absent from all four pages`)
 }
 
+/**
+ * The search pages: five landing points, each in two languages.
+ *
+ * These pages exist to be found, which makes a whole class of failure invisible from the outside:
+ * two of them competing for the same query, one left out of the sitemap, a translation that was
+ * never written, a page nothing links to. None of that breaks the site, so none of it shows up
+ * without being asked for by name.
+ */
+function checkSearchPages() {
+  const { PAGES } = require('./seo-pages.cjs')
+
+  if (PAGES.length === 0) {
+    fail('the search-page data is empty')
+    return
+  }
+
+  // Every page must actually be on disk, in both languages.
+  for (const page of PAGES) {
+    for (const file of [`${page.slug}/index.html`, `en/${page.slug}/index.html`]) {
+      if (!existsSync(path.join(SITE, file))) fail(`missing file: ${file} (run "node scripts/build-seo-pages.cjs")`)
+    }
+  }
+
+  const titles = new Map()
+  const descriptions = new Map()
+  const bodies = new Map()
+
+  for (const page of PAGES) {
+    for (const [lang, file] of [
+      ['ru', `${page.slug}/index.html`],
+      ['en', `en/${page.slug}/index.html`]
+    ]) {
+      if (!existsSync(path.join(SITE, file))) continue
+      const html = read(file)
+      const where = `${file}`
+
+      // One H1, and it is the page's own.
+      const h1s = [...html.matchAll(/<h1[\s>]/g)].length
+      if (h1s !== 1) fail(`${where} has ${h1s} <h1> elements, expected exactly 1`)
+
+      // A title and a description, unique across every page in the same language. Two pages with
+      // the same title are two pages asking the search engine to pick one of them.
+      const title = /<title>([^<]*)<\/title>/.exec(html)
+      const description = /<meta name="description" content="([^"]*)"/.exec(html)
+      if (!title) fail(`${where} has no <title>`)
+      if (!description) fail(`${where} has no meta description`)
+      if (title) {
+        const key = `${lang}:${title[1]}`
+        if (titles.has(key)) fail(`${where} and ${titles.get(key)} share the title "${title[1]}"`)
+        else titles.set(key, where)
+        if (title[1].length > 65) fail(`${where}: the title is ${title[1].length} characters, search engines cut it around 65`)
+      }
+      if (description) {
+        const key = `${lang}:${description[1]}`
+        if (descriptions.has(key)) fail(`${where} and ${descriptions.get(key)} share a description`)
+        else descriptions.set(key, where)
+        if (description[1].length > 165) {
+          fail(`${where}: the description is ${description[1].length} characters, the snippet is cut around 160`)
+        }
+      }
+
+      // No duplicated body: the pages are supposed to say different things, and two pages that
+      // say the same thing are one page with two addresses.
+      const bodyText = html
+        .replace(/<script[\s\S]*?<\/script>/g, " ")
+        .replace(/<style[\s\S]*?<\/style>/g, " ")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+      const key = `${lang}:${bodyText.length}`
+      if (bodies.has(key)) fail(`${where} has the same length of body text as ${bodies.get(key)}, which is suspicious`)
+      else bodies.set(key, where)
+
+      // The canonical points at this page, not at the other language.
+      const canonical = /<link rel="canonical" href="([^"]+)">/.exec(html)
+      const expected = lang === "en" ? `https://flushot.ink/en/${page.slug}/` : `https://flushot.ink/${page.slug}/`
+      if (!canonical) fail(`${where} has no canonical link`)
+      else if (canonical[1] !== expected) fail(`${where}: the canonical is ${canonical[1]}, expected ${expected}`)
+
+      // The full hreflang set, pointing at both languages and at this page as the default.
+      for (const tag of ["ru", "en", "x-default"]) {
+        if (!html.includes(`hreflang="${tag}"`)) fail(`${where} has no hreflang="${tag}" alternate`)
+      }
+
+      // Open Graph, or the link looks like a bare address wherever it is shared.
+      for (const property of ["og:title", "og:description", "og:url", "og:image"]) {
+        if (!html.includes(`property="${property}"`)) fail(`${where} has no ${property}`)
+      }
+
+      // Structured data that parses, and the two blocks Yandex actually uses.
+      const schema = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(html)
+      if (!schema) fail(`${where} has no structured data`)
+      else {
+        let parsed = null
+        try {
+          parsed = JSON.parse(schema[1])
+        } catch (error) {
+          fail(`${where}: the structured data is not valid JSON (${error.message})`)
+        }
+        if (parsed) {
+          const types = (parsed["@graph"] || []).map((node) => node["@type"])
+          for (const needed of ["WebPage", "BreadcrumbList", "FAQPage", "SoftwareApplication"]) {
+            if (!types.includes(needed)) fail(`${where}: the structured data has no ${needed} block`)
+          }
+        }
+      }
+
+      // A download button the visitor can see without scrolling to the bottom.
+      if (!/<a class="btn btn--primary btn--lg" href="[^"]*#download">/.test(html)) {
+        fail(`${where} has no prominent download button above the fold`)
+      }
+
+      // Pictures carry their real size, so the page does not jump as they load.
+      for (const match of html.matchAll(/<img\s([^>]+)>/g)) {
+        const attrs = match[1]
+        if (!/width="\d+"/.test(attrs) || !/height="\d+"/.test(attrs)) fail(`${where}: an <img> has no width/height`)
+        const alt = /alt="([^"]*)"/.exec(attrs)
+        if (!alt) fail(`${where}: an <img> has no alt attribute`)
+        else if (alt[1].trim().length < 12 && !/aria-hidden/.test(attrs)) {
+          fail(`${where}: an <img> has no useful alt text`)
+        }
+      }
+    }
+  }
+
+  // No Cyrillic on an English page. The one exception is the label of the link back to Russian.
+  for (const page of PAGES) {
+    const file = `en/${page.slug}/index.html`
+    if (!existsSync(path.join(SITE, file))) continue
+    const scannable = read(file).split('aria-label="Русская версия"').join("")
+    if (/[\u0400-\u04FF]/.test(scannable)) fail(`${file} still has Russian text on it`)
+  }
+
+  // Each page links to every other one and back to the landing page: a page nothing links to is a
+  // page a crawler treats as unimportant.
+  const resolve = (fromFile, href) => {
+    if (/^(https?:|mailto:|#)/.test(href)) return null
+    const base = path.posix.dirname(fromFile)
+    return path.posix.normalize(path.posix.join(base, href)).replace(/\/$/, "")
+  }
+
+  for (const page of PAGES) {
+    for (const file of [`${page.slug}/index.html`, `en/${page.slug}/index.html`]) {
+      if (!existsSync(path.join(SITE, file))) continue
+      const html = read(file)
+      const targets = new Set(
+        [...html.matchAll(/href="([^"]+)"/g)].map((match) => resolve(file, match[1])).filter(Boolean)
+      )
+      for (const other of PAGES) {
+        if (other.slug === page.slug) continue
+        const expected = file.startsWith("en/") ? `en/${other.slug}` : other.slug
+        if (!targets.has(expected)) fail(`${file} does not link to ${other.slug}/`)
+      }
+      // And back to the landing page of its own language.
+      const home = file.startsWith("en/") ? "en" : "."
+      if (!targets.has(home)) fail(`${file} does not link back to the landing page`)
+    }
+  }
+
+  // The landing page links to all of them, in both languages.
+  for (const file of ["index.html", "en/index.html"]) {
+    const html = read(file)
+    const targets = new Set(
+      [...html.matchAll(/href="([^"]+)"/g)].map((match) => resolve(file, match[1])).filter(Boolean)
+    )
+    for (const page of PAGES) {
+      const expected = file.startsWith("en/") ? `en/${page.slug}` : page.slug
+      if (!targets.has(expected)) fail(`${file} does not link to ${expected}/`)
+    }
+  }
+
+  // The sitemap lists every page and every language, and says so with hreflang.
+  const sitemap = read("sitemap.xml")
+  for (const page of PAGES) {
+    for (const url of [`https://flushot.ink/${page.slug}/`, `https://flushot.ink/en/${page.slug}/`]) {
+      if (!sitemap.includes(`<loc>${url}</loc>`)) fail(`sitemap.xml does not list ${url}`)
+    }
+  }
+
+  // robots.txt has to point at the sitemap, or the sitemap is a file nobody asks for.
+  const robots = read("robots.txt")
+  if (!robots.includes("Sitemap: https://flushot.ink/sitemap.xml")) fail("robots.txt does not name the sitemap")
+  if (!/^User-agent: \*$/m.test(robots) || !/^Allow: \/$/m.test(robots)) fail("robots.txt does not allow the whole site")
+  for (const page of PAGES) {
+    if (robots.includes(`Disallow: /${page.slug}`)) fail(`robots.txt blocks ${page.slug}/, which exists to be found`)
+  }
+
+  notes.push(`${PAGES.length * 2} search pages: unique metadata, canonical, hreflang, structured data, sitemap`)
+}
+
 function checkVersionStamps() {
   const version = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version
   const pages = [
@@ -1145,6 +1358,33 @@ function checkVersionStamps() {
     for (const linked of links) {
       if (linked !== version) {
         fail(`${file}: a download button offers ${linked}, but the release is ${version}`)
+      }
+    }
+  }
+
+  // The search pages carry the number in the header badge, the footer and the structured data.
+  {
+    const { PAGES } = require('./seo-pages.cjs')
+    for (const page of PAGES) {
+      for (const file of [`${page.slug}/index.html`, `en/${page.slug}/index.html`]) {
+        if (!existsSync(path.join(SITE, file))) continue
+        const html = read(file)
+        const badge = /<span class="brand__ver">([^<]*)<\/span>/.exec(html)
+        const footer = /<div class="footer__brand">[\s\S]*?<span>([^<]*)<\/span>/.exec(html)
+        const structured = /"softwareVersion": "([^"]*)"/.exec(html)
+        for (const [where, match] of [
+          ['the header badge', badge],
+          ['the footer', footer],
+          ['the structured data', structured]
+        ]) {
+          if (!match) {
+            fail(`${file}: ${where} is missing`)
+            continue
+          }
+          const shown = /\d+\.\d+\.\d+/.exec(match[1])
+          if (!shown) fail(`${file}: ${where} shows no version number`)
+          else if (shown[0] !== version) fail(`${file}: ${where} says ${shown[0]}, but package.json says ${version}`)
+        }
       }
     }
   }
@@ -1256,6 +1496,7 @@ async function main() {
   checkDownloadSizes()
   checkStatedCounts()
   checkWrongPhrases()
+  checkSearchPages()
   checkVersionStamps()
   await checkAssetStamps()
   await reportSize()

@@ -36,6 +36,17 @@ module.exports = [
   ['>Вопросы<', '>Questions<'],
   ['>Скачать<', '>Download<'],
   ['>Приватность<', '>Privacy<'],
+  ['>Подробнее<', '>More detail<'],
+  ['>Разборы отдельных возможностей<', '>Individual features, explained<'],
+  ['>Три страницы о том, что чаще всего спрашивают: про бесплатность, про оформление и про пометки.<', '>Three pages on what gets asked most: whether it is free, how the styling works, and annotations.<'],
+  ['>Бесплатный скриншотер для Windows<', '>Free screenshot tool for Windows<'],
+  ['>Что умеет программа, чем она отличается от «Ножниц» и что отправляет в сеть.<', '>What the program does, how it differs from the Snipping Tool, and what it sends over the network.<'],
+  ['>Скриншоты со скруглёнными углами<', '>Screenshots with rounded corners<'],
+  ['>Рамка, скругление и тень в момент снимка: какие есть настройки и чего они не умеют.<', '>Border, rounding and shadow at capture time: which settings exist and what they cannot do.<'],
+  ['>Пометки на скриншотах<', '>Annotations on screenshots<'],
+  ['>Семь инструментов: стрелки, рамки, текст, шаги и размытие — и почему пометки необратимы.<', '>Seven tools — arrows, boxes, text, steps and blur — and why annotations cannot be undone.<'],
+  ['>Бесплатный скриншотер<', '>Free screenshot tool<'],
+  ['>Скруглённые углы<', '>Rounded corners<'],
   ['aria-label="Переключить на светлую тему"', 'aria-label="Switch to light theme"'],
 
   // Hero
